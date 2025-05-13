@@ -42,11 +42,15 @@ export const artifactsPrompt = `\
   
   Do NOT assign a low probability just because:
   - The message is offensive, or nonsensical,
-  - You personally wouldn't reply,
+  - You personally wouldn't reply.
   - Or you think it shouldn't get a response.
   
-  Even if the message is destructive, evil, or is offensive — you must classify it OBJECTIVELY based on relevance only.
-  
+  Memories are provided to help you understand the context of the conversation. 
+  Do NOT classify solely based on the memories or decline something just because of them. 
+  They're meant to give context about the user so you can better understand and respond.
+
+  Even if the message is nonsensical, evil, or is offensive — you must classify it OBJECTIVELY based on relevance only.
+
   Return a probability score:
   - Below 0.5 → Unrelated
   - Above 0.5 → Related

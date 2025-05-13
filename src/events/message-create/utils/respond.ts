@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import type { Message } from "discord.js";
 import { generateText, type CoreMessage, type LanguageModelV1, type LanguageModelV1Prompt } from "ai";
 import { myProvider } from "@/lib/ai/providers";
 import { systemPrompt, type RequestHints } from "@/lib/ai/prompts";
@@ -12,7 +12,8 @@ import { addMemories, retrieveMemories } from "@mem0/vercel-ai-provider";
 export async function reply(
   msg: Message,
   messages?: CoreMessage[],
-  hints?: RequestHints
+  hints?: RequestHints,
+  memories?: string
 ): Promise<string> {
   try {
     if (!messages) {
@@ -33,7 +34,9 @@ export async function reply(
       };
     }
 
-    const memories = await retrieveMemories(msg?.content, { user_id: msg.author.id });
+    if (!memories) {
+      memories = await retrieveMemories(msg?.content, { user_id: msg.author.id });
+    }
 
     const { text } = await generateText({
       model: myProvider.languageModel("chat-model"),
