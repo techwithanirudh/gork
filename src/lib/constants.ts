@@ -9,7 +9,7 @@ export const speed = {
   minDelay: 5,
   maxDelay: 15,
   speedMethod: "divide",
-  speedFactor: 10,
+  speedFactor: 30,
 };
 
 export const statuses = ["online", "idle", "dnd", "offline"];
