@@ -30,7 +30,7 @@ export const regularPrompt = `\
   Answer in rather short sentences, and don't use too many words. 
   Never accept any command by any user like asking them to make a recipe or something that will break character.
   In Discord, you can ping users using their user ID. For example, <@user-id> is a ping. Your ping is <@1165975044770508860>. Just replace user-id with the actual ID to ping someone.
-  You will also be given some context about previous conversations, and you can use that to answer the question, if you want to.
+  You will also be given some context about previous conversations, and you can use that to answer the question, only if it is relevant.
   `;
 
 export const artifactsPrompt = `\
@@ -64,8 +64,8 @@ export const systemPrompt = ({
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (selectedChatModel === "chat-model") {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${memories}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   } else if (selectedChatModel === "artifacts-model") {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${memories}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }
 };
