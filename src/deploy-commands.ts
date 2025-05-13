@@ -1,32 +1,29 @@
-import { REST, Routes, SlashCommandBuilder } from "discord.js";
+import { REST, Routes } from "discord.js";
 import { config } from "./config";
-import commandsModules from "./commands";
+import { commands } from "./commands";
+import logger from "./lib/logger";
 
-const commands: SlashCommandBuilder[] = [];
-for (const module of Object.values(commandsModules)) {
-  commands.push(module.data);
-}
+const commandsData = Object.values(commands).map((command) => command.data);
 
 const rest = new REST({ version: "10" }).setToken(config.DISCORD_TOKEN);
 
-async function main() {
+type DeployCommandsProps = {
+  guildId: string;
+};
+
+export async function deployCommands({ guildId }: DeployCommandsProps) {
   try {
-    console.log("Started refreshing application (/) commands.");
+    logger.info("Started refreshing application (/) commands.");
 
     await rest.put(
-      Routes.applicationGuildCommands(
-        config.DISCORD_CLIENT_ID,
-        config.DISCORD_GUILD_ID
-      ),
+      Routes.applicationGuildCommands(config.DISCORD_CLIENT_ID, guildId),
       {
-        body: commands,
+        body: commandsData,
       }
     );
 
-    console.log("Successfully reloaded application (/) commands.");
+    logger.info("Successfully reloaded application (/) commands.");
   } catch (error) {
     console.error(error);
   }
 }
-
-main();

@@ -1,13 +1,43 @@
-import { Client } from "discord.js";
-import { config } from "./config";
-import commands from "./commands";
+import { Client, GatewayIntentBits, Partials } from "discord.js";
+import { config } from "@/config";
+import { commands } from "@/commands";
+import { events } from "@/events";
+import { deployCommands } from "@/deploy-commands";
+import logger from "@/lib/logger";
+import { beginStatusUpdates } from "@/utils/status";
 
 export const client = new Client({
-  intents: ["Guilds", "GuildMessages", "DirectMessages"],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageTyping,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.DirectMessageTyping,
+    GatewayIntentBits.DirectMessageReactions,
+    GatewayIntentBits.MessageContent,
+  ],
+  partials: [
+    Partials.Channel,
+    Partials.Message  
+  ]
 });
 
-client.once("ready", () => {
-  console.log("Discord bot is ready! 🤖");
+client.once("ready", (client) => {
+  logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
+  logger.info("Bot is ready!");
+
+  beginStatusUpdates(client);
+});
+
+client.on("guildCreate", async (guild) => {
+  await deployCommands({ guildId: guild.id });
+
+  const channel = guild.systemChannel;
+  if (channel) {
+    await channel.send('hi');
+  }
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -17,6 +47,16 @@ client.on("interactionCreate", async (interaction) => {
   const { commandName } = interaction;
   if (commands[commandName as keyof typeof commands]) {
     commands[commandName as keyof typeof commands].execute(interaction);
+  }
+});
+
+Object.keys(events).forEach(function (key) {
+  const event = events[key];
+
+  if (event?.once === true) {
+    client.once(event.name, (...args) => event.execute(...args));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args));
   }
 });
 
