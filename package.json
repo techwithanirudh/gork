@@ -54,10 +54,12 @@
     "@typescript-eslint/parser": "^5.51.0",
     "eslint": "^8.33.0",
     "eslint-config-prettier": "^8.6.0",
-    "eslint-plugin-import": "^2.25.2",
+    "eslint-import-resolver-typescript": "^4.4.3",
+    "eslint-plugin-import-x": "^4.15.2",
     "eslint-plugin-n": "^15.0.0",
     "eslint-plugin-promise": "^6.0.0",
-    "prettier": "^2.8.4"
+    "prettier": "^2.8.4",
+    "prettier-plugin-organize-imports": "^4.1.0"
   },
   "peerDependencies": {
     "typescript": "^5"

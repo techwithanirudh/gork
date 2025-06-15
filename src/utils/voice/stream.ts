@@ -6,10 +6,9 @@ import {
 import * as prism from 'prism-media';
 import type { User } from 'discord.js';
 import logger from '@/lib/logger';
-import { getAIResponse, playAudio } from './helpers';
+import { getAIResponse, playAudio , speak, deepgram } from './helpers';
 import { voice } from '@/config';
 import { LiveTranscriptionEvents } from '@deepgram/sdk';
-import { speak, deepgram } from './helpers';
 
 export async function createListeningStream(
   receiver: VoiceReceiver,
