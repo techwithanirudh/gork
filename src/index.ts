@@ -1,10 +1,10 @@
-import { Client, GatewayIntentBits, Partials } from "discord.js";
-import { commands } from "@/commands";
-import { events } from "@/events";
-import { deployCommands } from "@/deploy-commands";
-import logger from "@/lib/logger";
-import { beginStatusUpdates } from "@/utils/status";
-import { env } from "@/env";
+import { Client, GatewayIntentBits, Partials } from 'discord.js';
+import { commands } from '@/commands';
+import { events } from '@/events';
+import { deployCommands } from '@/deploy-commands';
+import logger from '@/lib/logger';
+import { beginStatusUpdates } from '@/utils/status';
+import { env } from '@/env';
 
 export const client = new Client({
   intents: [
@@ -18,20 +18,17 @@ export const client = new Client({
     GatewayIntentBits.DirectMessageReactions,
     GatewayIntentBits.MessageContent,
   ],
-  partials: [
-    Partials.Channel,
-    Partials.Message  
-  ]
+  partials: [Partials.Channel, Partials.Message],
 });
 
-client.once("ready", (client) => {
+client.once('ready', (client) => {
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
-  logger.info("Bot is ready!");
+  logger.info('Bot is ready!');
 
   beginStatusUpdates(client);
 });
 
-client.on("guildCreate", async (guild) => {
+client.on('guildCreate', async (guild) => {
   await deployCommands({ guildId: guild.id });
 
   const channel = guild.systemChannel;
@@ -40,7 +37,7 @@ client.on("guildCreate", async (guild) => {
   }
 });
 
-client.on("interactionCreate", async (interaction) => {
+client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) {
     return;
   }

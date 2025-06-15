@@ -1,6 +1,6 @@
-import { env } from "@/env";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { env } from '@/env';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 
 export const redis = new Redis({
   url: env.UPSTASH_REDIS_REST_URL,
@@ -9,9 +9,9 @@ export const redis = new Redis({
 
 export const ratelimit = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(7, "30 s"),
+  limiter: Ratelimit.slidingWindow(7, '30 s'),
   analytics: true,
-  prefix: "discord",
+  prefix: 'discord',
 });
 
 export const redisKeys = {

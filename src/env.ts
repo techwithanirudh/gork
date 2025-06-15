@@ -1,5 +1,5 @@
-import { createEnv } from "@t3-oss/env-core";
-import { z } from "zod";
+import { createEnv } from '@t3-oss/env-core';
+import { z } from 'zod';
 
 export const env = createEnv({
   server: {
@@ -11,16 +11,16 @@ export const env = createEnv({
     HACKCLUB_API_KEY: z.string().optional(),
     OPENROUTER_API_KEY: z.string().optional(),
     // Logging
-    LOG_DIRECTORY: z.string().optional().default("logs"),
+    LOG_DIRECTORY: z.string().optional().default('logs'),
     LOG_LEVEL: z
-      .enum(["debug", "info", "warn", "error"])
+      .enum(['debug', 'info', 'warn', 'error'])
       .optional()
-      .default("info"),
+      .default('info'),
     // Redis
     UPSTASH_REDIS_REST_URL: z.string().min(1).url(),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     // Mem0
-    MEM0_API_KEY: z.string().min(1).startsWith("m0-"),
+    MEM0_API_KEY: z.string().min(1).startsWith('m0-'),
   },
 
   /**

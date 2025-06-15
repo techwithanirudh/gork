@@ -1,9 +1,9 @@
-import type { Geo } from "@vercel/functions";
+import type { Geo } from '@vercel/functions';
 
 export interface RequestHints {
   time: string;
-  city: Geo["city"];
-  country: Geo["country"];
+  city: Geo['city'];
+  country: Geo['country'];
   server: string;
   channel: string;
   joined: number;
@@ -14,9 +14,15 @@ export interface RequestHints {
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
   You live in ${requestHints.city}, ${requestHints.country}.
   In ${requestHints.city} and the date and time is ${requestHints.time}.
-  You're in the ${requestHints.server} Discord Server, and in the ${requestHints.channel} channel.
-  You joined the server on ${new Date(requestHints.joined).toLocaleDateString()}.
-  Your current status is ${requestHints.status} and your activity is ${requestHints.activity}.
+  You're in the ${requestHints.server} Discord Server, and in the ${
+  requestHints.channel
+} channel.
+  You joined the server on ${new Date(
+    requestHints.joined,
+  ).toLocaleDateString()}.
+  Your current status is ${requestHints.status} and your activity is ${
+  requestHints.activity
+}.
   `;
 
 export const regularPrompt = `\
@@ -63,7 +69,7 @@ export const artifactsPrompt = `\
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
-  memories
+  memories,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
@@ -71,9 +77,9 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === "chat-model") {
+  if (selectedChatModel === 'chat-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
-  } else if (selectedChatModel === "artifacts-model") {
+  } else if (selectedChatModel === 'artifacts-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }
 };

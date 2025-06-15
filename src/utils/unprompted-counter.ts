@@ -1,5 +1,5 @@
-import { redis, redisKeys } from "@/lib/kv";
-import { messageThreshold } from "@/config";
+import { redis, redisKeys } from '@/lib/kv';
+import { messageThreshold } from '@/config';
 
 /** Add one “idle chatter” tick for this context and return the new total. */
 export async function accrueUnprompted(ctxId: string): Promise<number> {

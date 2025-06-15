@@ -1,20 +1,20 @@
-import { Events, Message } from "discord.js";
-import { keywords, city, country, timezone, initialMessages } from "@/config";
-import { getChannelName, getMessagesByChannel } from "@/lib/queries";
-import { getTimeInCity } from "@/utils/time";
-import { convertToCoreMessages } from "@/utils/messages";
-import { assessRelevance } from "./utils/relevance";
-import { reply } from "./utils/respond";
+import { Events, Message } from 'discord.js';
+import { keywords, city, country, timezone, initialMessages } from '@/config';
+import { getChannelName, getMessagesByChannel } from '@/lib/queries';
+import { getTimeInCity } from '@/utils/time';
+import { convertToCoreMessages } from '@/utils/messages';
+import { assessRelevance } from './utils/relevance';
+import { reply } from './utils/respond';
 import {
   accrueUnprompted,
   clearUnprompted,
   hasUnpromptedQuota,
-} from "@/utils/unprompted-counter";
-import { type RequestHints } from "@/lib/ai/prompts";
-import { ratelimit, redisKeys } from "@/lib/kv";
-import logger from "@/lib/logger";
-import { retrieveMemories } from "@mem0/vercel-ai-provider";
-import type { CoreMessage } from "ai";
+} from '@/utils/unprompted-counter';
+import { type RequestHints } from '@/lib/ai/prompts';
+import { ratelimit, redisKeys } from '@/lib/kv';
+import logger from '@/lib/logger';
+import { retrieveMemories } from '@mem0/vercel-ai-provider';
+import type { CoreMessage } from 'ai';
 
 export const name = Events.MessageCreate;
 export const once = false;
@@ -37,12 +37,12 @@ export async function execute(message: Message) {
   const botId = client.user?.id;
   const isPing = botId ? mentions.users.has(botId) : false;
   const hasKeyword = keywords.some((k) =>
-    content.toLowerCase().includes(k.toLowerCase())
+    content.toLowerCase().includes(k.toLowerCase()),
   );
 
   logger.info(
     { ctxId, user: author.username, isPing, hasKeyword, content, isDM },
-    "Incoming message"
+    'Incoming message',
   );
 
   /* ---------- Explicit trigger (ping / keyword) ------------------------- */
@@ -64,7 +64,10 @@ export async function execute(message: Message) {
 
   /* Relevance check happens ONLY in this branch (no trigger) */
   const messages = await getMessagesByChannel({ channel, limit: 50 });
-  const coreMessages = [...initialMessages as CoreMessage[], ...convertToCoreMessages(messages)];
+  const coreMessages = [
+    ...(initialMessages as CoreMessage[]),
+    ...convertToCoreMessages(messages),
+  ];
   const memories = await retrieveMemories(message?.content);
 
   const hints: RequestHints = {
@@ -72,17 +75,22 @@ export async function execute(message: Message) {
     time: getTimeInCity(timezone),
     city,
     country,
-    server: isDM ? `DM with ${author.username}` : guild?.name ?? "DM",
+    server: isDM ? `DM with ${author.username}` : guild?.name ?? 'DM',
     joined: guild?.members.me?.joinedTimestamp ?? 0,
-    status: guild?.members.me?.presence?.status ?? "offline",
-    activity: guild?.members.me?.presence?.activities[0]?.name ?? "none",
+    status: guild?.members.me?.presence?.status ?? 'offline',
+    activity: guild?.members.me?.presence?.activities[0]?.name ?? 'none',
   };
 
-  const { probability, reason } = await assessRelevance(message, coreMessages, hints, memories);
+  const { probability, reason } = await assessRelevance(
+    message,
+    coreMessages,
+    hints,
+    memories,
+  );
   logger.info(`Relevance for ${ctxId}: ${reason}; p=${probability}`);
 
   if (probability <= 0.5) {
-    logger.debug("Low relevance — ignoring");
+    logger.debug('Low relevance — ignoring');
     return;
   }
 
