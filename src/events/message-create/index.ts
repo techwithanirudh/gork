@@ -1,102 +1,105 @@
 import { Events, Message } from 'discord.js';
-import { keywords, city, country, timezone, initialMessages } from '@/config';
-import { getChannelName, getMessagesByChannel } from '@/lib/queries';
-import { getTimeInCity } from '@/utils/time';
-import { convertToCoreMessages } from '@/utils/messages';
+import { keywords } from '@/config';
+import { buildChatContext } from '@/utils/context';
 import { assessRelevance } from './utils/relevance';
-import { reply } from './utils/respond';
+import { generateResponse } from './utils/respond';
 import {
-  accrueUnprompted,
+  getUnprompted,
   clearUnprompted,
   hasUnpromptedQuota,
-} from '@/utils/unprompted-counter';
-import { type RequestHints } from '@/lib/ai/prompts';
-import { ratelimit, redisKeys } from '@/lib/kv';
+} from '@/utils/message-rate-limiter';
+import { ratelimit, redisKeys, redis } from '@/lib/kv';
+import { reply as staggeredReply } from '@/utils/delay';
+
+import { getTrigger } from '@/utils/triggers';
+import { logTrigger, logIncoming, logReply } from '@/utils/log';
 import logger from '@/lib/logger';
-import { retrieveMemories } from '@mem0/vercel-ai-provider';
-import type { CoreMessage } from 'ai';
 
 export const name = Events.MessageCreate;
 export const once = false;
 
+async function canReply(ctxId: string): Promise<boolean> {
+  const { success } = await ratelimit.limit(redisKeys.channelCount(ctxId));
+  if (!success) {
+    logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
+  }
+  return success;
+}
+
+async function isChannelAllowed(message: Message): Promise<boolean> {
+  if (!message.guild) return true;
+
+  const guildId = message.guild.id;
+  const channelId = message.channel.id;
+  const allowedChannels = await redis.smembers(
+    redisKeys.allowedChannels(guildId),
+  );
+
+  if (!allowedChannels || allowedChannels.length === 0) {
+    return true;
+  }
+
+  return allowedChannels.includes(channelId);
+}
+
 export async function execute(message: Message) {
   if (message.author.bot) return;
+  if (!(await isChannelAllowed(message))) {
+    logger.info(`Channel ${message.channel.id} not in allowed channels list`);
+    return;
+  }
 
-  const { channel, content, mentions, client, guild, author } = message;
-
+  const { content, client, guild, author } = message;
   const isDM = !guild;
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
-  const replyAllowed = (await ratelimit.limit(redisKeys.channelCount(ctxId)))
-    .success;
-  if (!replyAllowed) {
-    logger.info(`Message Limit tripped in ${ctxId}`);
-    return;
-  }
+  logIncoming(ctxId, author.username, content);
+
+  if (!(await canReply(ctxId))) return;
 
   const botId = client.user?.id;
-  const isPing = botId ? mentions.users.has(botId) : false;
-  const hasKeyword = keywords.some((k) =>
-    content.toLowerCase().includes(k.toLowerCase()),
-  );
+  const trigger = getTrigger(message, keywords, botId);
 
-  logger.info(
-    { ctxId, user: author.username, isPing, hasKeyword, content, isDM },
-    'Incoming message',
-  );
+  if (trigger.type) {
+    await clearUnprompted(ctxId);
+    logTrigger(ctxId, trigger);
 
-  /* ---------- Explicit trigger (ping / keyword) ------------------------- */
-  if (isPing || hasKeyword || isDM) {
-    await clearUnprompted(ctxId); // reset idle quota
-    logger.debug(`Trigger detected — counter cleared for ${ctxId}`);
-    await reply(message); // immediate reply
+    const { messages, hints, memories } = await buildChatContext(message);
+    const result = await generateResponse(message, messages, hints, memories);
+    logReply(ctxId, author.username, result, 'explicit trigger');
+    if (result.success && result.response) {
+      await staggeredReply(message, result.response);
+    }
     return;
   }
 
-  /* ---------- Idle‑chatter branch -------------------------------------- */
-  const idleCount = await accrueUnprompted(ctxId);
-  logger.debug(`Idle counter for ${ctxId}: ${idleCount}`);
+  const idleCount = await getUnprompted(ctxId);
+  logger.debug(`[${ctxId}] Idle counter: ${idleCount}`);
 
   if (!(await hasUnpromptedQuota(ctxId))) {
-    logger.info(`Idle quota exhausted in ${ctxId} — staying silent`);
+    logger.info(`[${ctxId}] Idle quota exhausted — staying silent`);
     return;
   }
 
-  /* Relevance check happens ONLY in this branch (no trigger) */
-  const messages = await getMessagesByChannel({ channel, limit: 50 });
-  const coreMessages = [
-    ...(initialMessages as CoreMessage[]),
-    ...convertToCoreMessages(messages),
-  ];
-  const memories = await retrieveMemories(message?.content);
-
-  const hints: RequestHints = {
-    channel: getChannelName(channel),
-    time: getTimeInCity(timezone),
-    city,
-    country,
-    server: isDM ? `DM with ${author.username}` : guild?.name ?? 'DM',
-    joined: guild?.members.me?.joinedTimestamp ?? 0,
-    status: guild?.members.me?.presence?.status ?? 'offline',
-    activity: guild?.members.me?.presence?.activities[0]?.name ?? 'none',
-  };
-
+  const { messages, hints, memories } = await buildChatContext(message);
   const { probability, reason } = await assessRelevance(
     message,
-    coreMessages,
+    messages,
     hints,
     memories,
   );
-  logger.info(`Relevance for ${ctxId}: ${reason}; p=${probability}`);
+  logger.info({ reason, probability }, `[${ctxId}] Relevance check`);
 
   if (probability <= 0.5) {
-    logger.debug('Low relevance — ignoring');
+    logger.debug(`[${ctxId}] Low relevance — ignoring`);
     return;
   }
 
-  /* Relevance high → speak & reset idle counter */
   await clearUnprompted(ctxId);
-  logger.info(`Replying in ${ctxId}; idle counter reset`);
-  const result = await reply(message, coreMessages, hints, memories);
-  logger.info(`Replied to ${ctxId}: ${result}`);
+  logger.info(`[${ctxId}] Replying; idle counter reset`);
+  const result = await generateResponse(message, messages, hints, memories);
+  logReply(ctxId, author.username, result, 'high relevance');
+  if (result.success && result.response) {
+    await staggeredReply(message, result.response);
+  }
 }

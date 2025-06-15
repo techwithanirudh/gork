@@ -1,15 +1,21 @@
 import { createEnv } from '@t3-oss/env-core';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const env = createEnv({
   server: {
+    NODE_ENV: z
+      .enum(['development', 'production', 'test'])
+      .default('development'),
     // Discord
     DISCORD_TOKEN: z.string().min(1),
     DISCORD_CLIENT_ID: z.string().min(1),
+    DISCORD_OWNER_ID: z.string().min(1),
+    DISCORD_DEFAULT_GUILD_ID: z.string().optional(),
     // AI
     OPENAI_API_KEY: z.string().optional(),
     HACKCLUB_API_KEY: z.string().optional(),
     OPENROUTER_API_KEY: z.string().optional(),
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
     // Logging
     LOG_DIRECTORY: z.string().optional().default('logs'),
     LOG_LEVEL: z
@@ -21,6 +27,10 @@ export const env = createEnv({
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     // Mem0
     MEM0_API_KEY: z.string().min(1).startsWith('m0-'),
+    // AssemblyAI
+    DEEPGRAM_API_KEY: z.string().min(1),
+    // ElevenLabs
+    // ELEVENLABS_API_KEY: z.string().min(1),
   },
 
   /**

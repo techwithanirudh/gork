@@ -1,51 +1,30 @@
 import type { Message } from 'discord.js';
-import {
-  generateText,
-  type CoreMessage,
-  type LanguageModelV1,
-  type LanguageModelV1Prompt,
-} from 'ai';
+import { generateText, stepCountIs } from 'ai';
 import { myProvider } from '@/lib/ai/providers';
-import { systemPrompt, type RequestHints } from '@/lib/ai/prompts';
-import { getChannelName, getMessagesByChannel } from '@/lib/queries';
-import { convertToCoreMessages } from '@/utils/messages';
-import { reply as staggeredReply } from '@/utils/delay';
-import { getTimeInCity } from '@/utils/time';
-import { timezone, city, country } from '@/lib/constants';
-import { addMemories, retrieveMemories } from '@mem0/vercel-ai-provider';
+import { replyPrompt, systemPrompt } from '@/lib/ai/prompts';
+import { addMemories } from '@mem0/vercel-ai-provider';
+import logger from '@/lib/logger';
+import { report } from '@/lib/ai/tools/report';
+import { getWeather } from '@/lib/ai/tools/get-weather';
+import type { ModelMessage } from 'ai';
+import type { RequestHints } from '@/lib/ai/prompts';
+import { discord } from '@/lib/ai/tools/discord';
 
-export async function reply(
+export async function generateResponse(
   msg: Message,
-  messages?: CoreMessage[],
-  hints?: RequestHints,
-  memories?: string,
-): Promise<string> {
+  messages: ModelMessage[],
+  hints: RequestHints,
+  memories: string,
+  options?: {
+    memories?: boolean;
+  },
+): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
-    if (!messages) {
-      const raw = await getMessagesByChannel({
-        channel: msg.channel,
-        limit: 50,
-      });
-      messages = convertToCoreMessages(raw);
-    }
-
-    if (!hints) {
-      hints = {
-        channel: getChannelName(msg.channel),
-        time: getTimeInCity(timezone),
-        city,
-        country,
-        server: msg.guild?.name ?? 'DM',
-        joined: msg.guild?.members.me?.joinedTimestamp ?? 0,
-        status: msg.guild?.members.me?.presence?.status ?? 'offline',
-        activity:
-          msg.guild?.members.me?.presence?.activities[0]?.name ?? 'none',
-      };
-    }
-
-    if (!memories) {
-      memories = await retrieveMemories(msg?.content);
-    }
+    const system = systemPrompt({
+      selectedChatModel: 'chat-model',
+      requestHints: hints,
+      memories,
+    });
 
     const { text } = await generateText({
       model: myProvider.languageModel('chat-model'),
@@ -53,32 +32,37 @@ export async function reply(
         ...messages,
         {
           role: 'system',
-          content:
-            "Respond to the following message just like you would in a casual chat. It's not a question; think of it as a conversation starter.\n" +
-            "Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.",
+          content: replyPrompt,
         },
       ],
-      system: systemPrompt({
-        selectedChatModel: 'chat-model',
-        requestHints: hints,
-        memories,
-      }),
+      activeTools: ['getWeather', 'report', 'discord'],
+      tools: {
+        getWeather,
+        report: report({ message: msg }),
+        discord: discord({ message: msg, client: msg.client, messages }),
+      },
+      system,
+      stopWhen: stepCountIs(10),
     });
 
-    await addMemories(
-      [
-        ...messages,
-        {
-          role: 'assistant',
-          content: text,
-        },
-      ] as any,
-      { user_id: msg.author.id },
-    );
+    if (options?.memories) {
+      await addMemories(
+        [
+          ...messages,
+          {
+            role: 'assistant',
+            content: text,
+          },
+        ] as any,
+        { user_id: msg.author.id },
+      );
+    }
 
-    await staggeredReply(msg, text);
-    return text;
-  } catch (error) {
-    return 'Oops! Something went wrong, please try again later';
+    return { success: true, response: text };
+  } catch (e) {
+    return {
+      success: false,
+      error: (e as Error)?.message,
+    };
   }
 }

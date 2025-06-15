@@ -1,22 +1,22 @@
 import type { Message } from 'discord.js';
-import { generateObject, type CoreMessage } from 'ai';
+import { generateObject, type ModelMessage } from 'ai';
 import { systemPrompt, type RequestHints } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { probabilitySchema, type Probability } from '@/lib/validators';
 
 export async function assessRelevance(
   msg: Message,
-  messages: CoreMessage[],
+  messages: ModelMessage[],
   hints: RequestHints,
   memories: string,
 ): Promise<Probability> {
   try {
     const { object } = await generateObject({
-      model: myProvider.languageModel('artifact-model'),
+      model: myProvider.languageModel('relevance-model'),
       messages,
       schema: probabilitySchema,
       system: systemPrompt({
-        selectedChatModel: 'artifact-model',
+        selectedChatModel: 'relevance-model',
         requestHints: hints,
         memories,
       }),
