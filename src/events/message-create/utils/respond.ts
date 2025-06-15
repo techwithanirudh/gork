@@ -61,9 +61,11 @@ export async function generateResponse(
     if (options?.memories) {
       await addMemories(
         [
+          // @ts-expect-error not compatible with ai sdk v5
           ...messages,
           {
             role: 'assistant',
+            // @ts-expect-error not compatible with ai sdk v5
             content: text,
           },
         ],
