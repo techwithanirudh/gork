@@ -1,3 +1,4 @@
+import { initialMessages } from '@/config';
 import { generateResponse } from '@/events/message-create/utils/respond';
 import { buildChatContext } from '@/utils/context';
 import { logIncoming, logReply } from '@/utils/log';
@@ -36,18 +37,18 @@ export async function execute(
     client: interaction.client,
   };
 
-  const initialMessages = !interaction.guild
+  const tempMessages = !interaction.guild
     ? [
-        {
-          role: 'system' as const,
-          content:
-            'You are currently running in an environment where previous context cannot be retrieved.',
-        },
-      ]
+      ...initialMessages,
+      {
+        role: 'user' as const,
+        content: prompt,
+      }
+    ]
     : undefined;
 
   const { messages, hints, memories } = await buildChatContext(chatContext, {
-    messages: initialMessages,
+    messages: tempMessages,
   });
 
   const result = await generateResponse(chatContext, messages, hints, memories);
