@@ -1,4 +1,3 @@
-import { SlashCommandBuilder } from 'discord.js';
 import { getVoiceConnection } from '@discordjs/voice';
 import type { ChatInputCommandInteraction } from 'discord.js';
 

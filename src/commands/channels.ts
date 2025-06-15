@@ -1,12 +1,12 @@
-import {
-  ChatInputCommandInteraction,
-  SlashCommandBuilder,
-  PermissionFlagsBits,
-  ChannelType,
-  TextChannel,
-  MessageFlags,
-} from 'discord.js';
 import { redis, redisKeys } from '@/lib/kv';
+import {
+  ChannelType,
+  ChatInputCommandInteraction,
+  MessageFlags,
+  PermissionFlagsBits,
+  SlashCommandBuilder,
+  TextChannel,
+} from 'discord.js';
 
 export const data = new SlashCommandBuilder()
   .setName('channels')

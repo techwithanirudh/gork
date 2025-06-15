@@ -1,5 +1,5 @@
-import { REST, Routes } from 'discord.js';
 import { env } from '@/env';
+import { REST, Routes } from 'discord.js';
 import { commands } from './commands';
 import logger from './lib/logger';
 

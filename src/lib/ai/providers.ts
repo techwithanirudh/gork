@@ -1,14 +1,10 @@
-import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
-} from 'ai';
+import { customProvider } from 'ai';
 
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { env } from '@/env';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
-import { env } from '@/env';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
 const hackclub = createOpenAICompatible({
   name: 'hackclub',

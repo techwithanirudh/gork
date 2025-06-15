@@ -1,12 +1,12 @@
-import { tool, generateText, type ModelMessage, stepCountIs } from 'ai';
-import { success, z } from 'zod/v4';
-import type { Client, Message } from 'discord.js';
-import { makeEmbed , scrub } from '@/utils/discord';
+import { env } from '@/env';
 import { myProvider } from '@/lib/ai/providers';
 import logger from '@/lib/logger';
-import { agentPrompt } from '../prompts';
+import { makeEmbed, scrub } from '@/utils/discord';
 import { runInSandbox } from '@/utils/sandbox';
-import { env } from '@/env';
+import { generateText, type ModelMessage, stepCountIs, tool } from 'ai';
+import type { Client, Message } from 'discord.js';
+import { z } from 'zod/v4';
+import { agentPrompt } from '../prompts';
 
 interface DiscordToolProps {
   client: Client;

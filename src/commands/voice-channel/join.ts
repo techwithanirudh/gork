@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { createListeningStream } from '@/utils/voice/stream';
 import {
   createAudioPlayer,
   entersState,
@@ -7,7 +7,6 @@ import {
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import type { ChatInputCommandInteraction } from 'discord.js';
-import { createListeningStream } from '@/utils/voice/stream';
 
 // export const data = new SlashCommandBuilder()
 //   .setName('join')

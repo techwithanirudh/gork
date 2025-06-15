@@ -1,15 +1,13 @@
-import type { Message } from 'discord.js';
-import { generateText, stepCountIs } from 'ai';
-import { myProvider } from '@/lib/ai/providers';
-import { replyPrompt, systemPrompt } from '@/lib/ai/prompts';
-import { addMemories } from '@mem0/vercel-ai-provider';
-import logger from '@/lib/logger';
-import { report } from '@/lib/ai/tools/report';
-import { getWeather } from '@/lib/ai/tools/get-weather';
-import type { ModelMessage } from 'ai';
 import type { RequestHints } from '@/lib/ai/prompts';
+import { replyPrompt, systemPrompt } from '@/lib/ai/prompts';
+import { myProvider } from '@/lib/ai/providers';
 import { discord } from '@/lib/ai/tools/discord';
+import { getWeather } from '@/lib/ai/tools/get-weather';
+import { report } from '@/lib/ai/tools/report';
 import { isDiscordMessage, type MinimalContext } from '@/utils/messages';
+import { addMemories } from '@mem0/vercel-ai-provider';
+import type { ModelMessage } from 'ai';
+import { generateText, stepCountIs } from 'ai';
 
 export async function generateResponse(
   msg: MinimalContext,

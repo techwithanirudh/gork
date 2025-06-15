@@ -1,10 +1,10 @@
+import { city, country, initialMessages, timezone } from '@/config';
+import type { RequestHints } from '@/lib/ai/prompts';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
 import { convertToModelMessages, type MinimalContext } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
-import { timezone, city, country, initialMessages } from '@/config';
 import { retrieveMemories } from '@mem0/vercel-ai-provider';
 import type { ModelMessage } from 'ai';
-import type { RequestHints } from '@/lib/ai/prompts';
 
 export async function buildChatContext(
   msg: MinimalContext,

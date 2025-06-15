@@ -1,8 +1,7 @@
 import {
-  createAudioResource,
-  StreamType,
-  AudioPlayerStatus,
   AudioPlayer,
+  AudioPlayerStatus,
+  createAudioResource,
   entersState,
 } from '@discordjs/voice';
 import type { Readable } from 'node:stream';

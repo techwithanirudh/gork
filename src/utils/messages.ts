@@ -1,8 +1,8 @@
 import logger from '@/lib/logger';
 import type { FilePart, ModelMessage } from 'ai';
 import {
-  type Attachment as DiscordAttachment,
   type Collection,
+  type Attachment as DiscordAttachment,
   type Message as DiscordMessage,
   Message,
 } from 'discord.js';

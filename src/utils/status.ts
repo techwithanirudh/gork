@@ -1,7 +1,7 @@
-import { Client } from 'discord.js';
-import type { PresenceStatusData } from 'discord.js';
 import { activities, statuses } from '@/config';
 import logger from '@/lib/logger';
+import type { PresenceStatusData } from 'discord.js';
+import { Client } from 'discord.js';
 
 type Activity = (typeof activities)[number];
 
@@ -32,4 +32,4 @@ const beginStatusUpdates = (
   setInterval(() => updateStatus(client), intervalMs);
 };
 
-export { updateStatus, beginStatusUpdates };
+export { beginStatusUpdates, updateStatus };

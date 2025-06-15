@@ -1,10 +1,10 @@
+import { generateResponse } from '@/events/message-create/utils/respond';
+import { buildChatContext } from '@/utils/context';
+import { logIncoming, logReply } from '@/utils/log';
 import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from 'discord.js';
-import { buildChatContext } from '@/utils/context';
-import { generateResponse } from '@/events/message-create/utils/respond';
-import { logIncoming, logReply } from '@/utils/log';
 
 export const data = new SlashCommandBuilder()
   .setName('chat')

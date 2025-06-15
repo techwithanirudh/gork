@@ -1,5 +1,5 @@
-import { format } from 'date-fns';
 import { TZDate } from '@date-fns/tz';
+import { format } from 'date-fns';
 
 export function getTimeInCity(
   timezone: string,

@@ -1,7 +1,6 @@
 import logger from '@/lib/logger';
 import type { MinimalContext } from '@/utils/messages';
 import { tool } from 'ai';
-import type { Message } from 'discord.js';
 import { z } from 'zod/v4';
 
 export const report = ({ message }: { message: MinimalContext }) =>

@@ -5,7 +5,6 @@ import {
   ThreadChannel,
   VoiceChannel,
   type Channel,
-  type Collection,
   type Message as DiscordMessage,
 } from 'discord.js';
 

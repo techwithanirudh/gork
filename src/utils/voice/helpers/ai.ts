@@ -1,6 +1,6 @@
-import { generateText } from 'ai';
-import { myProvider } from '@/lib/ai/providers';
 import { regularPrompt } from '@/lib/ai/prompts';
+import { myProvider } from '@/lib/ai/providers';
+import { generateText } from 'ai';
 
 // TODO: Add Memories, and other tools available in the AI provider
 // TODO: Add History from the VC Chat Channel

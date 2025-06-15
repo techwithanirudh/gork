@@ -1,14 +1,14 @@
+import { voice } from '@/config';
+import logger from '@/lib/logger';
+import { LiveTranscriptionEvents } from '@deepgram/sdk';
 import {
   AudioPlayer,
   EndBehaviorType,
   type VoiceReceiver,
 } from '@discordjs/voice';
-import * as prism from 'prism-media';
 import type { User } from 'discord.js';
-import logger from '@/lib/logger';
-import { getAIResponse, playAudio , speak, deepgram } from './helpers';
-import { voice } from '@/config';
-import { LiveTranscriptionEvents } from '@deepgram/sdk';
+import * as prism from 'prism-media';
+import { deepgram, getAIResponse, playAudio, speak } from './helpers';
 
 export async function createListeningStream(
   receiver: VoiceReceiver,
