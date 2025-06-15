@@ -7,7 +7,10 @@ type Activity = (typeof activities)[number];
 
 const getRandomItem = <T>(arr: readonly T[]): T => {
   if (arr.length === 0) throw new Error('Array must not be empty');
-  return arr[Math.floor(Math.random() * arr.length)]!;
+  const randomIndex = Math.floor(Math.random() * arr.length);
+  const item = arr[randomIndex];
+  if (item === undefined) throw new Error('Selected item is undefined');
+  return item;
 };
 
 const updateStatus = (client: Client): void => {

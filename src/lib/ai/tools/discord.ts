@@ -52,7 +52,7 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
         allowedMentions: { repliedUser: false },
       });
 
-      const sharedState: Record<string, any> = {
+      const sharedState: Record<string, unknown> = {
         state: {},
         last: undefined,
         client,

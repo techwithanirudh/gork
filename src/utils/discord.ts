@@ -69,7 +69,7 @@ export function makeEmbed(options: MakeEmbedOptions): EmbedBuilder {
   return embed;
 }
 
-export function scrub(obj: any) {
+export function scrub(obj: unknown) {
   return JSON.stringify(obj, (_, value) =>
     typeof value === 'bigint' ? value.toString() : value,
   );

@@ -1,4 +1,4 @@
-export type SandboxContext = Record<string, any>;
+export type SandboxContext = Record<string, unknown>;
 
 export interface SandboxOptions {
   code: string;
@@ -15,7 +15,7 @@ export async function runInSandbox({
   allowRequire = false,
   allowedModules = [],
 }: SandboxOptions): Promise<
-  { ok: true; result: any } | { ok: false; error: string }
+  { ok: true; result: unknown } | { ok: false; error: string }
 > {
   if (allowRequire) {
     context.require = (moduleName: string) => {
@@ -29,6 +29,7 @@ export async function runInSandbox({
   const keys = Object.keys(context);
   const values = Object.values(context);
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 
   try {
@@ -40,7 +41,7 @@ export async function runInSandbox({
       ),
     ]);
     return { ok: true, result };
-  } catch (err: any) {
-    return { ok: false, error: err.message || String(err) };
+  } catch (err: unknown) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 }

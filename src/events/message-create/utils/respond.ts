@@ -66,7 +66,7 @@ export async function generateResponse(
             role: 'assistant',
             content: text,
           },
-        ] as any,
+        ],
         { user_id: msg.author.id },
       );
     }

@@ -64,6 +64,6 @@ export async function processAttachments(
   return results;
 }
 
-export function isDiscordMessage(msg: any): msg is Message {
+export function isDiscordMessage(msg: unknown): msg is Message {
   return msg instanceof Message && typeof msg.reply === 'function';
 }
