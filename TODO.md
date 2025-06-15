@@ -14,4 +14,15 @@ seperate deepgram code into its seperate files
 probably switch to 11 labs
 Implement memory for the ai voic chat
 Add commit lint
-Allow people to customize zenix's speed in config
+Allow people to customize zenix's speed in a per-server command like config
+Rewrite the channels command to make it a option like an allow / deney list
+
+Detect when messages are still being typed by the user like
+You are lying
+because
+etc, so it doesnt double reply
+
+If it has to double reply, it will pause the current reply and resume the other one with context.
+
+Have a small dashboard to modify the bots setting
+Add a chat command to chat with the AI use thinking when thinkin

@@ -29,17 +29,17 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
     execute: async ({ action }) => {
       // as this is a dangerous tool, we want to ensure the user is the bot owner
       if (message.author.id !== env.DISCORD_OWNER_ID) {
-        logger.warn("Unauthorized access attempt", {
+        logger.warn('Unauthorized access attempt', {
           userId: message.author.id,
           action,
         });
 
         return {
           success: false,
-          error: "This tool can only be used by the bot owner.",
+          error: 'This tool can only be used by the bot owner.',
         };
-      }      
-      
+      }
+
       logger.info({ action }, 'Starting Discord agent');
 
       const status = await message.reply({

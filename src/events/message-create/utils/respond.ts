@@ -9,17 +9,26 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import type { ModelMessage } from 'ai';
 import type { RequestHints } from '@/lib/ai/prompts';
 import { discord } from '@/lib/ai/tools/discord';
+import { isDiscordMessage, type MinimalContext } from '@/utils/messages';
 
 export async function generateResponse(
-  msg: Message,
+  msg: MinimalContext,
   messages: ModelMessage[],
   hints: RequestHints,
   memories: string,
   options?: {
     memories?: boolean;
+    tools?: {
+      getWeather?: boolean;
+      report?: boolean;
+      discord?: boolean;
+      [key: string]: boolean | undefined;
+    };
   },
 ): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
+    const isMessage = isDiscordMessage(msg);
+
     const system = systemPrompt({
       selectedChatModel: 'chat-model',
       requestHints: hints,
@@ -35,11 +44,17 @@ export async function generateResponse(
           content: replyPrompt,
         },
       ],
-      activeTools: ['getWeather', 'report', 'discord'],
+      activeTools: [
+        'getWeather',
+        'report',
+        ...(isMessage ? ['discord' as const] : []),
+      ],
       tools: {
         getWeather,
         report: report({ message: msg }),
-        discord: discord({ message: msg, client: msg.client, messages }),
+        ...(isMessage && {
+          discord: discord({ message: msg, client: msg.client, messages }),
+        }),
       },
       system,
       stopWhen: stepCountIs(10),

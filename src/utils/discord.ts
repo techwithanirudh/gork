@@ -1,4 +1,4 @@
-import { EmbedBuilder, type APIEmbedField } from 'discord.js';
+import { EmbedBuilder, Message, type APIEmbedField } from 'discord.js';
 
 /**
  * Default language for code blocks when `code` is boolean or language not specified.

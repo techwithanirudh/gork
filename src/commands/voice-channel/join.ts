@@ -6,13 +6,12 @@ import {
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
-import type { ChatInputCommandInteraction, Snowflake } from 'discord.js';
+import type { ChatInputCommandInteraction } from 'discord.js';
 import { createListeningStream } from '@/utils/voice/stream';
-import { playAudio } from '@/utils/voice/helpers';
 
-export const data = new SlashCommandBuilder()
-  .setName('join')
-  .setDescription('Joins the voice channel that you are in');
+// export const data = new SlashCommandBuilder()
+//   .setName('join')
+//   .setDescription('Joins the voice channel that you are in');
 
 export async function execute(
   interaction: ChatInputCommandInteraction<'cached'>,

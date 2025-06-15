@@ -4,7 +4,13 @@ import {
   type Attachment as DiscordAttachment,
   type Collection,
   type Message as DiscordMessage,
+  Message,
 } from 'discord.js';
+
+export type MinimalContext = Pick<
+  Message,
+  'content' | 'channel' | 'guild' | 'author' | 'client'
+>;
 
 export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>,
@@ -56,4 +62,8 @@ export async function processAttachments(
   );
 
   return results;
+}
+
+export function isDiscordMessage(msg: any): msg is Message {
+  return msg instanceof Message && typeof msg.reply === 'function';
 }
