@@ -27,3 +27,5 @@ If it has to double reply, it will pause the current reply and resume the other 
 Have a small dashboard to modify the bots setting
 Add a chat command to chat with the AI use thinking when thinkin
 Figure out the issue if you join and close stream multilpe deepgram thigns are kept
+
+When the user is typiung increase speed 

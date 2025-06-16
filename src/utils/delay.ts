@@ -49,7 +49,7 @@ export async function reply(message: Message, reply: string): Promise<void> {
   let isFirst = true;
 
   for (const raw of segments) {
-    const text = raw.toLowerCase().trim().replace(/\.$/, '');
+    const text = raw.trim().replace(/\.$/, '');
     if (!text) continue;
 
     const { minDelay, maxDelay } = speedConfig;

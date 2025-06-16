@@ -23,7 +23,7 @@ export const env = createEnv({
       .optional()
       .default('info'),
     // Redis
-    UPSTASH_REDIS_REST_URL: z.string().min(1).url(),
+    UPSTASH_REDIS_REST_URL: z.url().min(1),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     // Mem0
     MEM0_API_KEY: z.string().min(1).startsWith('m0-'),
@@ -31,6 +31,8 @@ export const env = createEnv({
     DEEPGRAM_API_KEY: z.string().min(1),
     // ElevenLabs
     // ELEVENLABS_API_KEY: z.string().min(1),
+    // Exa
+    EXA_API_KEY: z.string().min(1),
   },
 
   /**
