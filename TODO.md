@@ -1,32 +1,33 @@
 - Handle Message Interruptions
-- Add Web Search using Exa
-- Attachments Support
+- Add Web Search using Exa (Done)
+- Attachments Support (Done)
   (final goal) - @gork / @zenix is it true?
 
-Agent Isolation for each server, role based access control
-mention that u need to install rust curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+The Discord Agent Isolation for each server, full RBAC
+Switch to ElevenLabs instead of deepgram voice as it's more realistic.
 
-Put commands like join and leave as a subcommand under VC, make an easierway to have subcommands rather clubbing in one file
-Stream back audio from ElevenLabs instead of non streaming
-Switch to AI SDK Voice leater
+Seperate Deepgram code into it's files
+Implement Conversation history for Voice Chat, previous message memory + chat history.
+Add Commit Lint to enforce strict commit messages, and add lint pipelines.
+Allow People to Customize Zenix's Speed, and other settings in a /config command (per-server).
+Refactor the channels command to be more easy to use, with deny and allow lists.
 
-seperate deepgram code into its seperate files
-probably switch to 11 labs
-Implement memory for the ai voic chat
-Add commit lint
-Allow people to customize zenix's speed in a per-server command like config
-Rewrite the channels command to make it a option like an allow / deney list
+Detect when the user sent an unfinished sentence as a request and wait until they complete the response before replying fully, wait 1-2 seconds (for one user). This adds deduping
 
-Detect when messages are still being typed by the user like
-You are lying
-because
-etc, so it doesnt double reply
+If a user interrupts it's replying, it will pause the current reply and reply to the other one with context.
 
-If it has to double reply, it will pause the current reply and resume the other one with context.
+Have a small dashboard UI to modify the bots settings
+Add a slash chat command to chat with the AI on servers.
+Figure out the issue if you join and close stream multilpe DeepGram thigns are kept
 
-Have a small dashboard to modify the bots setting
-Add a chat command to chat with the AI use thinking when thinkin
-Figure out the issue if you join and close stream multilpe deepgram thigns are kept
+When the user is typing increase the response speed by 0.5x. Also, use a different method for responding like a set WPM.
 
-When the user is typiung increase speed , calculate WPMinstead of the slow thing 
-Add CI/Cd
+Add CI/CD testing so pushing things to production don't break stuff.
+
+Add context to when the bot is triggered—for example, whether it’s due to a ping, a message, or some other interaction.
+
+Switch from Mem0 (free, limited plan) to a more efficient memory system like Pinecone or another vector store. Implement a better memory workflow with both long-term and short-term memory. This way, the bot can retain conversation history, summarize previous messages, and maintain context over time.
+
+Look into CrewAI or build your own custom memory system (a custom approach is likely more flexible). The goal is for Zenix to be more tightly integrated with both voice chat and text messages.
+
+Zenix should have unified memory per user across all servers—not separate memories per server. That way, the bot always remembers the same person no matter where they interact with it.
