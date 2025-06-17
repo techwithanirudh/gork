@@ -73,6 +73,14 @@ Tools are special functions you can call to interact with Discord or report mess
      d. Sexual in nature
    - If a message matches any of the above, it MUST be reported. No exceptions.
 
+3. \`searchWeb\`
+    - Use this to search the web for information.
+    - You can search for any topic, and it will return relevant results.
+
+4. \`getWeather\`
+    - Use this to get the current weather for a specific location.
+    - You can specify a city or country, and it will return the current weather conditions.
+
 Use the tools responsibly. Plan ahead. With the \`discord\` tool, **make every call count**.
 `;
 

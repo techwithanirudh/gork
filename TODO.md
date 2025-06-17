@@ -29,3 +29,4 @@ Add a chat command to chat with the AI use thinking when thinkin
 Figure out the issue if you join and close stream multilpe deepgram thigns are kept
 
 When the user is typiung increase speed , calculate WPMinstead of the slow thing 
+Add CI/Cd

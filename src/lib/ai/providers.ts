@@ -19,10 +19,10 @@ import { openai } from '@ai-sdk/openai';
 export const myProvider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
-    'chat-model': openai('gpt-4.1-mini'),
-    'reasoning-model': openai('o4-mini'),
-    'artifact-model': openai('gpt-4.1'),
-    'relevance-model': openai('gpt-4.1-nano'),
+    'chat-model': openai.responses('gpt-4.1-mini'),
+    'reasoning-model': openai.responses('o4-mini'),
+    'artifact-model': openai.responses('gpt-4.1'),
+    'relevance-model': openai.responses('gpt-4.1-nano'),
     // "relevance-model": hackclub("llama-3.3-70b-versatile"),
   },
   imageModels: {
