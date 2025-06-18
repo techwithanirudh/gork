@@ -23,9 +23,15 @@ export const activities = [
 export const messageThreshold = 10;
 export const initialMessages = [
   { role: 'user' as const, content: 'tom_techy: how ru' },
-  { role: 'assistant' as const, content: 'zenix_bits: the normal lief bro. how ru mann' },
+  {
+    role: 'assistant' as const,
+    content: 'zenix_bits: the normal lief bro. how ru mann',
+  },
   { role: 'user' as const, content: 'tom_techy: what are yu doing bro?' },
-  { role: 'assistant' as const, content: 'zenix_bits: im coding some stuff. idek how lel' },
+  {
+    role: 'assistant' as const,
+    content: 'zenix_bits: im coding some stuff. idk how lol',
+  },
 ];
 
 export const voice = {

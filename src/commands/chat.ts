@@ -32,6 +32,7 @@ export async function execute(
   const chatContext = {
     author: interaction.user,
     content: prompt,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     channel: interaction.channel!,
     guild: interaction.guild,
     client: interaction.client,
@@ -39,12 +40,12 @@ export async function execute(
 
   const tempMessages = !interaction.guild
     ? [
-      ...initialMessages,
-      {
-        role: 'user' as const,
-        content: prompt,
-      }
-    ]
+        ...initialMessages,
+        {
+          role: 'user' as const,
+          content: prompt,
+        },
+      ]
     : undefined;
 
   const { messages, hints, memories } = await buildChatContext(chatContext, {

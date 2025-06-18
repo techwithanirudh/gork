@@ -1,12 +1,12 @@
 - Handle Message Interruptions
 - Add Web Search using Exa (Done)
 - Attachments Support (Done)
-  (final goal) - @gork / @zenix is it true?
+- (final goal) - @grok (gork) / @zenix is it true?
 
 The Discord Agent Isolation for each server, full RBAC
 Switch to ElevenLabs instead of deepgram voice as it's more realistic.
 
-Seperate Deepgram code into it's files
+Separate Deepgram code into it's files
 Implement Conversation history for Voice Chat, previous message memory + chat history.
 Add Commit Lint to enforce strict commit messages, and add lint pipelines.
 Allow People to Customize Zenix's Speed, and other settings in a /config command (per-server).
@@ -18,7 +18,7 @@ If a user interrupts it's replying, it will pause the current reply and reply to
 
 Have a small dashboard UI to modify the bots settings
 Add a slash chat command to chat with the AI on servers.
-Figure out the issue if you join and close stream multilpe DeepGram thigns are kept
+Figure out the issue if you join and close stream multiple DeepGram things are kept
 
 When the user is typing increase the response speed by 0.5x. Also, use a different method for responding like a set WPM.
 

@@ -5,7 +5,6 @@ import { discord } from '@/lib/ai/tools/discord';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { report } from '@/lib/ai/tools/report';
 import { searchWeb } from '@/lib/ai/tools/search-web';
-import logger from '@/lib/logger';
 import { isDiscordMessage, type MinimalContext } from '@/utils/messages';
 import { addMemories } from '@mem0/vercel-ai-provider';
 import type { ModelMessage } from 'ai';

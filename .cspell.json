@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "dictionaries": ["software-terms", "npm", "fullstack", "redis"],
+  "files": ["**", ".vscode/**", ".github/**"],
+  "ignorePaths": ["bun.lock"],
+  "ignoreRegExpList": ["apiKey='[a-zA-Z0-9-]{32}'"],
+  "import": [
+    "@cspell/dict-redis/cspell-ext.json",
+    "@cspell/dict-bash/cspell-ext.json"
+  ],
+  "useGitignore": true,
+  "version": "0.2",
+  "words": [
+    "anirudh",
+    "sriram",
+    "Fellipe",
+    "Utaka",
+    "umami",
+    "assemblyai",
+    "bitstream",
+    "zenix",
+    "openrouter",
+    "elevenlabs",
+    "hackclub",
+    "deepgram",
+    "libsodium",
+    "livecrawl",
+    "grok",
+    "gork",
+    "dalle",
+    "dall",
+    "arcas"
+  ]
+}

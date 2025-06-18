@@ -42,6 +42,9 @@ export async function runInSandbox({
     ]);
     return { ok: true, result };
   } catch (err: unknown) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }
