@@ -1,10 +1,10 @@
-import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { commands } from '@/commands';
-import { events } from '@/events';
 import { deployCommands } from '@/deploy-commands';
+import { env } from '@/env';
+import { events } from '@/events';
 import logger from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
-import { env } from '@/env';
+import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 
 export const client = new Client({
   intents: [

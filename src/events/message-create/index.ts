@@ -1,19 +1,19 @@
-import { Events, Message } from 'discord.js';
 import { keywords } from '@/config';
+import { ratelimit, redis, redisKeys } from '@/lib/kv';
 import { buildChatContext } from '@/utils/context';
-import { assessRelevance } from './utils/relevance';
-import { generateResponse } from './utils/respond';
+import { reply as staggeredReply } from '@/utils/delay';
 import {
-  getUnprompted,
   clearUnprompted,
+  getUnprompted,
   hasUnpromptedQuota,
 } from '@/utils/message-rate-limiter';
-import { ratelimit, redisKeys, redis } from '@/lib/kv';
-import { reply as staggeredReply } from '@/utils/delay';
+import { Events, Message } from 'discord.js';
+import { assessRelevance } from './utils/relevance';
+import { generateResponse } from './utils/respond';
 
-import { getTrigger } from '@/utils/triggers';
-import { logTrigger, logIncoming, logReply } from '@/utils/log';
 import logger from '@/lib/logger';
+import { logIncoming, logReply, logTrigger } from '@/utils/log';
+import { getTrigger } from '@/utils/triggers';
 
 export const name = Events.MessageCreate;
 export const once = false;

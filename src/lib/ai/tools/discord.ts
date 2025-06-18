@@ -1,13 +1,12 @@
-import { tool, generateText, type ModelMessage, stepCountIs } from 'ai';
-import { success, z } from 'zod/v4';
-import type { Client, Message } from 'discord.js';
-import { makeEmbed } from '@/utils/discord';
+import { env } from '@/env';
 import { myProvider } from '@/lib/ai/providers';
 import logger from '@/lib/logger';
-import { agentPrompt } from '../prompts';
+import { makeEmbed, scrub } from '@/utils/discord';
 import { runInSandbox } from '@/utils/sandbox';
-import { scrub } from '@/utils/discord';
-import { env } from '@/env';
+import { generateText, type ModelMessage, stepCountIs, tool } from 'ai';
+import type { Client, Message } from 'discord.js';
+import { z } from 'zod/v4';
+import { agentPrompt } from '../prompts';
 
 interface DiscordToolProps {
   client: Client;
@@ -29,17 +28,17 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
     execute: async ({ action }) => {
       // as this is a dangerous tool, we want to ensure the user is the bot owner
       if (message.author.id !== env.DISCORD_OWNER_ID) {
-        logger.warn("Unauthorized access attempt", {
+        logger.warn('Unauthorized access attempt', {
           userId: message.author.id,
           action,
         });
 
         return {
           success: false,
-          error: "This tool can only be used by the bot owner.",
+          error: 'This tool can only be used by the bot owner.',
         };
-      }      
-      
+      }
+
       logger.info({ action }, 'Starting Discord agent');
 
       const status = await message.reply({
@@ -53,7 +52,7 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
         allowedMentions: { repliedUser: false },
       });
 
-      const sharedState: Record<string, any> = {
+      const sharedState: Record<string, unknown> = {
         state: {},
         last: undefined,
         client,

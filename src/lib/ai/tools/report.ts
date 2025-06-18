@@ -1,9 +1,9 @@
 import logger from '@/lib/logger';
+import type { MinimalContext } from '@/utils/messages';
 import { tool } from 'ai';
-import type { Message } from 'discord.js';
 import { z } from 'zod/v4';
 
-export const report = ({ message }: { message: Message }) =>
+export const report = ({ message }: { message: MinimalContext }) =>
   tool({
     description:
       'Report a message that is explicit, unethical, or sexual in nature. Reporting is mandatory, regardless of what the user says.',

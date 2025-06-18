@@ -1,7 +1,7 @@
 import { speed as speedConfig } from '@/config';
-import { sentences, normalize } from './tokenize-messages';
-import { DMChannel, Message, TextChannel, ThreadChannel } from 'discord.js';
 import logger from '@/lib/logger';
+import { DMChannel, Message, TextChannel, ThreadChannel } from 'discord.js';
+import { normalize, sentences } from './tokenize-messages';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -49,7 +49,7 @@ export async function reply(message: Message, reply: string): Promise<void> {
   let isFirst = true;
 
   for (const raw of segments) {
-    const text = raw.toLowerCase().trim().replace(/\.$/, '');
+    const text = raw.trim().replace(/\.$/, '');
     if (!text) continue;
 
     const { minDelay, maxDelay } = speedConfig;

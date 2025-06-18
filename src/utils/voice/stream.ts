@@ -1,15 +1,14 @@
+import { voice } from '@/config';
+import logger from '@/lib/logger';
+import { LiveTranscriptionEvents } from '@deepgram/sdk';
 import {
   AudioPlayer,
   EndBehaviorType,
   type VoiceReceiver,
 } from '@discordjs/voice';
-import * as prism from 'prism-media';
 import type { User } from 'discord.js';
-import logger from '@/lib/logger';
-import { getAIResponse, playAudio } from './helpers';
-import { voice } from '@/config';
-import { LiveTranscriptionEvents } from '@deepgram/sdk';
-import { speak, deepgram } from './helpers';
+import * as prism from 'prism-media';
+import { deepgram, getAIResponse, playAudio, speak } from './helpers';
 
 export async function createListeningStream(
   receiver: VoiceReceiver,
@@ -56,7 +55,7 @@ export async function createListeningStream(
         logger.info({ transcript }, `[Deepgram] Transcript`);
         const text = await getAIResponse(transcript);
         logger.info({ text }, `[Deepgram] AI Response`);
-        const audio = speak({ text, model: voice.model });
+        const audio = await speak({ text, model: voice.model });
         if (!audio) return;
         // @ts-expect-error this is a ReadableStream
         playAudio(player, audio);

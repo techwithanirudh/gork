@@ -1,13 +1,16 @@
-import { Client } from 'discord.js';
-import type { PresenceStatusData } from 'discord.js';
 import { activities, statuses } from '@/config';
 import logger from '@/lib/logger';
+import type { PresenceStatusData } from 'discord.js';
+import { Client } from 'discord.js';
 
 type Activity = (typeof activities)[number];
 
 const getRandomItem = <T>(arr: readonly T[]): T => {
   if (arr.length === 0) throw new Error('Array must not be empty');
-  return arr[Math.floor(Math.random() * arr.length)]!;
+  const randomIndex = Math.floor(Math.random() * arr.length);
+  const item = arr[randomIndex];
+  if (item === undefined) throw new Error('Selected item is undefined');
+  return item;
 };
 
 const updateStatus = (client: Client): void => {
@@ -32,4 +35,4 @@ const beginStatusUpdates = (
   setInterval(() => updateStatus(client), intervalMs);
 };
 
-export { updateStatus, beginStatusUpdates };
+export { beginStatusUpdates, updateStatus };

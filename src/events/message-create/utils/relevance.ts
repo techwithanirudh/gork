@@ -1,8 +1,8 @@
-import type { Message } from 'discord.js';
-import { generateObject, type ModelMessage } from 'ai';
 import { systemPrompt, type RequestHints } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { probabilitySchema, type Probability } from '@/lib/validators';
+import { generateObject, type ModelMessage } from 'ai';
+import type { Message } from 'discord.js';
 
 export async function assessRelevance(
   msg: Message,
