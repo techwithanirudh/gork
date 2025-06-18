@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod/v4';
 import { exa } from "@/lib/search";
+import logger from '@/lib/logger';
 
 export const searchWeb = tool({
     description: "Use this to search the web for information",
@@ -20,7 +21,7 @@ export const searchWeb = tool({
             includeDomains: specificDomain ? [specificDomain] : undefined,
         });
 
-        console.log(results)
+        logger.info({ results }, "[searchWeb] Search results")
 
         return {
             results: results.map((result) => ({
