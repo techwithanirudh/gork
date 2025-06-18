@@ -1,0 +1,43 @@
+name: Check setup
+
+runs:
+  using: composite
+  steps:
+    - name: Setup bun
+      uses: oven-sh/setup-bun@v2
+
+    - name: Get Bun cache directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=${HOME}/.bun/install/cache" >> $GITHUB_ENV
+
+    - name: Setup Bun cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-bun-
+
+    - name: Install dependencies
+      shell: bash
+      run: bun install
+
+    - name: Create environment variables file
+      shell: bash
+      run: |
+        cat << EOF > .env.local
+        DISCORD_TOKEN=your_discord_token_here
+        DISCORD_CLIENT_ID=your_discord_client_id_here
+        DISCORD_OWNER_ID=your_discord_owner_id_here
+        DISCORD_DEFAULT_GUILD_ID=your_discord_default_guild_id_here
+        OPENAI_API_KEY=sk-your_openai_api_key_here
+        UPSTASH_REDIS_REST_URL=https://your_upstash_redis_rest_url.upstash.io
+        UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token
+        LOG_LEVEL=INFO
+        LOG_DIRECTORY=logs
+        MEM0_API_KEY=m0-api_key_here
+        DEEPGRAM_API_KEY=your_deepgram_api_key_here
+        ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
+        EXA_API_KEY=your_exa_api_key_here
+        EOF
