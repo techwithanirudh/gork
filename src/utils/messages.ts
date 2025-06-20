@@ -35,43 +35,42 @@ export async function convertToModelMessages(
 export async function processAttachments(
   attachments: Collection<string, DiscordAttachment>
 ): Promise<FilePart[]> {
-  // const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+  const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
 
-  // const validAttachments = attachments.filter((a) =>
-  //   validTypes.includes(a.contentType ?? '')
-  // );
+  const validAttachments = attachments.filter((a) =>
+    validTypes.includes(a.contentType ?? '')
+  );
 
-  // const invalidAttachments = attachments.filter((a) =>
-  //   !validTypes.includes(a.contentType ?? '')
-  // );
+  const invalidAttachments = attachments.filter(
+    (a) => !validTypes.includes(a.contentType ?? '')
+  );
 
-  // if (invalidAttachments.size > 0) {
-  //   logger.warn(
-  //     `Ignored attachments: ${Array.from(invalidAttachments.values())
-  //       .map((a) => a.name)
-  //       .join(', ')}`
-  //   );
-  // }
+  if (invalidAttachments.size > 0) {
+    logger.warn(
+      `Ignored attachments: ${Array.from(invalidAttachments.values())
+        .map((a) => a.name)
+        .join(', ')}`
+    );
+  }
 
-  // const results: FilePart[] = [];
+  const results: FilePart[] = [];
 
-  // for (const attachment of validAttachments.values()) {
-  //   try {
-  //     const res = await fetch(attachment.url);
-  //     const buffer = await res.arrayBuffer();
+  for (const attachment of validAttachments.values()) {
+    try {
+      const res = await fetch(attachment.url);
+      const buffer = await res.arrayBuffer();
 
-  //     results.push({
-  //       type: 'file',
-  //       data: buffer,
-  //       mediaType: attachment.contentType ?? 'application/octet-stream',
-  //       filename: attachment.name,
-  //     });
-  //   } catch (err) {
-  //     logger.warn(`Failed to fetch attachment ${attachment.name}:`, err);
-  //   }
-  // }
+      results.push({
+        type: 'file',
+        data: buffer,
+        mediaType: attachment.contentType ?? 'application/octet-stream',
+        filename: attachment.name,
+      });
+    } catch (err) {
+      logger.warn(`Failed to fetch attachment ${attachment.name}:`, err);
+    }
+  }
 
-  // todo: fix attachments andkeep llama
   return [];
 }
 

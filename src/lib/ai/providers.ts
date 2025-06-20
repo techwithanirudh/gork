@@ -1,8 +1,8 @@
 import { customProvider } from 'ai';
 
-import { openai } from '@ai-sdk/openai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { env } from '@/env';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 const hackclub = createOpenAICompatible({
@@ -23,7 +23,7 @@ export const myProvider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
     // 'chat-model': openai.responses('gpt-4.1-mini'),
-    'chat-model': google("gemini-2.5-flash-preview-04-17"),
+    'chat-model': google('gemini-2.5-flash-preview-04-17'),
     'reasoning-model': openai.responses('o4-mini'),
     'artifact-model': openai.responses('gpt-4.1'),
     'relevance-model': openai.responses('gpt-4.1-nano'),
