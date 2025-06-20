@@ -10,7 +10,7 @@ export function sentences(text: string): string[] {
 export function normalize(input: string[]): string[] {
   return input.map((s) =>
     s
-      .replace(/\b\w+(?:\s*\([^)]+\))*:\s*/g, '')
+      .replace(/^[\w\s]+(?:\([^)]+\)\s*)*:\s*/, '')
       .replace(/[.!?]+$/g, '')
       .trim()
   );

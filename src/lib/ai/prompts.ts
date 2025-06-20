@@ -137,7 +137,6 @@ Include all operations performed, this is necessary because the model that start
 `;
 
 export const replyPrompt = `\
-Don't include the starting sentence "Zenix (zenix) (1380964531697615029) (XYZ Server)" as it is automatically added when replying.
 Respond to the following message just like you would in a casual chat. It's not a question; think of it as a conversation starter.
 Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion. 
 Make it sound like a natural, friendly reply, not a formal response. ALWAYS make spelling and grammatical mistakes, as this adds to the humanity. If NOT, it will be very obvious that you are a bot.
