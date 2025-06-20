@@ -24,7 +24,7 @@ export const myProvider = customProvider({
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
     // 'chat-model': openai.responses('gpt-4.1-mini'),
     'chat-model': google('gemini-2.5-flash-preview-04-17'),
-    'reasoning-model': openai.responses('o4-mini'),
+    'reasoning-model': google('gemini-2.5-flash-preview-04-17'),
     'artifact-model': openai.responses('gpt-4.1'),
     'relevance-model': openai.responses('gpt-4.1-nano'),
     // "relevance-model": hackclub("llama-3.3-70b-versatile"),
