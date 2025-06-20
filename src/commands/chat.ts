@@ -48,11 +48,11 @@ export async function execute(
       ]
     : undefined;
 
-  const { messages, hints, memories } = await buildChatContext(chatContext, {
+  const { messages, hints } = await buildChatContext(chatContext, {
     messages: tempMessages,
   });
 
-  const result = await generateResponse(chatContext, messages, hints, memories);
+  const result = await generateResponse(chatContext, messages, hints);
 
   logReply(ctxId, interaction.user.username, result, 'slash command');
 

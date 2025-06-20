@@ -34,34 +34,45 @@ export async function convertToModelMessages(
 
 export async function processAttachments(
   attachments: Collection<string, DiscordAttachment>
-): Promise<Array<FilePart>> {
-  const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-  const invalidAttachments = attachments.filter(
-    (attachment) => !validTypes.includes(attachment.contentType ?? '')
-  );
+): Promise<FilePart[]> {
+  // const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
 
-  if (invalidAttachments.size > 0) {
-    logger.warn(
-      `Ignoring attachments: ${Array.from(invalidAttachments.values())
-        .map((a) => a.name)
-        .join(', ')}`
-    );
-  }
+  // const validAttachments = attachments.filter((a) =>
+  //   validTypes.includes(a.contentType ?? '')
+  // );
 
-  const results = await Promise.all(
-    attachments.map(async (attachment) => {
-      const response = await fetch(attachment.url);
-      const buffer = await response.arrayBuffer();
-      return {
-        type: 'file' as const,
-        data: buffer,
-        mediaType: attachment.contentType ?? 'application/octet-stream',
-        filename: attachment.name,
-      };
-    })
-  );
+  // const invalidAttachments = attachments.filter((a) =>
+  //   !validTypes.includes(a.contentType ?? '')
+  // );
 
-  return results;
+  // if (invalidAttachments.size > 0) {
+  //   logger.warn(
+  //     `Ignored attachments: ${Array.from(invalidAttachments.values())
+  //       .map((a) => a.name)
+  //       .join(', ')}`
+  //   );
+  // }
+
+  // const results: FilePart[] = [];
+
+  // for (const attachment of validAttachments.values()) {
+  //   try {
+  //     const res = await fetch(attachment.url);
+  //     const buffer = await res.arrayBuffer();
+
+  //     results.push({
+  //       type: 'file',
+  //       data: buffer,
+  //       mediaType: attachment.contentType ?? 'application/octet-stream',
+  //       filename: attachment.name,
+  //     });
+  //   } catch (err) {
+  //     logger.warn(`Failed to fetch attachment ${attachment.name}:`, err);
+  //   }
+  // }
+
+  // todo: fix attachments andkeep llama
+  return [];
 }
 
 export function isDiscordMessage(msg: unknown): msg is Message {
