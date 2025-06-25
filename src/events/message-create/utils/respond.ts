@@ -1,5 +1,5 @@
 import type { RequestHints } from '@/lib/ai/prompts';
-import { replyPrompt, systemPrompt } from '@/lib/ai/prompts';
+import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { discord } from '@/lib/ai/tools/discord';
 import { getWeather } from '@/lib/ai/tools/get-weather';
@@ -32,9 +32,7 @@ export async function generateResponse(
 
     const { text } = await generateText({
       model: myProvider.languageModel('chat-model'),
-      messages: [
-        ...messages
-      ],
+      messages: [...messages],
       activeTools: [
         'getWeather',
         'searchWeb',

@@ -17,7 +17,6 @@ This project was developed with the following technologies:
 
 - [Vercel AI SDK][ai-sdk]
 - [Exa AI][exa]
-- [Mem0][mem0]
 - [discord.js][discord.js]
 - [TypeScript][ts]
 - [Bun][bun]
@@ -61,5 +60,4 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 [prettier]: https://prettier.io/
 [ai-sdk]: https://ai-sdk.dev/
 [bun]: https://bun.sh/
-[mem0]: https://mem0.ai/
 [exa]: https://exa.ai/
