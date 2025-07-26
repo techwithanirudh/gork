@@ -17,10 +17,7 @@ export async function buildChatContext(
 
   if (!messages) {
     const raw = await getMessagesByChannel({ channel: msg.channel, limit: 50 });
-    messages = [
-      ...(initialMessages as ModelMessage[]),
-      ...(await convertToModelMessages(raw)),
-    ];
+    messages = await convertToModelMessages(raw);
   }
 
   if (!hints) {
