@@ -1,6 +1,6 @@
 import { activities, statuses } from '@/config';
 import logger from '@/lib/logger';
-import type { PresenceStatusData } from 'discord.js-selfbot-v13';
+import type { ActivityType, PresenceStatusData } from 'discord.js-selfbot-v13';
 import { Client } from 'discord.js-selfbot-v13';
 
 type Activity = (typeof activities)[number];
@@ -21,7 +21,20 @@ const updateStatus = (client: Client): void => {
 
   client.user.setPresence({
     status,
-    activities: [{ name: activity.name, type: activity.type }],
+    activities: [
+      {
+        name: activity.name,
+        type: [
+          'PLAYING',
+          'STREAMING',
+          'LISTENING',
+          'WATCHING',
+          'CUSTOM',
+          'COMPETING',
+          'HANG',
+        ][activity.type] as ActivityType,
+      },
+    ],
   });
 
   logger.info(`Status: ${status}, Activity: ${activity.name}`);

@@ -2,7 +2,7 @@ import logger from '@/lib/logger';
 import type { FilePart, ModelMessage } from 'ai';
 import {
   type Collection,
-  type Attachment as DiscordAttachment,
+  MessageAttachment as DiscordAttachment,
   type Message as DiscordMessage,
   Message,
 } from 'discord.js-selfbot-v13';
@@ -22,9 +22,7 @@ export async function convertToModelMessages(
       content: [
         {
           type: 'text' as const,
-          text: `${message.author.username} (${message.author.displayName}) (${
-            message.author.id
-          }) (${message.guild?.name ?? 'DM'}): ${message.content}`,
+          text: `${message.author.username}: ${message.content}`,
         },
         ...(await processAttachments(message.attachments)),
       ],
@@ -38,12 +36,12 @@ export async function processAttachments(
 ): Promise<FilePart[]> {
   const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
 
-  const validAttachments = attachments.filter((a) =>
-    validTypes.includes(a.contentType ?? '')
+  const validAttachments = attachments.filter(
+    (a) => a.contentType !== null && validTypes.includes(a.contentType)
   );
 
   const invalidAttachments = attachments.filter(
-    (a) => !validTypes.includes(a.contentType ?? '')
+    (a) => a.contentType === null || !validTypes.includes(a.contentType)
   );
 
   if (invalidAttachments.size > 0) {
@@ -64,8 +62,8 @@ export async function processAttachments(
       results.push({
         type: 'file',
         data: buffer,
-        mediaType: attachment.contentType ?? 'application/octet-stream',
-        filename: attachment.name,
+        mediaType: attachment.contentType || 'application/octet-stream',
+        filename: attachment.name || 'unknown',
       });
     } catch (err) {
       logger.warn(`Failed to fetch attachment ${attachment.name}:`, err);

@@ -1,9 +1,10 @@
-import { city, country, initialMessages, timezone } from '@/config';
+import { city, country, timezone } from '@/config';
 import type { RequestHints } from '@/lib/ai/prompts';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
 import { convertToModelMessages, type MinimalContext } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
 import type { ModelMessage } from 'ai';
+import { Channel } from 'discord.js-selfbot-v13';
 
 export async function buildChatContext(
   msg: MinimalContext,
@@ -15,6 +16,8 @@ export async function buildChatContext(
   let messages = opts?.messages;
   let hints = opts?.hints;
 
+  const channel = msg.channel as Channel;
+
   if (!messages) {
     const raw = await getMessagesByChannel({ channel: msg.channel, limit: 50 });
     messages = await convertToModelMessages(raw);
@@ -22,7 +25,7 @@ export async function buildChatContext(
 
   if (!hints) {
     hints = {
-      channel: getChannelName(msg.channel),
+      channel: getChannelName(channel),
       time: getTimeInCity(timezone),
       city,
       country,

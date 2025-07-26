@@ -16,7 +16,9 @@ client.once('ready', () => {
 client.on('guildCreate', (guild) => {
   const channel = guild.systemChannel;
   if (channel) {
-    channel.send('hi').catch((err) => logger.error('Failed to send greeting:', err));
+    channel
+      .send('hi')
+      .catch((err) => logger.error('Failed to send greeting:', err));
   }
 });
 
@@ -24,7 +26,7 @@ Object.keys(events).forEach((key) => {
   const event = events[key as keyof typeof events];
   if (!event) return;
 
-  const listener = (...args: any[]) => {
+  const listener = (...args: Parameters<typeof event.execute>) => {
     try {
       event.execute(...args);
     } catch (err) {
