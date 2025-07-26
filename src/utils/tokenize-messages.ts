@@ -7,5 +7,5 @@ export function sentences(text: string): string[] {
 }
 
 export function normalize(input: string[]): string[] {
-  return input.map((s) => s.replace(/[.!?]+$/g, '').trim());
+  return input.map((s) => s.replace(/^[^:]+:\s*/g, '').trim());
 }
