@@ -1,53 +1,63 @@
 import { redis, redisKeys } from '@/lib/kv';
-import {
-  ChannelType,
-  ChatInputCommandInteraction,
-  MessageFlags,
-  PermissionFlagsBits,
-  SlashCommandBuilder,
-  TextChannel,
+import type {
+  ApplicationCommandChannelOptionData,
+  ApplicationCommandData,
+  ApplicationCommandSubCommandData,
 } from 'discord.js-selfbot-v13';
+import { CommandInteraction, TextChannel } from 'discord.js-selfbot-v13';
 
-export const data = new SlashCommandBuilder()
-  .setName('channels')
-  .setDescription('Manage allowed channels for the bot')
-  .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
-  .addSubcommand((sc) =>
-    sc
-      .setName('add')
-      .setDescription('Add a channel to the allowed list')
-      .addChannelOption((opt) =>
-        opt
-          .setName('channel')
-          .setDescription('The text channel to add')
-          .addChannelTypes(ChannelType.GuildText)
-          .setRequired(true)
-      )
-  )
-  .addSubcommand((sc) =>
-    sc
-      .setName('remove')
-      .setDescription('Remove a channel from the allowed list')
-      .addChannelOption((opt) =>
-        opt
-          .setName('channel')
-          .setDescription('The text channel to remove')
-          .addChannelTypes(ChannelType.GuildText)
-          .setRequired(true)
-      )
-  )
-  .addSubcommand((sc) =>
-    sc.setName('list').setDescription('List all allowed channels')
-  )
-  .addSubcommand((sc) =>
-    sc.setName('clear').setDescription('Clear all allowed channels')
-  );
+export const data: ApplicationCommandData = {
+  name: 'channels',
+  description: 'Manage allowed channels for the bot',
+  type: 1, // ChatInput
+  defaultMemberPermissions: '16', // ManageChannels
+  options: [
+    {
+      name: 'add',
+      description: 'Add a channel to the allowed list',
+      type: 1, // Subcommand
+      options: [
+        {
+          name: 'channel',
+          description: 'The text channel to add',
+          type: 7, // Channel
+          channelTypes: [0], // GuildText
+          required: true,
+        } as ApplicationCommandChannelOptionData,
+      ],
+    },
+    {
+      name: 'remove',
+      description: 'Remove a channel from the allowed list',
+      type: 1, // Subcommand
+      options: [
+        {
+          name: 'channel',
+          description: 'The text channel to remove',
+          type: 7, // Channel
+          channelTypes: [0], // GuildText
+          required: true,
+        } as ApplicationCommandChannelOptionData,
+      ],
+    } as ApplicationCommandSubCommandData,
+    {
+      name: 'list',
+      description: 'List all allowed channels',
+      type: 1, // Subcommand
+    } as ApplicationCommandSubCommandData,
+    {
+      name: 'clear',
+      description: 'Clear all allowed channels',
+      type: 1, // Subcommand
+    } as ApplicationCommandSubCommandData,
+  ],
+};
 
-export async function execute(interaction: ChatInputCommandInteraction) {
+export async function execute(interaction: CommandInteraction) {
   if (!interaction.guild) {
     return interaction.reply({
       content: 'This can only be used inside a server.',
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -60,10 +70,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   if (sub === 'add' || sub === 'remove') {
     const channel = getChannel();
 
-    if (channel.type !== ChannelType.GuildText) {
+    if (typeof channel.type === 'number' && channel.type !== 0) {
+      // 0 = GuildText
       return interaction.reply({
         content: 'Please pick a text channel.',
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
 
@@ -72,25 +83,25 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       if (isMember) {
         return interaction.reply({
           content: `${channel} is already allowed.`,
-          flags: MessageFlags.Ephemeral,
+          ephemeral: true,
         });
       }
       await redis.sadd(guildKey, channel.id);
       return interaction.reply({
         content: `done! thanks for letting me talk in ${channel}!`,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     } else {
       const removedCount = await redis.srem(guildKey, channel.id);
       if (!removedCount) {
         return interaction.reply({
           content: `there's nothing to remove! ${channel} wasn't even on the list.`,
-          flags: MessageFlags.Ephemeral,
+          ephemeral: true,
         });
       }
       return interaction.reply({
         content: `aw... ${channel} has been removed from the allowed list. i won't talk there anymore...`,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
   }
@@ -100,13 +111,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     if (!ids.length) {
       return interaction.reply({
         content: 'no channels are locked down, i can talk anywhere.',
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true,
       });
     }
     const mentions = ids.map((id) => `<#${id}>`).join(' • ');
     return interaction.reply({
       content: `**allowed channels:** ${mentions}`,
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
@@ -114,12 +125,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await redis.del(guildKey);
     return interaction.reply({
       content: 'yay, thanks! i can talk anywhere now.',
-      flags: MessageFlags.Ephemeral,
+      ephemeral: true,
     });
   }
 
   return interaction.reply({
     content: 'Unknown subcommand. ',
-    flags: MessageFlags.Ephemeral,
+    ephemeral: true,
   });
 }

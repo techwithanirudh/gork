@@ -2,24 +2,27 @@ import { initialMessages } from '@/config';
 import { generateResponse } from '@/events/message-create/utils/respond';
 import { buildChatContext } from '@/utils/context';
 import { logIncoming, logReply } from '@/utils/log';
-import {
-  SlashCommandBuilder,
-  type ChatInputCommandInteraction,
+import type {
+  ApplicationCommandData,
+  ApplicationCommandOptionData,
 } from 'discord.js-selfbot-v13';
+import { CommandInteraction } from 'discord.js-selfbot-v13';
 
-export const data = new SlashCommandBuilder()
-  .setName('chat')
-  .setDescription('Chat with the assistant')
-  .addStringOption((opt) =>
-    opt
-      .setName('prompt')
-      .setDescription('What do you want to say?')
-      .setRequired(true)
-  );
+export const data: ApplicationCommandData = {
+  name: 'chat',
+  description: 'Chat with the assistant',
+  type: 1, // ChatInput
+  options: [
+    {
+      name: 'prompt',
+      description: 'What do you want to say?',
+      type: 3, // String
+      required: true,
+    } as ApplicationCommandOptionData,
+  ],
+};
 
-export async function execute(
-  interaction: ChatInputCommandInteraction<'cached'>
-) {
+export async function execute(interaction: CommandInteraction) {
   await interaction.deferReply();
 
   const prompt = interaction.options.getString('prompt', true);

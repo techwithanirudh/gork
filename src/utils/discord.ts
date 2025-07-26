@@ -1,4 +1,7 @@
-import { EmbedBuilder, type APIEmbedField } from 'discord.js-selfbot-v13';
+import {
+  MessageEmbed,
+  type EmbedField as APIEmbedField,
+} from 'discord.js-selfbot-v13';
 
 /**
  * Default language for code blocks when `code` is boolean or language not specified.
@@ -24,9 +27,9 @@ export interface MakeEmbedOptions {
   fields?: EmbedField[];
 }
 
-export function makeEmbed(options: MakeEmbedOptions): EmbedBuilder {
+export function makeEmbed(options: MakeEmbedOptions): MessageEmbed {
   const { title, description, color, fields } = options;
-  const embed = new EmbedBuilder();
+  const embed = new MessageEmbed();
 
   if (title) embed.setTitle(title);
   if (description) embed.setDescription(description);

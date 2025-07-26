@@ -23,8 +23,8 @@ export const myProvider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
     // 'chat-model': openai.responses('gpt-4.1-mini'),
-    'chat-model': google('gemini-2.5-flash-preview-04-17'),
-    'reasoning-model': google('gemini-2.5-flash-preview-04-17'),
+    'chat-model': google('gemini-2.5-flash'),
+    'reasoning-model': google('gemini-2.5-flash'),
     'relevance-model': openai.responses('gpt-4.1-nano'),
     // "relevance-model": hackclub("llama-3.3-70b-versatile"),
   },

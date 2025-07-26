@@ -1,48 +1,44 @@
-import { commands } from '@/commands';
 import { env } from '@/env';
 import { events } from '@/events';
 import logger from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
-import { Client, Events, GatewayIntentBits, Partials } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v13';
 
-export const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessageTyping,
-    GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.DirectMessages,
-    GatewayIntentBits.DirectMessageTyping,
-    GatewayIntentBits.DirectMessageReactions,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildVoiceStates,
-  ],
-  partials: [Partials.Channel, Partials.Message],
-});
+export const client = new Client();
 
-client.once(Events.ClientReady, async (client) => {
+client.once('ready', () => {
+  if (!client.user) return;
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info('Bot is ready!');
-
   beginStatusUpdates(client);
 });
 
-client.on(Events.GuildCreate, async (guild) => {
+client.on('guildCreate', (guild) => {
   const channel = guild.systemChannel;
   if (channel) {
-    await channel.send('hi');
+    channel.send('hi').catch((err) => logger.error('Failed to send greeting:', err));
   }
 });
 
-Object.keys(events).forEach(function (key) {
+Object.keys(events).forEach((key) => {
   const event = events[key as keyof typeof events];
+  if (!event) return;
 
-  if (event?.once) {
-    client.once(event.name, (...args) => event.execute(...args));
+  const listener = (...args: any[]) => {
+    try {
+      event.execute(...args);
+    } catch (err) {
+      logger.error(`Error in event ${event.name}:`, err);
+    }
+  };
+
+  if (event.once) {
+    client.once(event.name, listener);
   } else {
-    client.on(event.name, (...args) => event.execute(...args));
+    client.on(event.name, listener);
   }
 });
 
-client.login(env.DISCORD_TOKEN);
+client.login(env.DISCORD_TOKEN).catch((err) => {
+  logger.error('Login failed:', err);
+});
