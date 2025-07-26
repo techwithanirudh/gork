@@ -13,12 +13,7 @@ export const speed = {
 };
 
 export const statuses = ['online', 'idle', 'dnd', 'offline'];
-export const activities = [
-  { type: 0, name: 'with humans 🤖' },
-  { type: 2, name: 'to conversations 👂' },
-  { type: 3, name: 'the server 👀' },
-  { type: 5, name: 'in chatting 💭' },
-] as const;
+export const activities = [{ type: 0, name: 'chilling' }] as const;
 
 export const messageThreshold = 10;
 export const initialMessages = [
