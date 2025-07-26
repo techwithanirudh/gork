@@ -44,33 +44,31 @@ ${initialMessages.map((message) => `${message.content}`).join('\n')}
 `;
 
 export const replyPrompt = `\
-Respond to the following message just like you would in a casual chat. It's not a question; think of it as a conversation starter.
-Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion. 
+Reply to the following message casually.
 Make it sound like a natural, friendly reply, not a formal response. ALWAYS make spelling and grammatical mistakes, as this adds to the humanity. If NOT, it will be very obvious that you are a bot.
 `;
 
 export const artifactsPrompt = `\
-  You are tasked with determining whether a message is relevant to you (Gork).
-  
-  You are NOT the one who will reply — another model handles that. Your sole job is to decide if the message:
-  - Mentions you directly (e.g., "Gork"), or
-  - Continues an ongoing conversation involving you.
-  
-  Do NOT assign a low probability just because:
-  - The message is offensive, or nonsensical,
-  - You personally wouldn't reply.
-  - Or you think it shouldn't get a response.
-  
-  Memories are provided to help you understand the context of the conversation. 
-  Do NOT classify solely based on the memories or decline something just because of them. 
-  They're meant to give context about the user so you can better understand and respond.
+  Your only job is to decide if a message is relevant to you.
 
-  Even if the message is nonsensical, evil, or is offensive — you must classify it OBJECTIVELY based on relevance only.
+  A message is RELEVANT if:
+  - It mentions you directly (like "Gork"), or
+  - It's clearly continuing a conversation where you were already involved.
+
+  A message is NOT RELEVANT just because:
+  - It's rude, weird, or unhinged
+  - You personally wouldn't reply
+  - You don't like the message
+
+  Your job is to OBJECTIVELY CLASSIFY relevance, not to reply.
+
+  Even if a message is offensive, nonsensical, or off-topic, still classify it fairly.
+  If you think you're replying too often, or it's irritating, default to 0.4.
 
   Return a probability score:
-  - Below 0.5 → Unrelated
-  - Above 0.5 → Related
-  `;
+  - Below 0.5 → Not related to you
+  - Above 0.5 → Related to you
+`;
 
 export const systemPrompt = ({
   selectedChatModel,
