@@ -1,4 +1,4 @@
-import { ActivityType } from 'discord.js';
+import { ActivityType } from 'discord.js-selfbot-v13';
 
 export const keywords = ['zenix', 'zenith', 'gpt', 'llm', 'ai', 'bot'];
 export const country = 'Greece';

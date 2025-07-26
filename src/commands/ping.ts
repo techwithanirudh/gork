@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder } from 'discord.js-selfbot-v13';
 
 export const data = new SlashCommandBuilder()
   .setName('ping')

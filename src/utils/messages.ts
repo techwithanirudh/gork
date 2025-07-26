@@ -5,7 +5,7 @@ import {
   type Attachment as DiscordAttachment,
   type Message as DiscordMessage,
   Message,
-} from 'discord.js';
+} from 'discord.js-selfbot-v13';
 
 export type MinimalContext = Pick<
   Message,

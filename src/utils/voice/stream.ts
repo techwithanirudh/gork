@@ -6,7 +6,7 @@ import {
   EndBehaviorType,
   type VoiceReceiver,
 } from '@discordjs/voice';
-import type { User } from 'discord.js';
+import type { User } from 'discord.js-selfbot-v13';
 import * as prism from 'prism-media';
 import { deepgram, getAIResponse, playAudio, speak } from './helpers';
 

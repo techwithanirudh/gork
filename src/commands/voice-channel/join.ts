@@ -6,7 +6,7 @@ import {
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
-import type { ChatInputCommandInteraction } from 'discord.js';
+import type { ChatInputCommandInteraction } from 'discord.js-selfbot-v13';
 
 // export const data = new SlashCommandBuilder()
 //   .setName('join')

@@ -1,4 +1,4 @@
-import { EmbedBuilder, type APIEmbedField } from 'discord.js';
+import { EmbedBuilder, type APIEmbedField } from 'discord.js-selfbot-v13';
 
 /**
  * Default language for code blocks when `code` is boolean or language not specified.

@@ -7,7 +7,7 @@ import {
   getUnprompted,
   hasUnpromptedQuota,
 } from '@/utils/message-rate-limiter';
-import { Events, Message } from 'discord.js';
+import { Events, Message } from 'discord.js-selfbot-v13';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
 

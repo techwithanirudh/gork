@@ -3,7 +3,7 @@ import { env } from '@/env';
 import { events } from '@/events';
 import logger from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
-import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
+import { Client, Events, GatewayIntentBits, Partials } from 'discord.js-selfbot-v13';
 
 export const client = new Client({
   intents: [
@@ -32,17 +32,6 @@ client.on(Events.GuildCreate, async (guild) => {
   const channel = guild.systemChannel;
   if (channel) {
     await channel.send('hi');
-  }
-});
-
-client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isCommand()) {
-    return;
-  }
-  const { commandName } = interaction;
-  if (commands[commandName as keyof typeof commands]) {
-    // @ts-expect-error todo: fix this
-    commands[commandName as keyof typeof commands].execute(interaction);
   }
 });
 

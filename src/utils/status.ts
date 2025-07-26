@@ -1,7 +1,7 @@
 import { activities, statuses } from '@/config';
 import logger from '@/lib/logger';
-import type { PresenceStatusData } from 'discord.js';
-import { Client } from 'discord.js';
+import type { PresenceStatusData } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v13';
 
 type Activity = (typeof activities)[number];
 

@@ -4,7 +4,7 @@ import logger from '@/lib/logger';
 import { makeEmbed, scrub } from '@/utils/discord';
 import { runInSandbox } from '@/utils/sandbox';
 import { generateText, type ModelMessage, stepCountIs, tool } from 'ai';
-import type { Client, Message } from 'discord.js';
+import type { Client, Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod/v4';
 import { agentPrompt } from '../prompts';
 
@@ -101,7 +101,7 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
                 code,
                 context: sharedState,
                 allowRequire: true,
-                allowedModules: ['discord.js'],
+                allowedModules: ['discord.js-selfbot-v13'],
               });
 
               if (result.ok) {

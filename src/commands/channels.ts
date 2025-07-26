@@ -6,7 +6,7 @@ import {
   PermissionFlagsBits,
   SlashCommandBuilder,
   TextChannel,
-} from 'discord.js';
+} from 'discord.js-selfbot-v13';
 
 export const data = new SlashCommandBuilder()
   .setName('channels')

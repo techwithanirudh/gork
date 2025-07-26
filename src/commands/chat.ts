@@ -5,7 +5,7 @@ import { logIncoming, logReply } from '@/utils/log';
 import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
-} from 'discord.js';
+} from 'discord.js-selfbot-v13';
 
 export const data = new SlashCommandBuilder()
   .setName('chat')
