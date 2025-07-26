@@ -1,5 +1,4 @@
 import { commands } from '@/commands';
-import { deployCommands } from '@/deploy-commands';
 import { env } from '@/env';
 import { events } from '@/events';
 import logger from '@/lib/logger';
@@ -30,8 +29,6 @@ client.once(Events.ClientReady, async (client) => {
 });
 
 client.on(Events.GuildCreate, async (guild) => {
-  await deployCommands({ guildId: guild.id });
-
   const channel = guild.systemChannel;
   if (channel) {
     await channel.send('hi');

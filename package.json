@@ -44,7 +44,7 @@
     "compromise": "^14.14.4",
     "cspell": "^9.1.1",
     "date-fns": "^4.1.0",
-    "discord.js": "^14.19.3",
+    "discord.js-selfbot-v13": "^3.7.0",
     "dotenv": "^16.0.3",
     "exa-js": "^1.8.12",
     "ffmpeg-static": "^5.2.0",
