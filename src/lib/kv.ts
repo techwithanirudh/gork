@@ -19,6 +19,4 @@ export const ratelimit = new Ratelimit({
 export const redisKeys = {
   messageCount: (ctx: string) => `${PREFIX}:ctx:messageCount:${ctx}`,
   channelCount: (ctx: string) => `${PREFIX}:ctx:channelCount:${ctx}`,
-  allowedChannels: (guild: string) =>
-    `${PREFIX}:guild:${guild}:allowed_channels`,
 };
