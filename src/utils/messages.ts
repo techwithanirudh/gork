@@ -17,7 +17,8 @@ export async function convertToModelMessages(
 ): Promise<Array<ModelMessage>> {
   return await Promise.all(
     messages.map(async (message) => ({
-      role: message.author.bot ? 'assistant' : 'user',
+      role:
+        message.author.id === message.client.user?.id ? 'assistant' : 'user',
       content: [
         {
           type: 'text' as const,

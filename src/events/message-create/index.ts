@@ -43,7 +43,7 @@ async function isChannelAllowed(message: Message): Promise<boolean> {
 }
 
 export async function execute(message: Message) {
-  if (message.author.bot) return;
+  if (message.author.id === message.client.user?.id) return;
   if (!(await isChannelAllowed(message))) {
     logger.info(`Channel ${message.channel.id} not in allowed channels list`);
     return;
