@@ -16,3 +16,5 @@ Learn about namespaces
 Learn about rerankinig (https://docs.pinecone.io/guides/get-started/quickstart#6-rerank-results)
 Look at bob code (https://docs.pinecone.io/guides/get-started/quickstart#7-improve-results)
 Look at AI SDK pinecone example so we can implement it
+
+3-large-textembbeding
