@@ -9,19 +9,14 @@ export const searchMemories = ({ message }: { message: MinimalContext }) =>
     description: 'Search through stored memories using a text query.',
     parameters: z.object({
       query: z.string().describe('The text query to search for in memories'),
-      namespace: z
-        .string()
-        .optional()
-        .describe('Optional namespace to search in (defaults to "default")'),
       topK: z
         .number()
-        .optional()
-        .describe('Optional number of results to return (defaults to 5)'),
+        .default(5)
+        .describe('Number of results to return (defaults to 5)'),
     }),
-    execute: async ({ query, namespace, topK }) => {
+    execute: async ({ query, topK }) => {
       try {
         const results = await searchPineconeMemories(query, {
-          namespace,
           topK,
         });
 
