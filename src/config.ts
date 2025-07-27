@@ -1,4 +1,9 @@
-// Activity Types: 0 = PLAYING, 2 = LISTENING, 3 = WATCHING, 5 = COMPETING
+/* cSpell:disable */
+interface Activity {
+  type: number;
+  name: string;
+  image?: string;
+}
 
 export const keywords = ['gork', 'grok'];
 export const country = 'United States';
@@ -13,7 +18,12 @@ export const speed = {
 };
 
 export const statuses = ['online', 'idle', 'dnd', 'offline'];
-export const activities = [{ type: 0, name: 'chilling' }] as const;
+
+export const activities: Activity[] = [{
+  type: 0,
+  name: 'chilling',
+  image: 'https://pbs.twimg.com/profile_images/1634609660048326656/JYiwOp5D_400x400.jpg'
+}];
 
 export const messageThreshold = 10;
 export const initialMessages = [

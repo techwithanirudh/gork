@@ -6,11 +6,11 @@ import { Client } from 'discord.js-selfbot-v13';
 
 export const client = new Client();
 
-client.once('ready', () => {
+client.once('ready', async () => {
   if (!client.user) return;
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info('Bot is ready!');
-  beginStatusUpdates(client);
+  await beginStatusUpdates(client);
 });
 
 client.on('guildCreate', (guild) => {
