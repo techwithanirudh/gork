@@ -41,6 +41,14 @@ async function onSuccess(message: Message, response: string) {
   await addMemory(historyText, {
     createdAt: Date.now(),
     lastRetrievalTime: Date.now(),
+    guild: JSON.stringify({
+      id: message.guild?.id ?? null,
+      name: message.guild?.name ?? null,
+    }),
+    channel: JSON.stringify({
+      id: message.channel.id,
+      name: message.channel.type === 'DM' ? 'DM' : message.channel.name,
+    }),
     type: 'chat',
   });
 }

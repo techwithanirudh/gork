@@ -4,6 +4,7 @@ import { getUserInfo } from '@/lib/ai/tools/get-user-info';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { joinServer } from '@/lib/ai/tools/join-server';
 import { report } from '@/lib/ai/tools/report';
+import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
 import { startDM } from '@/lib/ai/tools/start-dm';
 import type { RequestHints } from '@/types';
@@ -32,6 +33,7 @@ export async function generateResponse(
         'joinServer',
         'startDM',
         'getUserInfo',
+        'searchMemories',
       ],
       tools: {
         getWeather,
@@ -40,6 +42,7 @@ export async function generateResponse(
         joinServer: joinServer({ message: msg }),
         startDM: startDM({ message: msg }),
         getUserInfo: getUserInfo({ message: msg }),
+        searchMemories: searchMemories({ message: msg }),
       },
       system,
       stopWhen: stepCountIs(10),
