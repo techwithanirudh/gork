@@ -30,7 +30,6 @@ export const searchMemories = ({ message }: { message: MinimalContext }) =>
           data: results.map((result) => ({
             score: result.score,
             text: result.metadata?.text,
-            hash: result.metadata?.hash,
             metadata: result.metadata,
           })),
         };

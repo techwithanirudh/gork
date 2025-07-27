@@ -1,6 +1,5 @@
 export type PineconeMetadata = {
   text: string;
-  hash: string;
   guild: string;
   channel: string;
   createdAt?: number;

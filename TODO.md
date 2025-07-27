@@ -40,3 +40,4 @@ Add tool calling to memory, also use a FIFO queue instead of async sending and c
 Properly refactor the memory system with querying like B does it
 Cleanup the code a bit
 Properly type the thing, we're currently JSON.string the memories I/O, stringify in the queries.ts
+Implement the BM25 thing

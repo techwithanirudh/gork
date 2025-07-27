@@ -51,7 +51,7 @@ export const addMemory = async (
 ): Promise<string> => {
   try {
     const hash = new MD5().update(text).digest('hex');
-    const fullMetadata: PineconeMetadata = { text, hash, ...metadata };
+    const fullMetadata: PineconeMetadata = { text, ...metadata };
     const { embedding } = await embed({
       model: myProvider.textEmbeddingModel('small-model'),
       value: text,
