@@ -9,25 +9,31 @@ import {
 
 export type MinimalContext = Pick<
   Message,
-  'content' | 'channel' | 'guild' | 'author' | 'client'
+  'content' | 'channel' | 'guild' | 'author' | 'client' | 'reference'
 >;
 
 export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>
 ): Promise<Array<ModelMessage>> {
   return await Promise.all(
-    messages.map(async (message) => ({
-      role:
-        message.author.id === message.client.user?.id ? 'assistant' : 'user',
-      content: [
-        {
-          type: 'text' as const,
-          text: `${message.author.username}: ${message.content}`,
-        },
-        ...(await processAttachments(message.attachments)),
-      ],
-      createdAt: message.createdAt,
-    }))
+    messages.map(async (msg) => {
+      const ref = msg.reference
+        ? await msg.fetchReference().catch(() => null)
+        : null;
+      const text = ref
+        ? `> ${ref.author.username}: ${ref.content}
+${msg.author.username}: ${msg.content}`
+        : `${msg.author.username}: ${msg.content}`;
+
+      return {
+        role: msg.author.id === msg.client.user?.id ? 'assistant' : 'user',
+        content: [
+          { type: 'text' as const, text },
+          ...(await processAttachments(msg.attachments)),
+        ],
+        createdAt: msg.createdAt,
+      };
+    })
   );
 }
 
