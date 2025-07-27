@@ -3,13 +3,12 @@ import { customProvider } from 'ai';
 import { env } from '@/env';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
-const hackclub = createOpenAICompatible({
-  name: 'hackclub',
-  apiKey: env.HACKCLUB_API_KEY,
-  baseURL: 'https://ai.hackclub.com',
-});
+// const hackclub = createOpenAICompatible({
+//   name: 'hackclub',
+//   apiKey: env.HACKCLUB_API_KEY,
+//   baseURL: 'https://ai.hackclub.com',
+// });
 
 // const openrouter = createOpenRouter({
 //   apiKey: env.OPENROUTER_API_KEY!,

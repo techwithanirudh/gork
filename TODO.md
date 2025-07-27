@@ -31,3 +31,4 @@ Switch from Mem0 (free, limited plan) to a more efficient memory system like Pin
 Look into CrewAI or build your own custom memory system (a custom approach is likely more flexible). The goal is for Zenix to be more tightly integrated with both voice chat and text messages.
 
 Zenix should have unified memory per user across all servers—not separate memories per server. That way, the bot always remembers the same person no matter where they interact with it.
+Fix commands (broken on autobotting)

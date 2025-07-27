@@ -1,16 +1,5 @@
 import { initialMessages } from '@/config';
-import type { Geo } from '@vercel/functions';
-
-export interface RequestHints {
-  time: string;
-  city: Geo['city'];
-  country: Geo['country'];
-  server: string;
-  channel: string;
-  joined: number;
-  status: string;
-  activity: string;
-}
+import type { RequestHints } from '@/types';
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
   You live in ${requestHints.city}, ${requestHints.country}.

@@ -3,7 +3,7 @@ import logger from '@/lib/logger';
 import type { ActivityType, PresenceStatusData } from 'discord.js-selfbot-v13';
 import { Client, RichPresence } from 'discord.js-selfbot-v13';
 
-type Activity = (typeof activities)[number];
+import type { Activity } from '@/types';
 
 const getRandomItem = <T>(arr: readonly T[]): T => {
   if (arr.length === 0) throw new Error('Array must not be empty');
@@ -35,7 +35,11 @@ const updateStatus = async (client: Client): Promise<void> => {
 
   if (activity.image) {
     try {
-      const externalImage = await RichPresence.getExternal(client, client.user.id, activity.image);
+      const externalImage = await RichPresence.getExternal(
+        client,
+        client.user.id,
+        activity.image
+      );
       if (externalImage?.[0]?.external_asset_path) {
         richPresence.setAssetsLargeImage(externalImage[0].external_asset_path);
         logger.info(`Set external image for activity: ${activity.name}`);
@@ -47,7 +51,7 @@ const updateStatus = async (client: Client): Promise<void> => {
 
   client.user.setPresence({
     status,
-    activities: [richPresence]
+    activities: [richPresence],
   });
 
   logger.info(`Status: ${status}, Activity: ${activity.name}`);

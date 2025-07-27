@@ -1,16 +1,13 @@
 import logger from '@/lib/logger';
+import type { MinimalContext } from '@/types';
 import type { FilePart, ModelMessage } from 'ai';
 import {
+  Message as DiscordMessage,
   type Collection,
-  MessageAttachment as DiscordAttachment,
-  type Message as DiscordMessage,
-  Message,
+  type MessageAttachment as DiscordAttachment,
 } from 'discord.js-selfbot-v13';
 
-export type MinimalContext = Pick<
-  Message,
-  'content' | 'channel' | 'guild' | 'author' | 'client' | 'reference'
->;
+export type { MinimalContext };
 
 export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>
@@ -79,6 +76,6 @@ export async function processAttachments(
   return [];
 }
 
-export function isDiscordMessage(msg: unknown): msg is Message {
-  return msg instanceof Message && typeof msg.reply === 'function';
+export function isDiscordMessage(msg: unknown): msg is DiscordMessage {
+  return msg instanceof DiscordMessage && typeof msg.reply === 'function';
 }

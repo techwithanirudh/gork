@@ -1,10 +1,10 @@
-import type { RequestHints } from '@/lib/ai/prompts';
 import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { report } from '@/lib/ai/tools/report';
 import { searchWeb } from '@/lib/ai/tools/search-web';
-import { isDiscordMessage, type MinimalContext } from '@/utils/messages';
+import type { RequestHints } from '@/types';
+import { type MinimalContext } from '@/utils/messages';
 import type { ModelMessage } from 'ai';
 import { generateText, stepCountIs } from 'ai';
 
@@ -26,7 +26,7 @@ export async function generateResponse(
       tools: {
         getWeather,
         searchWeb,
-        report: report({ message: msg })
+        report: report({ message: msg }),
       },
       system,
       stopWhen: stepCountIs(10),
