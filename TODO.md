@@ -33,3 +33,5 @@ Look into CrewAI or build your own custom memory system (a custom approach is li
 Zenix should have unified memory per user across all servers—not separate memories per server. That way, the bot always remembers the same person no matter where they interact with it.
 Fix commands (broken on autobotting)
 Cleanup memory part later
+
+use lefthook instead of husky

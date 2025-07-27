@@ -1,5 +1,7 @@
 import { keywords } from '@/config';
 import { ratelimit, redisKeys } from '@/lib/kv';
+import { addMemory } from '@/lib/pinecone/queries';
+import { getMessagesByChannel } from '@/lib/queries';
 import { buildChatContext } from '@/utils/context';
 import { reply as staggeredReply } from '@/utils/delay';
 import {
@@ -26,6 +28,23 @@ async function canReply(ctxId: string): Promise<boolean> {
   return success;
 }
 
+async function onSuccess(message: Message, response: string) {
+  await staggeredReply(message, response);
+
+  const messages = await getMessagesByChannel({
+    channel: message.channel,
+    limit: 5,
+  });
+  const historyText = messages
+    .map((msg) => `${msg.author.username}: ${msg.content}`)
+    .join('\n');
+  await addMemory(historyText, {
+    createdAt: Date.now(),
+    lastRetrievalTime: Date.now(),
+    type: 'chat',
+  });
+}
+
 export async function execute(message: Message) {
   if (message.author.id === message.client.user?.id) return;
 
@@ -48,7 +67,7 @@ export async function execute(message: Message) {
     const result = await generateResponse(message, messages, hints);
     logReply(ctxId, author.username, result, 'explicit trigger');
     if (result.success && result.response) {
-      await staggeredReply(message, result.response);
+      await onSuccess(message, result.response);
     }
     return;
   }
@@ -79,6 +98,6 @@ export async function execute(message: Message) {
   const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'high relevance');
   if (result.success && result.response) {
-    await staggeredReply(message, result.response);
+    await onSuccess(message, result.response);
   }
 }

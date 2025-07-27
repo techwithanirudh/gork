@@ -37,6 +37,7 @@
     "autobotting",
     "dotproduct",
     "rerankinig",
-    "textembbeding"
+    "textembbeding",
+    "lefthook"
   ]
 }
