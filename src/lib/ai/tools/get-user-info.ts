@@ -7,7 +7,7 @@ export const getUserInfo = ({ message }: { message: MinimalContext }) =>
   tool({
     description:
       'Get detailed information about a Discord user by their username or ID.',
-    parameters: z.object({
+      inputSchema: z.object({
       userId: z
         .string()
         .describe('The ID or username of the user to get information about.'),

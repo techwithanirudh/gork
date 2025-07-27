@@ -3,6 +3,8 @@ import { customProvider } from 'ai';
 import { env } from '@/env';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
+import { createFallback } from 'ai-fallback'
+import logger from '../logger';
 
 // const hackclub = createOpenAICompatible({
 //   name: 'hackclub',
@@ -18,11 +20,22 @@ const google = createGoogleGenerativeAI({
   apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY!,
 });
 
+const chatModel = createFallback({
+  models: [
+    google('gemini-2.5-flash'),
+    openai.responses('gpt-4.1'),
+  ],
+  onError: (error, modelId) => {
+    logger.error({ error }, `Error with model ${modelId}:`)
+  },
+  modelResetInterval: 60000
+})
+
 export const myProvider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
     // 'chat-model': openai.responses('gpt-4.1-mini'),
-    'chat-model': google('gemini-2.5-flash'),
+    'chat-model': chatModel,
     'reasoning-model': google('gemini-2.5-flash'),
     'relevance-model': openai.responses('gpt-4.1-nano'),
     // "relevance-model": hackclub("llama-3.3-70b-versatile"),

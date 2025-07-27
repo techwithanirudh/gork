@@ -6,7 +6,7 @@ import { z } from 'zod/v4';
 export const startDM = ({ message }: { message: MinimalContext }) =>
   tool({
     description: 'Start a DM with a user and send them a message.',
-    parameters: z.object({
+    inputSchema: z.object({
       userId: z
         .string()
         .describe('The ID or username of the user you want to DM.'),

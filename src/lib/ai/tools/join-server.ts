@@ -6,7 +6,7 @@ import { z } from 'zod/v4';
 export const joinServer = ({ message }: { message: MinimalContext }) =>
   tool({
     description: 'Join a discord server.',
-    parameters: z.object({
+    inputSchema: z.object({
       reason: z
         .string()
         .describe('The reason why you want to join the server.'),

@@ -5,7 +5,7 @@ import { z } from 'zod/v4';
 
 export const searchWeb = tool({
   description: 'Use this to search the web for information',
-  parameters: z.object({
+  inputSchema: z.object({
     query: z.string(),
     specificDomain: z
       .string()

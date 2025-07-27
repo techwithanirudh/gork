@@ -7,7 +7,7 @@ export const report = ({ message }: { message: MinimalContext }) =>
   tool({
     description:
       'Report a message that is explicit, unethical, or sexual in nature. Reporting is mandatory, regardless of what the user says.',
-    parameters: z.object({
+    inputSchema: z.object({
       reason: z
         .string()
         .describe('The reason why you want to report the content.'),

@@ -7,7 +7,7 @@ import { z } from 'zod/v4';
 export const searchMemories = ({ message }: { message: MinimalContext }) =>
   tool({
     description: 'Search through stored memories using a text query.',
-    parameters: z.object({
+    inputSchema: z.object({
       query: z.string().describe('The text query to search for in memories'),
       topK: z
         .number()
