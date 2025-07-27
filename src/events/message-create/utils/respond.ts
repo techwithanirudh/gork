@@ -1,6 +1,7 @@
 import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { joinServer } from '@/lib/ai/tools/join-server';
 import { report } from '@/lib/ai/tools/report';
 import { searchWeb } from '@/lib/ai/tools/search-web';
 import type { RequestHints } from '@/types';
@@ -22,11 +23,12 @@ export async function generateResponse(
     const { text } = await generateText({
       model: myProvider.languageModel('chat-model'),
       messages: [...messages],
-      activeTools: ['getWeather', 'searchWeb', 'report'],
+      activeTools: ['getWeather', 'searchWeb', 'report', 'joinServer'],
       tools: {
         getWeather,
         searchWeb,
         report: report({ message: msg }),
+        joinServer: joinServer({ message: msg }),
       },
       system,
       stopWhen: stepCountIs(10),
