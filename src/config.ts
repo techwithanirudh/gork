@@ -24,7 +24,7 @@ export const activities: Activity[] = [
   },
   {
     type: 2,
-    name: 'to music',
+    name: 'music',
     image: 'https://pbs.twimg.com/media/GtTOrD7bMAEfahJ?format=png&name=medium',
   },
   {
