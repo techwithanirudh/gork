@@ -5,7 +5,7 @@ Let's use Pinecone for the following:
 3. We do NOT need to chunk the data as discord messages are already short and concise.
 4. When a message is deleted or edited, we should remove the embedding from the index, or update it. (https://docs.pinecone.io/guides/index-data/data-modeling#delete-chunks, https://docs.pinecone.io/guides/index-data/data-modeling#update-chunks). Have a way to easily connect message and embedding id.
 5. After all this we can upsert the embeddings to the index. (https://docs.pinecone.io/guides/index-data/upsert-data#upsert-dense-vectors) (https://docs.pinecone.io/guides/index-data/indexing-overview#bring-your-own-vectors)
-
+6. Setup a hybrid search index (https://docs.pinecone.io/guides/search/hybrid-search#use-a-single-hybrid-index)
 
 # Searches
 - When searching have a sophisticated algo (bob), check through server, recent messages, and a lot of context aswell so we get the data. w/metadata timeframes, users etc. (https://docs.pinecone.io/guides/get-started/quickstart#5-semantic-search)

@@ -26,10 +26,11 @@ export const env = createEnv({
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     // AssemblyAI
     DEEPGRAM_API_KEY: z.string().min(1),
-    // ElevenLabs
-    // ELEVENLABS_API_KEY: z.string().min(1),
     // Exa
     EXA_API_KEY: z.string().min(1),
+    // Pinecone
+    PINECONE_API_KEY: z.string().min(1),
+    PINECONE_INDEX: z.string().min(1),
   },
 
   /**
