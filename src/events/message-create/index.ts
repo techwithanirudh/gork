@@ -38,7 +38,7 @@ export async function execute(message: Message) {
   if (!(await canReply(ctxId))) return;
 
   const botId = client.user?.id;
-  const trigger = getTrigger(message, keywords, botId);
+  const trigger = await getTrigger(message, keywords, botId);
 
   if (trigger.type) {
     await clearUnprompted(ctxId);
