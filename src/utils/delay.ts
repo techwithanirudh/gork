@@ -1,6 +1,11 @@
 import { speed as speedConfig } from '@/config';
 import logger from '@/lib/logger';
-import { DMChannel, Message, TextChannel, ThreadChannel } from 'discord.js-selfbot-v13';
+import {
+  DMChannel,
+  Message,
+  TextChannel,
+  ThreadChannel,
+} from 'discord.js-selfbot-v13';
 import { normalize, sentences } from './tokenize-messages';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

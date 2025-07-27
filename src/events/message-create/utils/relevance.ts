@@ -7,7 +7,7 @@ import type { Message } from 'discord.js-selfbot-v13';
 export async function assessRelevance(
   msg: Message,
   messages: ModelMessage[],
-  hints: RequestHints,
+  hints: RequestHints
 ): Promise<Probability> {
   try {
     const { object } = await generateObject({
