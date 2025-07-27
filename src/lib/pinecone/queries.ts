@@ -1,10 +1,10 @@
-import { type QueryResponse, type ScoredPineconeRecord } from "@pinecone-database/pinecone";
-import { getIndex } from "./index";
-import logger from "@/lib/logger";
-import type { PineconeMetadata } from "@/types";
-import { MD5 } from "bun";
+import logger from '@/lib/logger';
+import type { PineconeMetadata } from '@/types';
+import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { embed } from 'ai';
-import { myProvider } from "../ai/providers";
+import { MD5 } from 'bun';
+import { myProvider } from '../ai/providers';
+import { getIndex } from './index';
 
 export interface MemorySearchOptions {
   namespace?: string;
@@ -16,11 +16,11 @@ export const searchMemories = async (
   query: string,
   options: MemorySearchOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadata>[]> => {
-  const { namespace = "default", topK = 5, filter } = options;
+  const { namespace = 'default', topK = 5, filter } = options;
 
   try {
     const { embedding } = await embed({
-      model: myProvider.textEmbeddingModel("small-model"),
+      model: myProvider.textEmbeddingModel('small-model'),
       value: query,
     });
 
@@ -33,29 +33,33 @@ export const searchMemories = async (
       filter,
     });
 
-    return queryResult.matches || [];
+    const matches = queryResult.matches || [];
+    return matches.map((match) => ({
+      ...match,
+      metadata: match.metadata as PineconeMetadata,
+    }));
   } catch (error: unknown) {
-    logger.error({ error }, "Error searching memories");
+    logger.error({ error }, 'Error searching memories');
     throw error;
   }
 };
 
 export const addMemory = async (
   text: string,
-  metadata: Omit<PineconeMetadata, "text" | "hash">,
-  namespace = "default"
+  metadata: Omit<PineconeMetadata, 'text' | 'hash'>,
+  namespace = 'default'
 ): Promise<string> => {
   try {
-    const hash = new MD5().update(text).digest("hex");
+    const hash = new MD5().update(text).digest('hex');
     const fullMetadata: PineconeMetadata = { text, hash, ...metadata };
     const { embedding } = await embed({
-      model: myProvider.textEmbeddingModel("small-model"),
+      model: myProvider.textEmbeddingModel('small-model'),
       value: text,
     });
 
     const idx = await getIndex();
     const index = idx.namespace(namespace);
-    
+
     const vector = {
       id: hash,
       values: embedding,
@@ -63,25 +67,25 @@ export const addMemory = async (
     };
 
     await index.upsert([vector]);
-    logger.info({ hash }, "Added memory");
+    logger.info({ hash }, 'Added memory');
     return hash;
   } catch (error: unknown) {
-    logger.error({ error }, "Error adding memory");
+    logger.error({ error }, 'Error adding memory');
     throw error;
   }
 };
 
 export const deleteMemory = async (
   hash: string,
-  namespace = "default"
+  namespace = 'default'
 ): Promise<void> => {
   try {
     const idx = await getIndex();
     const index = idx.namespace(namespace);
     await index.deleteOne(hash);
-    logger.info({ hash }, "Deleted memory");
+    logger.info({ hash }, 'Deleted memory');
   } catch (error: unknown) {
-    logger.error({ error }, "Error deleting memory");
+    logger.error({ error }, 'Error deleting memory');
     throw error;
   }
 };

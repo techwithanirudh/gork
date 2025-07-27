@@ -1,8 +1,7 @@
 export type PineconeMetadata = {
-    text: string;
-    chunk: string;
-    hash: string;
-    created_at?: number;
-    last_retrieval_time?: number;
-    type?: 'tool' | 'chat';
-}
+  text: string;
+  hash: string;
+  createdAt?: number;
+  lastRetrievalTime?: number;
+  type?: 'tool' | 'chat';
+};
