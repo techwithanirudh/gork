@@ -1,5 +1,6 @@
 import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
+import { getUserInfo } from '@/lib/ai/tools/get-user-info';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { joinServer } from '@/lib/ai/tools/join-server';
 import { report } from '@/lib/ai/tools/report';
@@ -30,6 +31,7 @@ export async function generateResponse(
         'report',
         'joinServer',
         'startDM',
+        'getUserInfo',
       ],
       tools: {
         getWeather,
@@ -37,6 +39,7 @@ export async function generateResponse(
         report: report({ message: msg }),
         joinServer: joinServer({ message: msg }),
         startDM: startDM({ message: msg }),
+        getUserInfo: getUserInfo({ message: msg }),
       },
       system,
       stopWhen: stepCountIs(10),

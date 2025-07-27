@@ -38,7 +38,7 @@ export const searchMemories = async (
       ...match,
       metadata: match.metadata as PineconeMetadata,
     }));
-  } catch (error: unknown) {
+  } catch (error) {
     logger.error({ error }, 'Error searching memories');
     throw error;
   }
@@ -69,7 +69,7 @@ export const addMemory = async (
     await index.upsert([vector]);
     logger.info({ hash }, 'Added memory');
     return hash;
-  } catch (error: unknown) {
+  } catch (error) {
     logger.error({ error }, 'Error adding memory');
     throw error;
   }
@@ -84,7 +84,7 @@ export const deleteMemory = async (
     const index = idx.namespace(namespace);
     await index.deleteOne(hash);
     logger.info({ hash }, 'Deleted memory');
-  } catch (error: unknown) {
+  } catch (error) {
     logger.error({ error }, 'Error deleting memory');
     throw error;
   }

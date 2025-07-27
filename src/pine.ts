@@ -1,8 +1,4 @@
-import { addMemory, searchMemories } from './lib/pinecone/queries';
+import { searchMemories } from './lib/pinecone/queries';
 
-await addMemory('anirudh is the best coder ever', {
-  createdAt: Date.now(),
-  lastRetrievalTime: Date.now(),
-});
-const result = await searchMemories('who is the best coder');
+const result = await searchMemories('do you remember my friend?');
 console.log(result);
