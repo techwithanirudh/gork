@@ -42,7 +42,7 @@ const updateStatus = async (client: Client): Promise<void> => {
       );
       if (externalImage?.[0]?.external_asset_path) {
         richPresence.setAssetsLargeImage(externalImage[0].external_asset_path);
-        logger.info(`Set external image for activity: ${activity.name}`);
+        logger.debug(`Set external image for activity: ${activity.name}`);
       }
     } catch (error) {
       logger.error(`Failed to set external image for activity: ${error}`);

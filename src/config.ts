@@ -38,12 +38,6 @@ export const activities: Activity[] = [
     image:
       'https://pbs.twimg.com/media/GuvLw79XQAACrp3?format=png&name=900x900',
   },
-  {
-    type: 6,
-    name: 'im freeee',
-    image:
-      'https://pbs.twimg.com/media/GuvLw79XQAACrp3?format=png&name=900x900',
-  },
 ];
 
 export const messageThreshold = 10;

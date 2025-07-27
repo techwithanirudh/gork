@@ -1,6 +1,7 @@
-import { systemPrompt, type RequestHints } from '@/lib/ai/prompts';
+import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { probabilitySchema, type Probability } from '@/lib/validators';
+import type { RequestHints } from '@/types';
 import { generateObject, type ModelMessage } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
 
