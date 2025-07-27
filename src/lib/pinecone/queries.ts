@@ -2,59 +2,86 @@ import { type QueryResponse, type ScoredPineconeRecord } from "@pinecone-databas
 import { getIndex } from "./index";
 import logger from "@/lib/logger";
 import type { PineconeMetadata } from "@/types";
+import { MD5 } from "bun";
+import { embed } from 'ai';
+import { myProvider } from "../ai/providers";
 
-export const getMatchesFromEmbeddings = async (
-  embeddings: number[],
-  topK = 5,
-  namespace = "default"
+export interface MemorySearchOptions {
+  namespace?: string;
+  topK?: number;
+  filter?: Record<string, any>;
+}
+
+export const searchMemories = async (
+  query: string,
+  options: MemorySearchOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadata>[]> => {
+  const { namespace = "default", topK = 5, filter } = options;
+
   try {
+    const { embedding } = await embed({
+      model: myProvider.textEmbeddingModel("small-model"),
+      value: query,
+    });
+
     const idx = await getIndex();
     const index = idx.namespace(namespace);
-
     const queryResult = await index.query({
-      vector: embeddings,
+      vector: embedding,
       topK,
       includeMetadata: true,
-    }) as QueryResponse<PineconeMetadata>;
+      filter,
+    });
 
     return queryResult.matches || [];
   } catch (error: unknown) {
-    logger.error({ error }, "Error querying embeddings");
+    logger.error({ error }, "Error searching memories");
     throw error;
   }
 };
 
-export const upsertVectors = async (
-  vectors: {
-    id: string;
-    values: number[];
-    metadata: PineconeMetadata;
-  }[],
+export const addMemory = async (
+  text: string,
+  metadata: Omit<PineconeMetadata, "text" | "hash">,
+  namespace = "default"
+): Promise<string> => {
+  try {
+    const hash = new MD5().update(text).digest("hex");
+    const fullMetadata: PineconeMetadata = { text, hash, ...metadata };
+    const { embedding } = await embed({
+      model: myProvider.textEmbeddingModel("small-model"),
+      value: text,
+    });
+
+    const idx = await getIndex();
+    const index = idx.namespace(namespace);
+    
+    const vector = {
+      id: hash,
+      values: embedding,
+      metadata: fullMetadata,
+    };
+
+    await index.upsert([vector]);
+    logger.info({ hash }, "Added memory");
+    return hash;
+  } catch (error: unknown) {
+    logger.error({ error }, "Error adding memory");
+    throw error;
+  }
+};
+
+export const deleteMemory = async (
+  hash: string,
   namespace = "default"
 ): Promise<void> => {
   try {
     const idx = await getIndex();
     const index = idx.namespace(namespace);
-  
-    await index.upsert(vectors);
+    await index.deleteOne(hash);
+    logger.info({ hash }, "Deleted memory");
   } catch (error: unknown) {
-    logger.error({ error }, "Error upserting vectors");
-    throw error;
-  }
-};
-
-export const deleteVectors = async (
-  ids: string[], 
-  namespace = "default"
-): Promise<void> => {
-  try {
-    const idx = await getIndex();
-    const index = idx.namespace(namespace);
-
-    await index.deleteMany(ids);
-  } catch (error: unknown) {
-    logger.error({ error }, "Error deleting vectors");
+    logger.error({ error }, "Error deleting memory");
     throw error;
   }
 };
