@@ -50,3 +50,5 @@ When there is an attachment add Right now it just adds [Attachments: png, zip, p
 when if it is not a type it can process, remove all blank stuff messages (https://github.com/DomBom16/frank/blob/main/src/utils/aiResponse.ts)
 convert status or whatever in discord the yellow white block to text like frank
 Also another issue is the build context thing's reference replies are broken
+
+Refactor the ping system, the bot pings random people and doesn't know who is who

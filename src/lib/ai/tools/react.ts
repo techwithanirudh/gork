@@ -9,7 +9,14 @@ export const react = ({ message }: { message: Message }) =>
       emoji: z.string().describe('The emoji you want to react with'),
     }),
     execute: async ({ emoji }) => {
-      message.react(emoji);
+      try {
+        await message.react(emoji);
+      } catch (e) {
+        return {
+          success: false,
+          error: (e as Error)?.message,
+        };
+      }
 
       return {
         success: true,
