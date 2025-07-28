@@ -1,13 +1,10 @@
 import logger from '@/lib/logger';
-import type { MinimalContext } from '@/types';
 import type { FilePart, ModelMessage } from 'ai';
 import {
   Message as DiscordMessage,
   type Collection,
   type MessageAttachment as DiscordAttachment,
 } from 'discord.js-selfbot-v13';
-
-export type { MinimalContext };
 
 export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>
@@ -60,6 +57,11 @@ export async function processAttachments(
   for (const attachment of validAttachments.values()) {
     try {
       const res = await fetch(attachment.url);
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
       const buffer = await res.arrayBuffer();
 
       results.push({

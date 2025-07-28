@@ -41,5 +41,10 @@ Properly refactor the memory system with querying like B does it
 Cleanup the code a bit
 Properly type the thing, we're currently JSON.string the memories I/O, stringify in the queries.ts
 Implement the BM25 thing
-givev llm choice to reply or to generally psot
+give llm choice to reply or to generally not
 Fix attachment processing
+
+When pinging users mention @username then convert it to user ID like frank
+Improve system prompt to include tools
+When there is an attachment add Right now it just adds [Attachments: png, zip, png, png] for each file attached
+when if it is not a type it can process, remove all blank stuff messages (https://github.com/DomBom16/frank/blob/main/src/utils/aiResponse.ts)

@@ -22,7 +22,13 @@ const google = createGoogleGenerativeAI({
 });
 
 const chatModel = createFallback({
-  models: [google('gemini-2.5-flash'), cohere('command-a-03-2025')],
+  models: [
+    google('gemini-2.5-flash'),
+    google('gemini-2.0-flash'),
+    google('gemini-2.5-flash-lite'),
+    google('gemini-2.0-flash-lite'),
+    cohere('command-a-03-2025'),
+  ],
   onError: (error, modelId) => {
     logger.error({ error }, `Error with model ${modelId}:`);
   },
