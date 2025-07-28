@@ -15,8 +15,7 @@ export async function convertToModelMessages(
         ? await msg.fetchReference().catch(() => null)
         : null;
       const text = ref
-        ? `> ${ref.author.username}: ${ref.content}
-${msg.author.username}: ${msg.content}`
+        ? `${msg.author.username}: ${msg.content}`
         : `${msg.author.username}: ${msg.content}`;
 
       return {

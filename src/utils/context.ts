@@ -1,6 +1,6 @@
 import { city, country, timezone } from '@/config';
-import type { RequestHints } from '@/types';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
+import type { RequestHints } from '@/types';
 import { convertToModelMessages } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
 import type { ModelMessage } from 'ai';
