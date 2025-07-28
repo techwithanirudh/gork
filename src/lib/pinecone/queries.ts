@@ -67,7 +67,7 @@ export const addMemory = async (
     };
 
     await index.upsert([vector]);
-    logger.info({ hash }, 'Added memory');
+    logger.info({ id: hash }, 'Added memory');
     return hash;
   } catch (error) {
     logger.error({ error }, 'Error adding memory');
@@ -83,7 +83,7 @@ export const deleteMemory = async (
     const idx = await getIndex();
     const index = idx.namespace(namespace);
     await index.deleteOne(hash);
-    logger.info({ hash }, 'Deleted memory');
+    logger.info({ id: hash }, 'Deleted memory');
   } catch (error) {
     logger.error({ error }, 'Error deleting memory');
     throw error;

@@ -1,5 +1,5 @@
 import logger from '@/lib/logger';
-import type { FilePart, ModelMessage } from 'ai';
+import type { ImagePart, ModelMessage } from 'ai';
 import {
   Message as DiscordMessage,
   type Collection,
@@ -32,49 +32,28 @@ export async function convertToModelMessages(
 
 export async function processAttachments(
   attachments: Collection<string, DiscordAttachment>
-): Promise<FilePart[]> {
-  const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+): Promise<ImagePart[]> {
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-  const validAttachments = attachments.filter(
-    (a) => a.contentType !== null && validTypes.includes(a.contentType)
+  const validAttachments = Array.from(attachments.values()).filter(
+    (a) => a.contentType && validTypes.includes(a.contentType)
   );
 
-  const invalidAttachments = attachments.filter(
-    (a) => a.contentType === null || !validTypes.includes(a.contentType)
-  );
+  const invalidNames = attachments
+    .filter((a) => !a.contentType || !validTypes.includes(a.contentType))
+    .map((a) => a.name);
 
-  if (invalidAttachments.size > 0) {
-    logger.warn(
-      `Ignored attachments: ${Array.from(invalidAttachments.values())
-        .map((a) => a.name)
-        .join(', ')}`
-    );
+  if (invalidNames.length > 0) {
+    logger.warn(`Ignored attachments: ${invalidNames.join(', ')}`);
   }
 
-  const results: FilePart[] = [];
-
-  for (const attachment of validAttachments.values()) {
-    try {
-      const res = await fetch(attachment.url);
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
-
-      const buffer = await res.arrayBuffer();
-
-      results.push({
-        type: 'file',
-        data: buffer,
-        mediaType: attachment.contentType || 'application/octet-stream',
-        filename: attachment.name || 'unknown',
-      });
-    } catch (err) {
-      logger.warn(`Failed to fetch attachment ${attachment.name}:`, err);
-    }
-  }
-
-  return [];
+  return validAttachments
+    .map((attachment) => ({
+      type: 'image' as const,
+      image: attachment.url,
+      mediaType: attachment.contentType || 'application/octet-stream',
+    }))
+    .filter(Boolean);
 }
 
 export function isDiscordMessage(msg: unknown): msg is DiscordMessage {
