@@ -2,7 +2,17 @@
 # see all versions at https://hub.docker.com/r/oven/bun/tags
 FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
-RUN sudo apt install -y python3
+
+RUN apt update
+
+RUN apt install -y \
+        curl \
+        git \
+        sudo \
+        python3 \
+        python3-pip \
+        make
+
 # install dependencies into temp directory
 # this will cache them and speed up future builds
 FROM base AS install
