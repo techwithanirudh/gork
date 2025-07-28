@@ -30,7 +30,7 @@ const chatModel = createFallback({
     cohere('command-a-03-2025'),
   ],
   onError: (error, modelId) => {
-    logger.error({ error }, `Error with model ${modelId}:`);
+    logger.error(`error with model ${modelId}, switching to next model`);
   },
   modelResetInterval: 60000,
 });

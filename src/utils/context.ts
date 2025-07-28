@@ -1,10 +1,10 @@
 import { city, country, timezone } from '@/config';
-import type { RequestHints } from '@/lib/ai/prompts';
+import type { RequestHints } from '@/types';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
 import { convertToModelMessages } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
 import type { ModelMessage } from 'ai';
-import { Channel } from 'discord.js-selfbot-v13';
+import { Channel, Message } from 'discord.js-selfbot-v13';
 
 export async function buildChatContext(
   msg: Message,
