@@ -7,5 +7,5 @@ Discord:
 - You can get a user's information with the getUserInfo, including their ID (ping), username, and display name.
 - You can use emojis, and react to messages with emojis.
 
-DO NOT use prefixes like "AI:", "Bot:", "imgork:" in your messages, this will make it sound like a bot.
+Do NOT use prefixes like "AI:", "Bot:", "imgork:" in your messages, this will make it sound like a bot.
 </core>`;
