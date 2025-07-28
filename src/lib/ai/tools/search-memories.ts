@@ -1,10 +1,10 @@
 import logger from '@/lib/logger';
 import { searchMemories as searchPineconeMemories } from '@/lib/pinecone/queries';
-import type { MinimalContext } from '@/utils/messages';
 import { tool } from 'ai';
+import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod/v4';
 
-export const searchMemories = ({ message }: { message: MinimalContext }) =>
+export const searchMemories = ({ message }: { message: Message }) =>
   tool({
     description: 'Search through stored memories using a text query.',
     inputSchema: z.object({

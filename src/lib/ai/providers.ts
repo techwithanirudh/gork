@@ -1,9 +1,10 @@
 import { customProvider } from 'ai';
 
 import { env } from '@/env';
+import { cohere } from '@ai-sdk/cohere';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
-import { createFallback } from 'ai-fallback'
+import { createFallback } from 'ai-fallback';
 import logger from '../logger';
 
 // const hackclub = createOpenAICompatible({
@@ -21,15 +22,12 @@ const google = createGoogleGenerativeAI({
 });
 
 const chatModel = createFallback({
-  models: [
-    google('gemini-2.5-flash'),
-    openai.responses('gpt-4.1'),
-  ],
+  models: [google('gemini-2.5-flash'), cohere('command-a-03-2025')],
   onError: (error, modelId) => {
-    logger.error({ error }, `Error with model ${modelId}:`)
+    logger.error({ error }, `Error with model ${modelId}:`);
   },
-  modelResetInterval: 60000
-})
+  modelResetInterval: 60000,
+});
 
 export const myProvider = customProvider({
   languageModels: {

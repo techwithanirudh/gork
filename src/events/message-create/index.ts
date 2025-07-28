@@ -54,6 +54,7 @@ async function onSuccess(message: Message, response: string) {
 }
 
 export async function execute(message: Message) {
+  if (message.author.bot) return;
   if (message.author.id === message.client.user?.id) return;
 
   const { content, client, guild, author } = message;

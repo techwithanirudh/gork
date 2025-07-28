@@ -1,13 +1,13 @@
 import logger from '@/lib/logger';
-import type { MinimalContext } from '@/utils/messages';
 import { tool } from 'ai';
+import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod/v4';
 
-export const getUserInfo = ({ message }: { message: MinimalContext }) =>
+export const getUserInfo = ({ message }: { message: Message }) =>
   tool({
     description:
       'Get detailed information about a Discord user by their username or ID.',
-      inputSchema: z.object({
+    inputSchema: z.object({
       userId: z
         .string()
         .describe('The ID or username of the user to get information about.'),
