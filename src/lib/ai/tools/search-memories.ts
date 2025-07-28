@@ -20,6 +20,8 @@ export const searchMemories = ({ message }: { message: Message }) =>
           topK,
         });
 
+        logger.info({ results }, 'Search results');
+
         return {
           success: true,
           data: results.map((result) => ({

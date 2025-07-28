@@ -48,3 +48,5 @@ When pinging users mention @username then convert it to user ID like frank
 Improve system prompt to include tools
 When there is an attachment add Right now it just adds [Attachments: png, zip, png, png] for each file attached
 when if it is not a type it can process, remove all blank stuff messages (https://github.com/DomBom16/frank/blob/main/src/utils/aiResponse.ts)
+convert status or whatever in discord the yellow white block to text like frank
+Also another issue is the build context thing's reference replies are broken
