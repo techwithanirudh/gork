@@ -41,7 +41,6 @@ async function onSuccess(message: Message, response: string) {
     .join('\n');
   const metadata = {
     type: 'chat' as const,
-
     createdAt: Date.now(),
     lastRetrievalTime: Date.now(),
     guild: {
@@ -50,7 +49,7 @@ async function onSuccess(message: Message, response: string) {
     },
     channel: {
       id: message.channel.id,
-      name: message.channel.type === 'DM' ? 'DM' : message.channel.name,
+      name: message.channel.type === 'DM' ? 'DM' : message.channel.name ?? '',
     },
   };
 

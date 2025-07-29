@@ -7,8 +7,6 @@ import { MD5 } from 'bun';
 import { myProvider } from '../ai/providers';
 import { getIndex } from './index';
 
-const log = logger.child({ tool: 'queryMemories' });
-
 export interface MemorySearchOptions {
   namespace?: string;
   topK?: number;
@@ -55,7 +53,7 @@ export const queryMemories = async (
       filter: Object.keys(filter).length ? filter : undefined,
     });
 
-    log.debug(
+    logger.debug(
       {
         query,
         limit,
@@ -76,7 +74,7 @@ export const queryMemories = async (
 
     return results;
   } catch (error) {
-    log.error({ error, query }, 'Error querying long term memory');
+    logger.error({ error, query }, 'Error querying long term memory');
     return [];
   }
 };
@@ -104,7 +102,7 @@ export const searchMemories = async (
       const parsed = PineconeMetadataSchema.safeParse(match.metadata);
 
       if (!parsed.success) {
-        log.warn(
+        logger.warn(
           { id: match.id, issues: parsed.error.issues },
           'Invalid metadata schema'
         );
@@ -117,14 +115,14 @@ export const searchMemories = async (
       };
     });
   } catch (error) {
-    log.error({ error }, 'Error searching memories');
+    logger.error({ error }, 'Error searching memories');
     throw error;
   }
 };
 
 export const addMemory = async (
   text: string,
-  metadata: Omit<PineconeMetadataInput, 'hash'>,
+  metadata: Omit<PineconeMetadataInput, 'hash' | 'context'>,
   namespace = 'default'
 ): Promise<string> => {
   try {
@@ -133,9 +131,10 @@ export const addMemory = async (
     const parsed = PineconeMetadataSchema.safeParse({
       ...metadata,
       hash: id,
+      context: text,
     });
     if (!parsed.success) {
-      log.warn(
+      logger.warn(
         { id, issues: parsed.error.issues },
         'Invalid metadata provided, skipping add'
       );
@@ -156,10 +155,10 @@ export const addMemory = async (
       },
     ]);
 
-    log.info({ id }, 'Added memory');
+    logger.info({ id, metadata }, 'Added memory');
     return id;
   } catch (error) {
-    log.error({ error }, 'Error adding memory');
+    logger.error({ error }, 'Error adding memory');
     throw error;
   }
 };
@@ -171,9 +170,9 @@ export const deleteMemory = async (
   try {
     const index = (await getIndex()).namespace(namespace);
     await index.deleteOne(id);
-    log.info({ id }, 'Deleted memory');
+    logger.info({ id }, 'Deleted memory');
   } catch (error) {
-    log.error({ error }, 'Error deleting memory');
+    logger.error({ error }, 'Error deleting memory');
     throw error;
   }
 };

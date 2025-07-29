@@ -26,7 +26,7 @@ export const searchMemories = ({ message }: { message: Message }) =>
           success: true,
           data: results.map((result) => ({
             score: result.score,
-            text: result.metadata?.text,
+            context: result.metadata?.context,
             metadata: result.metadata,
           })),
         };
