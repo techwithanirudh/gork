@@ -91,7 +91,7 @@ export const addMemory = async (
       },
     ]);
 
-    logger.info({ id, metadata }, 'Added memory');
+    logger.debug({ id, metadata }, 'Added memory');
     return id;
   } catch (error) {
     logger.error({ error }, 'Error adding memory');
@@ -106,7 +106,7 @@ export const deleteMemory = async (
   try {
     const index = (await getIndex()).namespace(namespace);
     await index.deleteOne(id);
-    logger.info({ id }, 'Deleted memory');
+    logger.debug({ id }, 'Deleted memory');
   } catch (error) {
     logger.error({ error }, 'Error deleting memory');
     throw error;
