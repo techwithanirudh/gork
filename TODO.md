@@ -52,3 +52,4 @@ convert status or whatever in discord the yellow white block to text like frank
 Also another issue is the build context thing's reference replies are broken
 
 Refactor the ping system, the bot pings random people and doesn't know who is who
+Add edit delete messages functionality for gork, meaning it can understand when messages were edited and also edit it's own messages liek Frank
