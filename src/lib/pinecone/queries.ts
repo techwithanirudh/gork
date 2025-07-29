@@ -6,17 +6,87 @@ import { MD5 } from 'bun';
 import { myProvider } from '../ai/providers';
 import { getIndex } from './index';
 
+const log = logger.child({ tool: 'queryMemories' });
+
 export interface MemorySearchOptions {
   namespace?: string;
   topK?: number;
   filter?: Record<string, any>;
 }
 
+export interface QueryMemoriesOptions {
+  limit?: number;
+  ageLimit?: number; 
+  ignoreRecent?: boolean;
+  onlyTools?: boolean;
+}
+
+export const queryMemories = async (
+  query: string,
+  options: QueryMemoriesOptions = {}
+): Promise<ScoredPineconeRecord<PineconeMetadata>[]> => {
+  const {
+    limit = 4,
+    ageLimit,
+    ignoreRecent = true,
+    onlyTools = false
+  } = options;
+
+  const filter: Record<string, any> = {};
+
+  const now = Date.now();
+  if (ignoreRecent) {
+    const recentTime = now - 60000;
+    filter.creation_time = { $lt: recentTime };
+  }
+  if (ageLimit != null) {
+    filter.creation_time = {
+      ...filter.creation_time,
+      $gt: now - ageLimit
+    };
+  }
+
+  if (onlyTools) {
+    filter.type = { $eq: 'tool' };
+  }
+
+  try {
+    const results = await searchMemories(query, {
+      topK: limit,
+      filter: Object.keys(filter).length > 0 ? filter : undefined
+    });
+
+    log.debug({
+      query,
+      limit,
+      ageLimit,
+      ignoreRecent,
+      onlyTools,
+      resultIds: results.map(doc => doc.id.slice(0, 16) + '...')
+    }, 'Long term memory query completed');
+
+    const index = await getIndex();
+    await Promise.all(
+      results.map(result =>
+        index.update({
+          id: result.id,
+          metadata: { last_retrieval_time: now }
+        })
+      )
+    );
+
+    return results;
+  } catch (error) {
+    log.error({ error, query }, 'Error querying long term memory');
+    return [];
+  }
+};
+
 export const searchMemories = async (
   query: string,
   options: MemorySearchOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadata>[]> => {
-  const { namespace = 'default', topK = 5, filter } = options;
+  const { namespace = 'default', topK = 4, filter } = options;
 
   try {
     const { embedding } = await embed({
@@ -51,7 +121,6 @@ export const addMemory = async (
 ): Promise<string> => {
   try {
     const hash = new MD5().update(text).digest('hex');
-    const fullMetadata: PineconeMetadata = { text, ...metadata };
     const { embedding } = await embed({
       model: myProvider.textEmbeddingModel('small-model'),
       value: text,
@@ -63,7 +132,7 @@ export const addMemory = async (
     const vector = {
       id: hash,
       values: embedding,
-      metadata: fullMetadata,
+      metadata,
     };
 
     await index.upsert([vector]);

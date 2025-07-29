@@ -1,4 +1,5 @@
 import { city, country, timezone } from '@/config';
+import { queryMemories } from '@/lib/pinecone/queries';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
 import type { RequestHints } from '@/types';
 import { convertToModelMessages } from '@/utils/messages';
@@ -33,6 +34,7 @@ export async function buildChatContext(
       joined: msg.guild?.members.me?.joinedTimestamp ?? 0,
       status: msg.guild?.members.me?.presence?.status ?? 'offline',
       activity: msg.guild?.members.me?.presence?.activities[0]?.name ?? 'none',
+      // memories: await queryMemories(msg.content),
     };
   }
 

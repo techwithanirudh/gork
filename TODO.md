@@ -53,3 +53,7 @@ Also another issue is the build context thing's reference replies are broken
 
 Refactor the ping system, the bot pings random people and doesn't know who is who
 Add edit delete messages functionality for gork, meaning it can understand when messages were edited and also edit it's own messages liek Frank
+
+Refactor logging system with child loggers
+
+Refactor the adding metadata so guild and channel are not strings, and are JSON but the retrieval converts JSON to string and vice versa

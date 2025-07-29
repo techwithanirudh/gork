@@ -8,6 +8,7 @@ import { report } from '@/lib/ai/tools/report';
 import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
 import { startDM } from '@/lib/ai/tools/start-dm';
+import { addMemory } from '@/lib/pinecone/queries';
 import type { RequestHints } from '@/types';
 import type { ModelMessage } from 'ai';
 import { generateText, stepCountIs } from 'ai';
@@ -24,7 +25,7 @@ export async function generateResponse(
       requestHints: hints,
     });
 
-    const { text } = await generateText({
+    const { text, steps } = await generateText({
       model: myProvider.languageModel('chat-model'),
       messages: [...messages],
       activeTools: [
@@ -49,6 +50,29 @@ export async function generateResponse(
       },
       system,
       stopWhen: stepCountIs(10),
+      onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
+        if (!toolCalls.length) return;
+      
+        await Promise.all(
+          toolCalls.map(async (call, i) => {
+            const result = toolResults[i];
+            if (!call || !result) return;
+      
+            const data = JSON.stringify({ call, result }, null, 2);
+            const metadata = {
+              type: 'tool' as const,
+              name: call.toolName,
+              response: result,
+              createdAt: Date.now(),
+              channel: msg.channel.id,
+              guild: msg.guild?.id ?? '',
+              userId: msg.author.id,
+            };
+      
+            await addMemory(data, metadata);
+          })
+        );
+      },      
     });
 
     return { success: true, response: text };
