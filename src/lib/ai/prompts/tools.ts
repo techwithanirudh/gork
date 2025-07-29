@@ -1,9 +1,10 @@
-export const memoryPrompt = `\
+import type { ScoredPineconeRecord } from "@pinecone-database/pinecone";
+import type { PineconeMetadataOutput } from "@/types";
+
+export const memoryPrompt = (memories: ScoredPineconeRecord<PineconeMetadataOutput>[]) => `\
 <memory>
-As Gork, you can't remember everything across all the servers, that's what long-term memory is for.
+As Gork, you can't remember everything across all the servers, that's what long-term memory is for. 
+So you are given the following memories to help you answer the question.
 
-Use searchMemories to look things up. Add keywords from the question to make the search useful.
-The search isn't perfect, so ALWAYS try **4** to **5** different queries with different phrasing to really get what happened.
-
-Include anything helpful like usernames, topics, events, or what people were doing to make the search work better.
+${memories.map((memory) => JSON.stringify(memory)).join('\n\n')}
 </memory>`;

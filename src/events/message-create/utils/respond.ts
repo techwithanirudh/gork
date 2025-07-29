@@ -13,16 +13,20 @@ import type { RequestHints } from '@/types';
 import type { ModelMessage } from 'ai';
 import { generateText, stepCountIs } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { PineconeMetadataOutput } from '@/types';
 
 export async function generateResponse(
   msg: Message,
   messages: ModelMessage[],
-  hints: RequestHints
+  hints: RequestHints,
+  memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
     const system = systemPrompt({
       selectedChatModel: 'chat-model',
       requestHints: hints,
+      memories,
     });
 
     const { text } = await generateText({
@@ -57,6 +61,7 @@ export async function generateResponse(
           toolCalls.map(async (call, i) => {
             const result = toolResults[i];
             if (!call || !result) return;
+            if (call.toolName === 'searchMemories') return;
 
             const data = JSON.stringify({ call, result }, null, 2);
             const metadata = {

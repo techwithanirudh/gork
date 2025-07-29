@@ -1,4 +1,4 @@
-import { queryMemories } from '@/lib/pinecone/queries';
+import { queryMemories } from '@/lib/pinecone/operations';
 
 const query = 'who is gork known as';
 const memories = await queryMemories(query, {

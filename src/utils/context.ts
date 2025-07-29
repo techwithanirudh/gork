@@ -1,8 +1,11 @@
 import { city, country, timezone } from '@/config';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
+import { queryMemories } from '@/lib/pinecone/operations';
+import type { PineconeMetadataOutput } from '@/types';
 import type { RequestHints } from '@/types';
 import { convertToModelMessages } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
 import { Channel, Message } from 'discord.js-selfbot-v13';
 
@@ -11,10 +14,12 @@ export async function buildChatContext(
   opts?: {
     messages?: ModelMessage[];
     hints?: RequestHints;
+    memories?: ScoredPineconeRecord<PineconeMetadataOutput>[];
   }
 ) {
   let messages = opts?.messages;
   let hints = opts?.hints;
+  let memories = opts?.memories;
 
   const channel = msg.channel as Channel;
 
@@ -36,5 +41,14 @@ export async function buildChatContext(
     };
   }
 
-  return { messages, hints };
+  if (!memories) {
+    memories = await queryMemories(msg.content, {
+      namespace: 'default',
+      limit: 5,
+      ignoreRecent: true,
+      onlyTools: false,
+    });
+  }
+ 
+  return { messages, hints, memories };
 }

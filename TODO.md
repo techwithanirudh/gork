@@ -57,3 +57,6 @@ Add edit delete messages functionality for gork, meaning it can understand when 
 Refactor logging system with child loggers
 
 Refactor the adding metadata so guild and channel are not strings, and are JSON but the retrieval converts JSON to string and vice versa
+
+Implement text management logic like https://github.com/Giantpizzahead/bob-bot/blob/6574d0e988d6249c8df2a72179503e0d16f95a3c/src/bobbot/discord_helpers/text_channel_history.py#L127
+Do not INGEST the searchMemories tool when using addTool
