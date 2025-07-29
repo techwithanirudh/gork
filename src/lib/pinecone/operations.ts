@@ -1,8 +1,8 @@
 import logger from '@/lib/logger';
 import type { PineconeMetadataOutput } from '@/types';
 import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import { searchMemories } from './queries';
 import { getIndex } from './index';
+import { searchMemories } from './queries';
 
 export interface QueryMemoriesOptions {
   namespace?: string;
@@ -54,7 +54,10 @@ export const queryMemories = async (
         ageLimit,
         ignoreRecent,
         onlyTools,
-        resultIds: results.map((r: ScoredPineconeRecord<PineconeMetadataOutput>) => `${r.id.slice(0, 16)}...`),
+        resultIds: results.map(
+          (r: ScoredPineconeRecord<PineconeMetadataOutput>) =>
+            `${r.id.slice(0, 16)}...`
+        ),
       },
       'Long term memory query completed'
     );

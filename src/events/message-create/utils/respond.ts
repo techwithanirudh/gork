@@ -9,12 +9,11 @@ import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
 import { startDM } from '@/lib/ai/tools/start-dm';
 import { addMemory } from '@/lib/pinecone/queries';
-import type { RequestHints } from '@/types';
+import type { PineconeMetadataOutput, RequestHints } from '@/types';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
 import { generateText, stepCountIs } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { PineconeMetadataOutput } from '@/types';
 
 export async function generateResponse(
   msg: Message,

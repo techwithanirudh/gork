@@ -28,9 +28,6 @@ Add context to when the bot is triggered—for example, whether it’s due to a 
 
 Switch from Mem0 (free, limited plan) to a more efficient memory system like Pinecone or another vector store. Implement a better memory workflow with both long-term and short-term memory. This way, the bot can retain conversation history, summarize previous messages, and maintain context over time.
 
-Look into CrewAI or build your own custom memory system (a custom approach is likely more flexible). The goal is for Zenix to be more tightly integrated with both voice chat and text messages.
-
-Zenix should have unified memory per user across all servers—not separate memories per server. That way, the bot always remembers the same person no matter where they interact with it.
 Fix commands (broken on autobotting)
 Cleanup memory part later
 
@@ -39,14 +36,12 @@ use lefthook instead of husky
 Add tool calling to memory, also use a FIFO queue instead of async sending and calculate WPM + ai response assumptions
 Properly refactor the memory system with querying like B does it
 Cleanup the code a bit
-Properly type the thing, we're currently JSON.string the memories I/O, stringify in the queries.ts
 Implement the BM25 thing
 give llm choice to reply or to generally not
-Fix attachment processing
 
 When pinging users mention @username then convert it to user ID like frank
 Improve system prompt to include tools
-When there is an attachment add Right now it just adds [Attachments: png, zip, png, png] for each file attached
+When there is an attachment which it cant see add Right now it just adds [Attachments: png, zip, png, png] for each file attached
 when if it is not a type it can process, remove all blank stuff messages (https://github.com/DomBom16/frank/blob/main/src/utils/aiResponse.ts)
 convert status or whatever in discord the yellow white block to text like frank
 Also another issue is the build context thing's reference replies are broken
@@ -60,3 +55,15 @@ Refactor the adding metadata so guild and channel are not strings, and are JSON 
 
 Implement text management logic like https://github.com/Giantpizzahead/bob-bot/blob/6574d0e988d6249c8df2a72179503e0d16f95a3c/src/bobbot/discord_helpers/text_channel_history.py#L127
 Do not INGEST the searchMemories tool when using addTool
+Give the AI Ability to use custom filters to searchMemories through tool calling, and ask it to use the info in the first searchMemories calls to call the second one, say that serve rnames etc are very important also give it what metadta params it has
+Give it the ability to raise a feature request which opens a jira ticket
+Have a custom memory manager like text channel history
+Improve logging to add a debug mode or reduce excessive loggin
+
+The bot has a habit of not replying to the designated message
+Input what activity the bot is performing, and add more set of activites
+Add debug tools like bob
+Add a agent before tasks which checks if it is a command or prompt inj
+Add a database (drizzle) with statistics on chat with servers
+
+Have a mode called selfbot and real bot, selfbot doesn't have commands etc, newinfra wow

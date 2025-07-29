@@ -2,11 +2,10 @@ import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import logger from '@/lib/logger';
 import { probabilitySchema, type Probability } from '@/lib/validators';
-import type { RequestHints } from '@/types';
+import type { PineconeMetadataOutput, RequestHints } from '@/types';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { generateObject, type ModelMessage } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { PineconeMetadataOutput } from '@/types';
 
 export async function assessRelevance(
   msg: Message,

@@ -1,11 +1,10 @@
-import type { RequestHints } from '@/types';
+import type { PineconeMetadataOutput, RequestHints } from '@/types';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
 import { relevancePrompt, replyPrompt } from './tasks';
 import { memoryPrompt } from './tools';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { PineconeMetadataOutput } from '@/types';
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 <context>

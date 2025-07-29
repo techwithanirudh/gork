@@ -1,8 +1,7 @@
 import { city, country, timezone } from '@/config';
-import { getChannelName, getMessagesByChannel } from '@/lib/queries';
 import { queryMemories } from '@/lib/pinecone/operations';
-import type { PineconeMetadataOutput } from '@/types';
-import type { RequestHints } from '@/types';
+import { getChannelName, getMessagesByChannel } from '@/lib/queries';
+import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import { convertToModelMessages } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
@@ -49,6 +48,6 @@ export async function buildChatContext(
       onlyTools: false,
     });
   }
- 
+
   return { messages, hints, memories };
 }
