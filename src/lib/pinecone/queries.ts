@@ -133,7 +133,7 @@ export const addMemory = async (
 
     const parsed = PineconeMetadataSchema.safeParse({
       ...metadata,
-      hash: id
+      hash: id,
     });
     if (!parsed.success) {
       logger.warn(

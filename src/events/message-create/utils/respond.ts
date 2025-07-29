@@ -25,7 +25,7 @@ export async function generateResponse(
       requestHints: hints,
     });
 
-    const { text, steps } = await generateText({
+    const { text } = await generateText({
       model: myProvider.languageModel('chat-model'),
       messages: [...messages],
       activeTools: [
@@ -45,7 +45,7 @@ export async function generateResponse(
         joinServer: joinServer({ message: msg }),
         startDM: startDM({ message: msg }),
         getUserInfo: getUserInfo({ message: msg }),
-        searchMemories: searchMemories({ message: msg }),
+        searchMemories: searchMemories(),
         react: react({ message: msg }),
       },
       system,

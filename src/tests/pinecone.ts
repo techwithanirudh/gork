@@ -1,8 +1,8 @@
-import { queryMemories, searchMemories } from "@/lib/pinecone/queries";
+import { queryMemories } from '@/lib/pinecone/queries';
 
-const query = "who is gork known as";
+const query = 'who is gork known as';
 const memories = await queryMemories(query, {
-    ignoreRecent: false
+  ignoreRecent: false,
 });
 
-console.log(memories)
+console.log(memories);

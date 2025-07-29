@@ -32,7 +32,7 @@ export async function buildChatContext(
       server: msg.guild?.name ?? 'DM',
       joined: msg.guild?.members.me?.joinedTimestamp ?? 0,
       status: msg.guild?.members.me?.presence?.status ?? 'offline',
-      activity: msg.guild?.members.me?.presence?.activities[0]?.name ?? 'none'
+      activity: msg.guild?.members.me?.presence?.activities[0]?.name ?? 'none',
     };
   }
 
