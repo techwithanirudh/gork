@@ -3,15 +3,10 @@
 FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 
-RUN apt update
-
-RUN apt install -y \
-        curl \
-        git \
-        sudo \
-        python3 \
-        python3-pip \
-        make
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+       curl git sudo python3 python3-pip make \
+  && rm -rf /var/lib/apt/lists/*
 
 # install dependencies into temp directory
 # this will cache them and speed up future builds
@@ -30,9 +25,6 @@ RUN cd /temp/prod && bun install --production --ignore-scripts --frozen-lockfile
 FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
-
-# [optional] tests & build
-ENV NODE_ENV=production
 
 # copy production dependencies and source code into final image
 FROM base AS release
