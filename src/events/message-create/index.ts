@@ -13,9 +13,12 @@ import { Message } from 'discord.js-selfbot-v13';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
 
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
+
 import { logIncoming, logReply, logTrigger } from '@/utils/log';
 import { getTrigger } from '@/utils/triggers';
+
+const logger = createLogger('events:message');
 
 export const name = 'messageCreate';
 export const once = false;

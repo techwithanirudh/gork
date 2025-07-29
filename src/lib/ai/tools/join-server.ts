@@ -1,7 +1,9 @@
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod/v4';
+
+const logger = createLogger('tools:join-server');
 
 export const joinServer = ({ message }: { message: Message }) =>
   tool({

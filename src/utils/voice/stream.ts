@@ -1,5 +1,6 @@
 import { voice } from '@/config';
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
+
 import { LiveTranscriptionEvents } from '@deepgram/sdk';
 import {
   AudioPlayer,
@@ -9,6 +10,8 @@ import {
 import type { User } from 'discord.js-selfbot-v13';
 import * as prism from 'prism-media';
 import { deepgram, getAIResponse, playAudio, speak } from './helpers';
+
+const logger = createLogger('voice:stream');
 
 export async function createListeningStream(
   receiver: VoiceReceiver,

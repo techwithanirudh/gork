@@ -1,9 +1,12 @@
 import { activities, statuses } from '@/config';
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
+
 import type { ActivityType, PresenceStatusData } from 'discord.js-selfbot-v13';
 import { Client, RichPresence } from 'discord.js-selfbot-v13';
 
 import type { Activity } from '@/types';
+
+const logger = createLogger('status');
 
 const getRandomItem = <T>(arr: readonly T[]): T => {
   if (arr.length === 0) throw new Error('Array must not be empty');

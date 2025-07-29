@@ -1,5 +1,6 @@
 import { speed as speedConfig } from '@/config';
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
+
 import {
   DMChannel,
   Message,
@@ -7,6 +8,8 @@ import {
   ThreadChannel,
 } from 'discord.js-selfbot-v13';
 import { normalize, sentences } from './tokenize-messages';
+
+const logger = createLogger('utils:delay');
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

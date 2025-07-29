@@ -1,9 +1,10 @@
 import { env } from '@/env';
 import { events } from '@/events';
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
 import { Client } from 'discord.js-selfbot-v13';
 
+const logger = createLogger('core');
 export const client = new Client();
 
 client.once('ready', async () => {

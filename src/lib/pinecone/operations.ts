@@ -1,8 +1,11 @@
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
+
 import type { PineconeMetadataOutput } from '@/types';
 import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { getIndex } from './index';
 import { searchMemories } from './queries';
+
+const logger = createLogger('pinecone:operations');
 
 export interface QueryMemoriesOptions {
   namespace?: string;

@@ -1,11 +1,14 @@
 import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
+
 import { probabilitySchema, type Probability } from '@/lib/validators';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { generateObject, type ModelMessage } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
+
+const logger = createLogger('events:message:relevance');
 
 export async function assessRelevance(
   msg: Message,
@@ -21,6 +24,7 @@ export async function assessRelevance(
       system: systemPrompt({
         selectedChatModel: 'relevance-model',
         requestHints: hints,
+        memories,
       }),
       mode: 'json',
     });

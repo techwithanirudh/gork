@@ -1,5 +1,8 @@
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
+
 import type { TriggerType } from './triggers';
+
+const logger = createLogger('utils:log');
 
 export function logTrigger(
   ctxId: string,

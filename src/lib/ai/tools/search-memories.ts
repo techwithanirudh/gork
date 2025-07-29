@@ -1,7 +1,9 @@
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
 import { searchMemories as searchPineconeMemories } from '@/lib/pinecone/queries';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
+
+const logger = createLogger('tools:search-memories');
 
 export const searchMemories = () =>
   tool({

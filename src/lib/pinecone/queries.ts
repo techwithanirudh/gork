@@ -1,4 +1,5 @@
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
+
 import { PineconeMetadataSchema } from '@/lib/validators/pinecone';
 import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
 import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
@@ -6,6 +7,8 @@ import { embed } from 'ai';
 import { MD5 } from 'bun';
 import { myProvider } from '../ai/providers';
 import { getIndex } from './index';
+
+const logger = createLogger('pinecone:queries');
 
 export interface MemorySearchOptions {
   namespace?: string;

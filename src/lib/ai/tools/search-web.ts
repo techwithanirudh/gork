@@ -1,7 +1,9 @@
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
 import { exa } from '@/lib/search';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
+
+const logger = createLogger('tools:search-web');
 
 export const searchWeb = tool({
   description: 'Use this to search the web for information',
@@ -21,7 +23,7 @@ export const searchWeb = tool({
       includeDomains: specificDomain ? [specificDomain] : undefined,
     });
 
-    logger.info({ results }, '[searchWeb] Search results');
+    logger.debug({ results }, 'Search results');
 
     return {
       results: results.map((result) => ({

@@ -1,10 +1,13 @@
-import logger from '@/lib/logger';
+import { createLogger } from '@/lib/logger';
+
 import type { ImagePart, ModelMessage } from 'ai';
 import {
   Message as DiscordMessage,
   type Collection,
   type MessageAttachment as DiscordAttachment,
 } from 'discord.js-selfbot-v13';
+
+const logger = createLogger('utils:messages');
 
 export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>
@@ -17,9 +20,18 @@ export async function convertToModelMessages(
       const text = ref
         ? `${msg.author.username}: ${msg.content}`
         : `${msg.author.username}: ${msg.content}`;
+      const isBot = msg.author.id === msg.client.user?.id;
+
+      if (isBot) {
+        return {
+          role: 'assistant' as const,
+          content: [{ type: 'text' as const, text }],
+          createdAt: msg.createdAt,
+        };
+      }
 
       return {
-        role: msg.author.id === msg.client.user?.id ? 'assistant' : 'user',
+        role: 'user' as const,
         content: [
           { type: 'text' as const, text },
           ...(await processAttachments(msg.attachments)),
