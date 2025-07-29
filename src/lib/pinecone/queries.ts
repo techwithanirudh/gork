@@ -122,7 +122,7 @@ export const searchMemories = async (
 
 export const addMemory = async (
   text: string,
-  metadata: Omit<PineconeMetadataInput, 'hash' | 'context'>,
+  metadata: Omit<PineconeMetadataInput, 'hash'>,
   namespace = 'default'
 ): Promise<string> => {
   try {
@@ -130,8 +130,7 @@ export const addMemory = async (
 
     const parsed = PineconeMetadataSchema.safeParse({
       ...metadata,
-      hash: id,
-      context: text,
+      hash: id
     });
     if (!parsed.success) {
       logger.warn(

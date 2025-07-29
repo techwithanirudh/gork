@@ -33,12 +33,12 @@ const BaseMetadataSchema = z.object({
   channel: ChannelSchema,
   createdAt: z.number().optional(),
   lastRetrievalTime: z.number().optional(),
-  context: z.string(),
   type: z.enum(['tool', 'chat']),
 });
 
 const ChatMetadataSchema = BaseMetadataSchema.extend({
   type: z.literal('chat'),
+  context: z.string(),
 });
 
 const ToolMetadataSchema = BaseMetadataSchema.extend({

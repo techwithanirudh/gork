@@ -41,6 +41,7 @@ async function onSuccess(message: Message, response: string) {
     .join('\n');
   const metadata = {
     type: 'chat' as const,
+    context: data,
     createdAt: Date.now(),
     lastRetrievalTime: Date.now(),
     guild: {
