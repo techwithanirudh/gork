@@ -14,6 +14,7 @@ export interface MemorySearchOptions {
 }
 
 export interface QueryMemoriesOptions {
+  namespace?: string;
   limit?: number;
   ageLimit?: number;
   ignoreRecent?: boolean;
@@ -23,6 +24,7 @@ export interface QueryMemoriesOptions {
 export const queryMemories = async (
   query: string,
   {
+    namespace = 'default',
     limit = 4,
     ageLimit,
     ignoreRecent = true,
@@ -33,12 +35,12 @@ export const queryMemories = async (
   const filter: Record<string, any> = {};
 
   if (ignoreRecent) {
-    filter.creation_time = { $lt: now - 60_000 };
+    filter.createdAt = { $lt: now - 60_000 };
   }
 
   if (ageLimit != null) {
-    filter.creation_time = {
-      ...filter.creation_time,
+    filter.createdAt = {
+      ...filter.createdAt,
       $gt: now - ageLimit,
     };
   }
@@ -49,6 +51,7 @@ export const queryMemories = async (
 
   try {
     const results = await searchMemories(query, {
+      namespace,
       topK: limit,
       filter: Object.keys(filter).length ? filter : undefined,
     });
@@ -65,10 +68,10 @@ export const queryMemories = async (
       'Long term memory query completed'
     );
 
-    const index = await getIndex();
+    const index = (await getIndex()).namespace(namespace);
     await Promise.all(
       results.map(({ id }) =>
-        index.update({ id, metadata: { last_retrieval_time: now } })
+        index.update({ id, metadata: { lastRetrievalTime: now } })
       )
     );
 
