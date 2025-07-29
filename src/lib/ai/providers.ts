@@ -27,7 +27,18 @@ const chatModel = createFallback({
     google('gemini-2.0-flash'),
     google('gemini-2.5-flash-lite'),
     google('gemini-2.0-flash-lite'),
+    openai('gpt-4.1')
+  ],
+  onError: (error, modelId) => {
+    logger.error(`error with model ${modelId}, switching to next model`);
+  },
+  modelResetInterval: 60000,
+});
+
+const relevanceModel = createFallback({
+  models: [
     cohere('command-a-03-2025'),
+    openai.responses('gpt-4.1-nano')
   ],
   onError: (error, modelId) => {
     logger.error(`error with model ${modelId}, switching to next model`);
@@ -41,7 +52,7 @@ export const myProvider = customProvider({
     // 'chat-model': openai.responses('gpt-4.1-mini'),
     'chat-model': chatModel,
     'reasoning-model': google('gemini-2.5-flash'),
-    'relevance-model': openai.responses('gpt-4.1-nano'),
+    'relevance-model': relevanceModel,
     // "relevance-model": hackclub("llama-3.3-70b-versatile"),
   },
   imageModels: {
