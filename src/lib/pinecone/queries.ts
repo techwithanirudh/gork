@@ -1,5 +1,6 @@
 import logger from '@/lib/logger';
-import type { PineconeMetadata } from '@/types';
+import { PineconeMetadataSchema } from '@/lib/validators/pinecone';
+import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
 import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { embed } from 'ai';
 import { MD5 } from 'bun';
@@ -16,33 +17,31 @@ export interface MemorySearchOptions {
 
 export interface QueryMemoriesOptions {
   limit?: number;
-  ageLimit?: number; 
+  ageLimit?: number;
   ignoreRecent?: boolean;
   onlyTools?: boolean;
 }
 
 export const queryMemories = async (
   query: string,
-  options: QueryMemoriesOptions = {}
-): Promise<ScoredPineconeRecord<PineconeMetadata>[]> => {
-  const {
+  {
     limit = 4,
     ageLimit,
     ignoreRecent = true,
-    onlyTools = false
-  } = options;
-
+    onlyTools = false,
+  }: QueryMemoriesOptions = {}
+): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
+  const now = Date.now();
   const filter: Record<string, any> = {};
 
-  const now = Date.now();
   if (ignoreRecent) {
-    const recentTime = now - 60000;
-    filter.creation_time = { $lt: recentTime };
+    filter.creation_time = { $lt: now - 60_000 };
   }
+
   if (ageLimit != null) {
     filter.creation_time = {
       ...filter.creation_time,
-      $gt: now - ageLimit
+      $gt: now - ageLimit,
     };
   }
 
@@ -53,25 +52,25 @@ export const queryMemories = async (
   try {
     const results = await searchMemories(query, {
       topK: limit,
-      filter: Object.keys(filter).length > 0 ? filter : undefined
+      filter: Object.keys(filter).length ? filter : undefined,
     });
 
-    log.debug({
-      query,
-      limit,
-      ageLimit,
-      ignoreRecent,
-      onlyTools,
-      resultIds: results.map(doc => doc.id.slice(0, 16) + '...')
-    }, 'Long term memory query completed');
+    log.debug(
+      {
+        query,
+        limit,
+        ageLimit,
+        ignoreRecent,
+        onlyTools,
+        resultIds: results.map((r) => `${r.id.slice(0, 16)}...`),
+      },
+      'Long term memory query completed'
+    );
 
     const index = await getIndex();
     await Promise.all(
-      results.map(result =>
-        index.update({
-          id: result.id,
-          metadata: { last_retrieval_time: now }
-        })
+      results.map(({ id }) =>
+        index.update({ id, metadata: { last_retrieval_time: now } })
       )
     );
 
@@ -84,77 +83,97 @@ export const queryMemories = async (
 
 export const searchMemories = async (
   query: string,
-  options: MemorySearchOptions = {}
-): Promise<ScoredPineconeRecord<PineconeMetadata>[]> => {
-  const { namespace = 'default', topK = 4, filter } = options;
-
+  { namespace = 'default', topK = 5, filter }: MemorySearchOptions = {}
+): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   try {
     const { embedding } = await embed({
       model: myProvider.textEmbeddingModel('small-model'),
       value: query,
     });
 
-    const idx = await getIndex();
-    const index = idx.namespace(namespace);
-    const queryResult = await index.query({
+    const index = (await getIndex()).namespace(namespace);
+    const result = await index.query({
       vector: embedding,
       topK,
       includeMetadata: true,
       filter,
     });
 
-    const matches = queryResult.matches || [];
-    return matches.map((match) => ({
-      ...match,
-      metadata: match.metadata as PineconeMetadata,
-    }));
+    const matches = result.matches || [];
+    return matches.flatMap((match) => {
+      const parsed = PineconeMetadataSchema.safeParse(match.metadata);
+
+      if (!parsed.success) {
+        log.warn(
+          { id: match.id, issues: parsed.error.issues },
+          'Invalid metadata schema'
+        );
+        return [];
+      }
+
+      return {
+        ...match,
+        metadata: parsed.data,
+      };
+    });
   } catch (error) {
-    logger.error({ error }, 'Error searching memories');
+    log.error({ error }, 'Error searching memories');
     throw error;
   }
 };
 
 export const addMemory = async (
   text: string,
-  metadata: Omit<PineconeMetadata, 'text' | 'hash'>,
+  metadata: Omit<PineconeMetadataInput, 'hash'>,
   namespace = 'default'
 ): Promise<string> => {
   try {
-    const hash = new MD5().update(text).digest('hex');
+    const id = new MD5().update(text).digest('hex');
+
+    const parsed = PineconeMetadataSchema.safeParse({
+      ...metadata,
+      hash: id,
+    });
+    if (!parsed.success) {
+      log.warn(
+        { id, issues: parsed.error.issues },
+        'Invalid metadata provided, skipping add'
+      );
+      throw new Error('Invalid metadata schema');
+    }
+
     const { embedding } = await embed({
       model: myProvider.textEmbeddingModel('small-model'),
       value: text,
     });
 
-    const idx = await getIndex();
-    const index = idx.namespace(namespace);
+    const index = (await getIndex()).namespace(namespace);
+    await index.upsert([
+      {
+        id,
+        values: embedding,
+        metadata: parsed.data,
+      },
+    ]);
 
-    const vector = {
-      id: hash,
-      values: embedding,
-      metadata,
-    };
-
-    await index.upsert([vector]);
-    logger.info({ id: hash }, 'Added memory');
-    return hash;
+    log.info({ id }, 'Added memory');
+    return id;
   } catch (error) {
-    logger.error({ error }, 'Error adding memory');
+    log.error({ error }, 'Error adding memory');
     throw error;
   }
 };
 
 export const deleteMemory = async (
-  hash: string,
+  id: string,
   namespace = 'default'
 ): Promise<void> => {
   try {
-    const idx = await getIndex();
-    const index = idx.namespace(namespace);
-    await index.deleteOne(hash);
-    logger.info({ id: hash }, 'Deleted memory');
+    const index = (await getIndex()).namespace(namespace);
+    await index.deleteOne(id);
+    log.info({ id }, 'Deleted memory');
   } catch (error) {
-    logger.error({ error }, 'Error deleting memory');
+    log.error({ error }, 'Error deleting memory');
     throw error;
   }
 };

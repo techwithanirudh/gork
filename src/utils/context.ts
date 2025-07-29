@@ -1,5 +1,4 @@
 import { city, country, timezone } from '@/config';
-import { queryMemories } from '@/lib/pinecone/queries';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
 import type { RequestHints } from '@/types';
 import { convertToModelMessages } from '@/utils/messages';

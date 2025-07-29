@@ -35,22 +35,26 @@ async function onSuccess(message: Message, response: string) {
     channel: message.channel,
     limit: 5,
   });
-  const historyText = messages
+
+  const data = messages
     .map((msg) => `${msg.author.username}: ${msg.content}`)
     .join('\n');
-  await addMemory(historyText, {
+  const metadata = {
+    type: 'chat' as const,
+
     createdAt: Date.now(),
     lastRetrievalTime: Date.now(),
-    guild: JSON.stringify({
+    guild: {
       id: message.guild?.id ?? null,
       name: message.guild?.name ?? null,
-    }),
-    channel: JSON.stringify({
+    },
+    channel: {
       id: message.channel.id,
       name: message.channel.type === 'DM' ? 'DM' : message.channel.name,
-    }),
-    type: 'chat',
-  });
+    },
+  };
+
+  await addMemory(data, metadata);
 }
 
 export async function execute(message: Message) {

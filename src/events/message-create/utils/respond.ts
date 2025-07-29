@@ -52,27 +52,33 @@ export async function generateResponse(
       stopWhen: stepCountIs(10),
       onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
         if (!toolCalls.length) return;
-      
+
         await Promise.all(
           toolCalls.map(async (call, i) => {
             const result = toolResults[i];
             if (!call || !result) return;
-      
+
             const data = JSON.stringify({ call, result }, null, 2);
             const metadata = {
               type: 'tool' as const,
               name: call.toolName,
               response: result,
               createdAt: Date.now(),
-              channel: msg.channel.id,
-              guild: msg.guild?.id ?? '',
+              channel: {
+                id: msg.channel.id,
+                name: msg.channel.type === 'DM' ? 'DM' : msg.channel.name ?? '',
+              },
+              guild: {
+                id: msg.guild?.id,
+                name: msg.guild?.name,
+              },
               userId: msg.author.id,
             };
-      
+
             await addMemory(data, metadata);
           })
         );
-      },      
+      },
     });
 
     return { success: true, response: text };
