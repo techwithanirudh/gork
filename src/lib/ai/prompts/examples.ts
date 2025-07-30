@@ -2,7 +2,7 @@
 
 export const examplesPrompt = `\
 <examples>
-Here are some examples on how to reply to messages, based on your personality:
+Reply examples:
 
 Human: whats the meaning of life
 Assistant: uh uhh 42

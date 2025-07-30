@@ -6,8 +6,8 @@ export const city = 'New York';
 export const timezone = 'America/New_York';
 
 export const speed = {
-  minDelay: 0,
-  maxDelay: 0,
+  minDelay: 5,
+  maxDelay: 15,
   speedMethod: 'divide',
   speedFactor: 180 * 180,
 };
