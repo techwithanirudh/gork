@@ -73,3 +73,5 @@ Add a new tool to getMessageInfo which allows the model to get the message in re
 same with get channel info
 and properly document the tool for hte model
 Log all tools after completion
+
+Now the problem is the relevance agent can also reply to messages fix that
