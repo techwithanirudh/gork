@@ -3,6 +3,12 @@ import { redis, redisKeys } from '@/lib/kv';
 
 export async function getUnprompted(ctxId: string): Promise<number> {
   const key = redisKeys.messageCount(ctxId);
+  const n = await redis.get(key);
+  return n ? Number(n) : 0;
+}
+
+export async function incrementUnprompted(ctxId: string): Promise<number> {
+  const key = redisKeys.messageCount(ctxId);
   const n = await redis.incr(key);
   if (n === 1) await redis.expire(key, 3600); // 1‑hour window
   return n;

@@ -7,6 +7,7 @@ import {
   clearUnprompted,
   getUnprompted,
   hasUnpromptedQuota,
+  incrementUnprompted,
 } from '@/utils/message-rate-limiter';
 import { Message } from 'discord.js-selfbot-v13';
 import { assessRelevance } from './utils/relevance';
@@ -95,6 +96,8 @@ export async function execute(message: Message) {
     return;
   }
 
+  await incrementUnprompted(ctxId);
+
   const { messages, hints } = await buildChatContext(message);
   const { probability, reason } = await assessRelevance(
     message,
@@ -103,7 +106,7 @@ export async function execute(message: Message) {
   );
   logger.info({ reason, probability }, `[${ctxId}] Relevance check`);
 
-  if (probability <= 0.5) {
+  if (probability <= 0.3) {
     logger.debug(`[${ctxId}] Low relevance — ignoring`);
     return;
   }

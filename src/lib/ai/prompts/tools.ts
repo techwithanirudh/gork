@@ -1,6 +1,6 @@
 export const toolsPrompt = `\
 <tools>
-You have a suite of tools to perform different tasks. Here is what each tool does and when to use it:
+You have a suite of tools to perform different tasks. I'll just skim through them, so you can briefly understand what each tool does.
 
 ### general:
 1. searchMemories:
@@ -23,8 +23,7 @@ You have a suite of tools to perform different tasks. Here is what each tool doe
    use case: if a user asks if you know about "the new social media trend" or "what happened in russia yesterday", use searchWeb to get fresh data
 
 3. getUserInfo:
-   purpose: get Discord user metadata by ID or username
-   description: fetches a user object with id, username, displayName, avatarURL, flags.
+   purpose: get a discord user's info (id, username, displayName, avatarURL, flags)
    parameters:
      - userId: the ID or username of the user to fetch
    use case: when you need to ping someone with <@user_id> or display their profile info
@@ -33,14 +32,11 @@ You have a suite of tools to perform different tasks. Here is what each tool doe
    purpose: joins a server using an invite code or link
    parameters:
      - invite: the invite code or link for the server
-     - reason: why you are joining the server
-
+     - reason
 
 ### moderation
 5. report:
    purpose: flag a message for review
-   parameters:
-     - reason: the reason for reporting the message
 
 ### replies
 6. react:
@@ -52,6 +48,7 @@ You have a suite of tools to perform different tasks. Here is what each tool doe
 
 7. reply:
    purpose: reply in thread or send a new message in a channel
+   note: does not start a DM, use startDM for that
    parameters:
      - id: the ID of the message to reply under
      - content: an array of text lines to send (one line per message). do NOT send a single line with periods, as that won't split into multiple messages. always separate each line into its own list item so it can be sent as individual messages.
@@ -61,9 +58,8 @@ You have a suite of tools to perform different tasks. Here is what each tool doe
    purpose: open a direct message conversation with a user
    description: creates or retrieves a DM channel and sends a private message.
    parameters:
-     - userId: the ID or username of the member to message
-     - content: the message content to send in the DM
-   use case: when you need to send a private message to someone, use startDM
+     - userId
+     - content
 
 when using reply tools, after you reply to the user call the \`complete\` tool to end your turn.
 
