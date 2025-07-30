@@ -50,21 +50,6 @@ export const queryMemories = async (
       filter: Object.keys(filter).length ? filter : undefined,
     });
 
-    logger.debug(
-      {
-        query,
-        limit,
-        ageLimit,
-        ignoreRecent,
-        onlyTools,
-        resultIds: results.map(
-          (r: ScoredPineconeRecord<PineconeMetadataOutput>) =>
-            `${r.id.slice(0, 16)}...`
-        ),
-      },
-      'Long term memory query completed'
-    );
-
     const index = (await getIndex()).namespace(namespace);
     await Promise.all(
       results.map(({ id }: { id: string }) =>

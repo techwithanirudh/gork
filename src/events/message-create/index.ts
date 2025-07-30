@@ -79,8 +79,8 @@ export async function execute(message: Message) {
     await clearUnprompted(ctxId);
     logTrigger(ctxId, trigger);
 
-    const { messages, hints, memories } = await buildChatContext(message);
-    const result = await generateResponse(message, messages, hints, memories);
+    const { messages, hints } = await buildChatContext(message);
+    const result = await generateResponse(message, messages, hints);
     logReply(ctxId, author.username, result, 'explicit trigger');
     if (result.success && result.response) {
       await onSuccess(message, result.response);
@@ -96,12 +96,11 @@ export async function execute(message: Message) {
     return;
   }
 
-  const { messages, hints, memories } = await buildChatContext(message);
+  const { messages, hints } = await buildChatContext(message);
   const { probability, reason } = await assessRelevance(
     message,
     messages,
-    hints,
-    memories
+    hints
   );
   logger.info({ reason, probability }, `[${ctxId}] Relevance check`);
 
@@ -112,7 +111,7 @@ export async function execute(message: Message) {
 
   await clearUnprompted(ctxId);
   logger.info(`[${ctxId}] Replying; idle counter reset`);
-  const result = await generateResponse(message, messages, hints, memories);
+  const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'high relevance');
   if (result.success && result.response) {
     await onSuccess(message, result.response);

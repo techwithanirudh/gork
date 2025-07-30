@@ -19,13 +19,11 @@ export async function generateResponse(
   msg: Message,
   messages: ModelMessage[],
   hints: RequestHints,
-  memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
     const system = systemPrompt({
       selectedChatModel: 'chat-model',
       requestHints: hints,
-      memories,
     });
 
     const { text } = await generateText({

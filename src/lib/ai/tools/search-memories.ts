@@ -1,5 +1,5 @@
 import { createLogger } from '@/lib/logger';
-import { searchMemories as searchPineconeMemories } from '@/lib/pinecone/queries';
+import { queryMemories } from '@/lib/pinecone/operations';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
 
@@ -10,15 +10,23 @@ export const searchMemories = () =>
     description: 'Search through stored memories using a text query.',
     inputSchema: z.object({
       query: z.string().describe('The text query to search for in memories'),
-      topK: z
+      limit: z
         .number()
         .default(5)
         .describe('Number of results to return (defaults to 5)'),
+      options: z
+        .object({
+          ageLimit: z.number().optional(),
+          ignoreRecent: z.boolean().optional(),
+          onlyTools: z.boolean().optional(),
+        })
+        .optional(),
     }),
-    execute: async ({ query, topK }) => {
+    execute: async ({ query, limit, options }) => {
       try {
-        const results = await searchPineconeMemories(query, {
-          topK,
+        const results = await queryMemories(query, {
+          limit,
+          ...options,
         });
 
         logger.info({ results }, 'Memory search results');

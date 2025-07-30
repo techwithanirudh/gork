@@ -1,11 +1,12 @@
 import { customProvider } from 'ai';
 
 import { env } from '@/env';
-import { cohere } from '@ai-sdk/cohere';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
 import { createFallback } from 'ai-fallback';
-import logger from '../logger';
+import { createLogger } from '../logger';
+
+const logger = createLogger('ai:providers');
 
 // const hackclub = createOpenAICompatible({
 //   name: 'hackclub',

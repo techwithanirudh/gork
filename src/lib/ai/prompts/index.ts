@@ -1,5 +1,4 @@
-import type { PineconeMetadataOutput, RequestHints } from '@/types';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { RequestHints } from '@/types';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
@@ -22,11 +21,9 @@ Your current status is ${requestHints.status} and your activity is ${
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
-  memories,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
-  memories: ScoredPineconeRecord<PineconeMetadataOutput>[];
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
@@ -36,7 +33,7 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
-      memoryPrompt(memories),
+      memoryPrompt,
       replyPrompt,
     ]
       .filter(Boolean)
@@ -48,7 +45,7 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
-      memoryPrompt(memories),
+      memoryPrompt,
       relevancePrompt,
     ]
       .filter(Boolean)
