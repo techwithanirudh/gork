@@ -8,7 +8,7 @@ export const react = ({ message: { channel } }: { message: Message }) =>
     inputSchema: z.object({
       emoji: z.string().describe('The emoji you want to react with'),
       id: z.string().describe('The ID of the message to react to'),
-      author: z.string().describe('The author of the message to react to'),
+      // author: z.string().describe('The author of the message to react to'),
     }),
     execute: async ({ id, emoji }) => {
       try {

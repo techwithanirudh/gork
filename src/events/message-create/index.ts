@@ -33,8 +33,6 @@ async function canReply(ctxId: string): Promise<boolean> {
 }
 
 async function onSuccess(message: Message, toolCalls: ToolCallPart[]) {
-  logger.info(`FINAL TOOL CALLS: ${JSON.stringify(toolCalls, null, 2)}`);
-
   const messages = await getMessagesByChannel({
     channel: message.channel,
     limit: 5,

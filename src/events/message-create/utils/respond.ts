@@ -56,11 +56,7 @@ export async function generateResponse(
         complete: tool({
           description: 'A tool for providing the final answer.',
           inputSchema: z.object({
-            steps: z.array(
-              z.object({
-                reasoning: z.string(),
-              })
-            ),
+            success: z.boolean().describe('Whether the operation was successful'),
           }),
           // no execute function - invoking it will terminate the agent
         }),

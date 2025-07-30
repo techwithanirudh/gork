@@ -15,6 +15,7 @@ export const reply = ({ message: { channel } }: { message: Message }) =>
       type: z
         .enum(['reply', 'message'])
         .describe('Whether to reply (threads) or just send'),
+      // author: z.string().describe('The author of the message to react to'),
     }),
     execute: async ({ id, content, type }) => {
       try {
@@ -32,6 +33,8 @@ export const reply = ({ message: { channel } }: { message: Message }) =>
             await channel.send(text);
           }
         }
+
+        logger.info({ id, content, type }, 'Replied to message');
 
         return { success: true };
       } catch (error) {

@@ -17,7 +17,7 @@ Responding to messages:
   - the user pings / mentions you.
   You know that the relevance engine can be wrong, it's error ofcourse, so you are given these options. Let's dive deeper
 - \`reply\`:
-  This functions takes in a message and a content (array of messages, split by sentence etc.) to reply with, and format either the message should be a reply or just a message sent.
+  This functions takes in a message and a content (array of messages, split by sentence (compulsory) etc.) to reply with, and format either the message should be a reply or just a message sent.
 - \`react\`:
   This function takes in a message and an emoji to react with.
 - \`complete\`:
