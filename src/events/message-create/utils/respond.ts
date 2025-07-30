@@ -4,6 +4,7 @@ import { getUserInfo } from '@/lib/ai/tools/get-user-info';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { joinServer } from '@/lib/ai/tools/join-server';
 import { react } from '@/lib/ai/tools/react';
+import { reply } from '@/lib/ai/tools/reply';
 import { report } from '@/lib/ai/tools/report';
 import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
@@ -11,22 +12,24 @@ import { startDM } from '@/lib/ai/tools/start-dm';
 import { addMemory } from '@/lib/pinecone/queries';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { ModelMessage } from 'ai';
-import { generateText, stepCountIs } from 'ai';
+import type { ModelMessage, Tool, ToolSet } from 'ai';
+import { generateText, stepCountIs, tool } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
+import { z } from 'zod/v4';
+import { createLogger } from '@/lib/logger';
 
 export async function generateResponse(
   msg: Message,
   messages: ModelMessage[],
   hints: RequestHints,
-): Promise<{ success: boolean; response?: string; error?: string }> {
+) {
   try {
     const system = systemPrompt({
       selectedChatModel: 'chat-model',
       requestHints: hints,
     });
 
-    const { text } = await generateText({
+    const { toolCalls } = await generateText({
       model: myProvider.languageModel('chat-model'),
       messages: [...messages],
       activeTools: [
@@ -38,7 +41,10 @@ export async function generateResponse(
         'getUserInfo',
         'searchMemories',
         'react',
+        'reply',
+        'complete'
       ],
+      toolChoice: 'required',
       tools: {
         getWeather,
         searchWeb,
@@ -48,6 +54,18 @@ export async function generateResponse(
         getUserInfo: getUserInfo({ message: msg }),
         searchMemories: searchMemories(),
         react: react({ message: msg }),
+        reply: reply({ message: msg }),
+        complete: tool({
+          description: 'A tool for providing the final answer.',
+          inputSchema: z.object({
+            steps: z.array(
+              z.object({
+                reasoning: z.string(),
+              }),
+            ),
+          }),
+          // no execute function - invoking it will terminate the agent
+        }),
       },
       system,
       stopWhen: stepCountIs(10),
@@ -83,7 +101,7 @@ export async function generateResponse(
       },
     });
 
-    return { success: true, response: text };
+    return { success: true, toolCalls };
   } catch (e) {
     return {
       success: false,

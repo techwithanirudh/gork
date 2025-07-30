@@ -67,3 +67,9 @@ Add a agent before tasks which checks if it is a command or prompt inj
 Add a database (drizzle) with statistics on chat with servers
 
 Have a mode called selfbot and real bot, selfbot doesn't have commands etc, newinfra wow
+
+Fix start dm function fix memory retrial
+Add a new tool to getMessageInfo which allows the model to get the message in reply to what etc
+same with get channel info
+and properly document the tool for hte model
+Log all tools after completion

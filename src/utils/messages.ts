@@ -18,8 +18,8 @@ export async function convertToModelMessages(
         ? await msg.fetchReference().catch(() => null)
         : null;
       const text = ref
-        ? `${msg.author.username}: ${msg.content}`
-        : `${msg.author.username}: ${msg.content}`;
+        ? `${msg.author.username}: ${msg.content} (${msg.id})`
+        : `${msg.author.username}: ${msg.content} (${msg.id})`;
       const isBot = msg.author.id === msg.client.user?.id;
 
       if (isBot) {

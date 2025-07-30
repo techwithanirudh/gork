@@ -17,6 +17,7 @@ import { createLogger } from '@/lib/logger';
 
 import { logIncoming, logReply, logTrigger } from '@/utils/log';
 import { getTrigger } from '@/utils/triggers';
+import type { ToolSet } from 'ai';
 
 const logger = createLogger('events:message');
 
@@ -31,8 +32,8 @@ async function canReply(ctxId: string): Promise<boolean> {
   return success;
 }
 
-async function onSuccess(message: Message, response: string) {
-  await staggeredReply(message, response);
+async function onSuccess(message: Message, toolCalls: ToolSet[]) {
+  logger.info(`FINAL TOOL CALLS: ${JSON.stringify(toolCalls, null, 2)}`);
 
   const messages = await getMessagesByChannel({
     channel: message.channel,
@@ -82,8 +83,8 @@ export async function execute(message: Message) {
     const { messages, hints } = await buildChatContext(message);
     const result = await generateResponse(message, messages, hints);
     logReply(ctxId, author.username, result, 'explicit trigger');
-    if (result.success && result.response) {
-      await onSuccess(message, result.response);
+    if (result.success && result.toolCalls) {
+      await onSuccess(message, result.toolCalls);
     }
     return;
   }
@@ -113,7 +114,7 @@ export async function execute(message: Message) {
   logger.info(`[${ctxId}] Replying; idle counter reset`);
   const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'high relevance');
-  if (result.success && result.response) {
-    await onSuccess(message, result.response);
+  if (result.success && result.toolCalls) {
+    await onSuccess(message, result.toolCalls);
   }
 }
