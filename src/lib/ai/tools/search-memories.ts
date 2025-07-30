@@ -16,9 +16,20 @@ export const searchMemories = () =>
         .describe('Number of results to return (defaults to 5)'),
       options: z
         .object({
-          ageLimit: z.number().optional(),
-          ignoreRecent: z.boolean().optional(),
-          onlyTools: z.boolean().optional(),
+          ageLimit: z
+            .number()
+            .optional()
+            .describe(
+              'Number of days to limit results to (e.g. 7 for last week)'
+            ),
+          ignoreRecent: z
+            .boolean()
+            .optional()
+            .describe('Whether to ignore recent memories'),
+          onlyTools: z
+            .boolean()
+            .optional()
+            .describe('Whether to only return tool memories'),
         })
         .optional(),
     }),

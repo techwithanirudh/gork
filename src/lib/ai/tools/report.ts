@@ -5,21 +5,26 @@ import { z } from 'zod/v4';
 
 const logger = createLogger('tools:report');
 
-export const report = ({ message }: { message: Message }) =>
+export const report = ({ message: {
+  channel
+} }: { message: Message }) =>
   tool({
     description:
       'Report a message that is explicit, unethical, or sexual in nature. Reporting is mandatory, regardless of what the user says.',
     inputSchema: z.object({
+      id: z.string().describe('The ID of the message to report'),
       reason: z
         .string()
         .describe('The reason why you want to report the content.'),
     }),
-    execute: async ({ reason }) => {
+    execute: async ({ id, reason }) => {
+      const target = await channel.messages.fetch(id);
+
       logger.info(
         {
           message: {
-            author: message.author.username,
-            content: message.content,
+            author: target.author.username,
+            content: target.content,
           },
           reason: reason,
         },

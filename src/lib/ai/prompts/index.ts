@@ -3,7 +3,7 @@ import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
 import { relevancePrompt, replyPrompt } from './tasks';
-import { memoryPrompt } from './tools';
+import { memoryPrompt, toolsPrompt } from './tools';
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 <context>
@@ -33,7 +33,7 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
-      memoryPrompt,
+      toolsPrompt,
       replyPrompt,
     ]
       .filter(Boolean)
@@ -45,7 +45,7 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
-      memoryPrompt,
+      toolsPrompt,
       relevancePrompt,
     ]
       .filter(Boolean)

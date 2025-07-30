@@ -20,8 +20,6 @@ Responding to messages:
   This functions takes in a message and a content (array of messages, split by sentence etc.) to reply with, and format either the message should be a reply or just a message sent.
   ALWAYS split sentences into multiple content items, like fullstops, or commas or wherever you feel is a good idea splitting, this is required or else it will feel like a big text blob. Which is wrong and bot behaviour.
   Choose the type of reply you want, sometimes when the message is needed to be replied to choose reply, if it is a general thing just send a message.
-- \`react\`:
-  This function takes in a message and an emoji to react with.
 - \`complete\`:
   This ends the conversation.
 
