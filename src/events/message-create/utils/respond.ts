@@ -10,18 +10,16 @@ import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
 import { startDM } from '@/lib/ai/tools/start-dm';
 import { addMemory } from '@/lib/pinecone/queries';
-import type { PineconeMetadataOutput, RequestHints } from '@/types';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { ModelMessage, Tool, ToolSet } from 'ai';
+import type { RequestHints } from '@/types';
+import type { ModelMessage } from 'ai';
 import { generateText, stepCountIs, tool } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod/v4';
-import { createLogger } from '@/lib/logger';
 
 export async function generateResponse(
   msg: Message,
   messages: ModelMessage[],
-  hints: RequestHints,
+  hints: RequestHints
 ) {
   try {
     const system = systemPrompt({
@@ -42,7 +40,7 @@ export async function generateResponse(
         'searchMemories',
         'react',
         'reply',
-        'complete'
+        'complete',
       ],
       toolChoice: 'required',
       tools: {
@@ -61,7 +59,7 @@ export async function generateResponse(
             steps: z.array(
               z.object({
                 reasoning: z.string(),
-              }),
+              })
             ),
           }),
           // no execute function - invoking it will terminate the agent

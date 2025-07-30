@@ -2,9 +2,7 @@ import { tool } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod';
 
-export const react = ({ message: {
-  channel,
-} }: { message: Message }) =>
+export const react = ({ message: { channel } }: { message: Message }) =>
   tool({
     description: 'React to a message on discord',
     inputSchema: z.object({
@@ -12,22 +10,19 @@ export const react = ({ message: {
       id: z.string().describe('The ID of the message to react to'),
       author: z.string().describe('The author of the message to react to'),
     }),
-    execute: async ({ emoji, id, author }) => {
+    execute: async ({ id, emoji }) => {
       try {
-        const message = await channel.messages.fetch(id);
-
-        await message.react(emoji);
-      } catch (e) {
+        const target = await channel.messages.fetch(id);
+        await target.react(emoji);
+        return {
+          success: true,
+          content: `Reacted with ${emoji}`,
+        };
+      } catch (error) {
         return {
           success: false,
-          error: (e as Error)?.message,
+          error: String(error),
         };
       }
-
-      return {
-        success: true,
-        content: `Reacted with ${emoji}`,
-        emoji,
-      };
     },
   });

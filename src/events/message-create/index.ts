@@ -3,7 +3,6 @@ import { ratelimit, redisKeys } from '@/lib/kv';
 import { addMemory } from '@/lib/pinecone/queries';
 import { getMessagesByChannel } from '@/lib/queries';
 import { buildChatContext } from '@/utils/context';
-import { reply as staggeredReply } from '@/utils/delay';
 import {
   clearUnprompted,
   getUnprompted,
@@ -18,6 +17,7 @@ import { createLogger } from '@/lib/logger';
 import { logIncoming, logReply, logTrigger } from '@/utils/log';
 import { getTrigger } from '@/utils/triggers';
 import type { ToolSet } from 'ai';
+import type { ToolCallPart } from 'ai';
 
 const logger = createLogger('events:message');
 
@@ -32,7 +32,7 @@ async function canReply(ctxId: string): Promise<boolean> {
   return success;
 }
 
-async function onSuccess(message: Message, toolCalls: ToolSet[]) {
+async function onSuccess(message: Message, toolCalls: ToolCallPart[]) {
   logger.info(`FINAL TOOL CALLS: ${JSON.stringify(toolCalls, null, 2)}`);
 
   const messages = await getMessagesByChannel({
