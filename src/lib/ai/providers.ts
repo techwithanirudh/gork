@@ -35,24 +35,13 @@ const chatModel = createFallback({
   modelResetInterval: 60000,
 });
 
-const relevanceModel = createFallback({
-  models: [
-    cohere('command-a-03-2025'),
-    openai.responses('gpt-4.1-nano')
-  ],
-  onError: (error, modelId) => {
-    logger.error(`error with model ${modelId}, switching to next model`);
-  },
-  modelResetInterval: 60000,
-});
-
 export const myProvider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
     // 'chat-model': openai.responses('gpt-4.1-mini'),
     'chat-model': chatModel,
     'reasoning-model': google('gemini-2.5-flash'),
-    'relevance-model': relevanceModel,
+    'relevance-model': openai.responses('gpt-4.1-mini'),
     // "relevance-model": hackclub("llama-3.3-70b-versatile"),
   },
   imageModels: {

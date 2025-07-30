@@ -47,6 +47,7 @@ export async function buildChatContext(
       ignoreRecent: true,
       onlyTools: false,
     });
+    console.log(memories)
   }
 
   return { messages, hints, memories };
