@@ -3,7 +3,7 @@ import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
 import { relevancePrompt, replyPrompt } from './tasks';
-import { memoryPrompt, toolsPrompt } from './tools';
+import { toolsPrompt } from './tools';
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 <context>

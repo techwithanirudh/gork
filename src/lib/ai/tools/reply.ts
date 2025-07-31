@@ -2,6 +2,7 @@ import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod';
+import { setTimeout } from 'timers/promises';
 
 const logger = createLogger('tools:reply');
 
@@ -26,7 +27,10 @@ export const reply = ({ message: { channel } }: { message: Message }) =>
           return { success: false, error: 'Message not found' };
         }
 
+        await setTimeout(2000);
+
         for (const [idx, text] of content.entries()) {
+          await setTimeout(2500);
           if (idx === 0 && type === 'reply') {
             await target.reply(text);
           } else {

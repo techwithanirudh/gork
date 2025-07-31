@@ -68,15 +68,15 @@ export async function execute(message: Message) {
   const isDM = !guild;
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
-  logIncoming(ctxId, author.username, content);
-
   if (!(await canReply(ctxId))) return;
-
+  
   const botId = client.user?.id;
   const trigger = await getTrigger(message, keywords, botId);
 
   if (trigger.type) {
     await clearUnprompted(ctxId);
+
+    logIncoming(ctxId, author.username, content);
     logTrigger(ctxId, trigger);
 
     const { messages, hints } = await buildChatContext(message);
@@ -96,6 +96,7 @@ export async function execute(message: Message) {
     return;
   }
 
+  logIncoming(ctxId, author.username, content);
   await incrementUnprompted(ctxId);
 
   const { messages, hints } = await buildChatContext(message);

@@ -1,6 +1,6 @@
 import type { Activity } from './types';
 
-export const keywords = ['gork', 'grok'];
+export const keywords = ['gork', 'grok', 'fork'];
 export const country = 'United States';
 export const city = 'New York';
 export const timezone = 'America/New_York';
