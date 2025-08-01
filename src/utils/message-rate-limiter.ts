@@ -9,17 +9,26 @@ export async function getUnprompted(ctxId: string): Promise<number> {
 
 export async function incrementUnprompted(ctxId: string): Promise<number> {
   const key = redisKeys.messageCount(ctxId);
-  const n = await redis.incr(key);
-  if (n === 1) await redis.expire(key, 3600); // 1‑hour window
-  return n;
+  const pipeline = redis.pipeline();
+  pipeline.incr(key);
+  pipeline.expire(key, 3600);
+  
+  const results = await pipeline.exec();
+  const n = (results?.[0] as [any, number])?.[1];
+  return n || 1;
 }
 
 export async function clearUnprompted(ctxId: string): Promise<void> {
   await redis.del(redisKeys.messageCount(ctxId));
 }
 
-export async function hasUnpromptedQuota(ctxId: string): Promise<boolean> {
-  const val = await redis.get(redisKeys.messageCount(ctxId));
-  const n = val ? Number(val) : 0;
-  return n < messageThreshold;
+export async function getUnpromptedWithQuotaCheck(ctxId: string): Promise<{
+  count: number;
+  hasQuota: boolean;
+}> {
+  const count = await getUnprompted(ctxId);
+  return {
+    count,
+    hasQuota: count < messageThreshold
+  };
 }

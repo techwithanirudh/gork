@@ -5,8 +5,7 @@ import { getMessagesByChannel } from '@/lib/queries';
 import { buildChatContext } from '@/utils/context';
 import {
   clearUnprompted,
-  getUnprompted,
-  hasUnpromptedQuota,
+  getUnpromptedWithQuotaCheck,
   incrementUnprompted,
 } from '@/utils/message-rate-limiter';
 import { Message } from 'discord.js-selfbot-v13';
@@ -88,10 +87,10 @@ export async function execute(message: Message) {
     return;
   }
 
-  const idleCount = await getUnprompted(ctxId);
+  const { count: idleCount, hasQuota } = await getUnpromptedWithQuotaCheck(ctxId);
   logger.debug(`[${ctxId}] Idle counter: ${idleCount}`);
 
-  if (!(await hasUnpromptedQuota(ctxId))) {
+  if (!hasQuota) {
     logger.info(`[${ctxId}] Idle quota exhausted — staying silent`);
     return;
   }
