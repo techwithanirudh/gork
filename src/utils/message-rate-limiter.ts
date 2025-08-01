@@ -1,13 +1,13 @@
 import { messageThreshold } from '@/config';
 import { redis, redisKeys } from '@/lib/kv';
 
-export async function getUnprompted(ctxId: string): Promise<number> {
+async function getMessageCount(ctxId: string): Promise<number> {
   const key = redisKeys.messageCount(ctxId);
   const n = await redis.get(key);
   return n ? Number(n) : 0;
 }
 
-export async function incrementUnprompted(ctxId: string): Promise<number> {
+async function incrementMessageCount(ctxId: string): Promise<number> {
   const key = redisKeys.messageCount(ctxId);
   const pipeline = redis.pipeline();
   pipeline.incr(key);
@@ -18,17 +18,28 @@ export async function incrementUnprompted(ctxId: string): Promise<number> {
   return n || 1;
 }
 
-export async function clearUnprompted(ctxId: string): Promise<void> {
+export async function resetMessageCount(ctxId: string): Promise<void> {
   await redis.del(redisKeys.messageCount(ctxId));
 }
 
-export async function getUnpromptedWithQuotaCheck(ctxId: string): Promise<{
+export async function checkMessageQuota(ctxId: string): Promise<{
   count: number;
   hasQuota: boolean;
 }> {
-  const count = await getUnprompted(ctxId);
+  const count = await getMessageCount(ctxId);
   return {
     count,
     hasQuota: count < messageThreshold
   };
+}
+
+export async function handleMessageCount(ctxId: string, willReply: boolean): Promise<number> {
+  const key = redisKeys.messageCount(ctxId);
+  
+  if (willReply) {
+    await redis.del(key);
+    return 0;
+  } else {
+    return await incrementMessageCount(ctxId);
+  }
 }

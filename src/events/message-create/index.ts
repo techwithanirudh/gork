@@ -4,9 +4,9 @@ import { addMemory } from '@/lib/pinecone/queries';
 import { getMessagesByChannel } from '@/lib/queries';
 import { buildChatContext } from '@/utils/context';
 import {
-  clearUnprompted,
-  getUnpromptedWithQuotaCheck,
-  incrementUnprompted,
+  resetMessageCount,
+  checkMessageQuota,
+  handleMessageCount,
 } from '@/utils/message-rate-limiter';
 import { Message } from 'discord.js-selfbot-v13';
 import { assessRelevance } from './utils/relevance';
@@ -73,7 +73,7 @@ export async function execute(message: Message) {
   const trigger = await getTrigger(message, keywords, botId);
 
   if (trigger.type) {
-    await clearUnprompted(ctxId);
+    await resetMessageCount(ctxId);
 
     logIncoming(ctxId, author.username, content);
     logTrigger(ctxId, trigger);
@@ -87,7 +87,7 @@ export async function execute(message: Message) {
     return;
   }
 
-  const { count: idleCount, hasQuota } = await getUnpromptedWithQuotaCheck(ctxId);
+  const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
   logger.debug(`[${ctxId}] Idle counter: ${idleCount}`);
 
   if (!hasQuota) {
@@ -96,7 +96,6 @@ export async function execute(message: Message) {
   }
 
   logIncoming(ctxId, author.username, content);
-  await incrementUnprompted(ctxId);
 
   const { messages, hints } = await buildChatContext(message);
   const { probability, reason } = await assessRelevance(
@@ -106,12 +105,14 @@ export async function execute(message: Message) {
   );
   logger.info({ reason, probability }, `[${ctxId}] Relevance check`);
 
-  if (probability <= 0.3) {
+  const willReply = probability > 0.5;
+  await handleMessageCount(ctxId, willReply);
+
+  if (!willReply) {
     logger.debug(`[${ctxId}] Low relevance — ignoring`);
     return;
   }
 
-  await clearUnprompted(ctxId);
   logger.info(`[${ctxId}] Replying; idle counter reset`);
   const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'high relevance');
