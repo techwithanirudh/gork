@@ -40,11 +40,15 @@ const chatModel = createFallback({
 
 const relevanceModel = createFallback({
   models: [
-    // Top-tier open-weight instruct models
-    openrouter('mistralai/mistral-small-3.2-24b-instruct:free'),
+    // Top tier
+    openrouter('openrouter/horizon-beta'),
     openrouter('moonshotai/kimi-k2:free'),
 
-    // QWEN heavy hitters
+    // Mistral
+    openrouter('cognitivecomputations/dolphin-mistral-24b-venice-edition:free'),
+    openrouter('mistralai/mistral-small-3.2-24b-instruct:free'),
+
+    // Qwen
     openrouter('qwen/qwen3-235b-a22b:free'),
     openrouter('qwen/qwen3-30b-a3b:free'),
     openrouter('qwen/qwen3-14b:free'),

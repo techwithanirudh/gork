@@ -1,4 +1,4 @@
-import { keywords } from '@/config';
+import { keywords, messageThreshold } from '@/config';
 import { ratelimit, redisKeys } from '@/lib/kv';
 import { addMemory } from '@/lib/pinecone/queries';
 import { getMessagesByChannel } from '@/lib/queries';
@@ -14,7 +14,7 @@ import { generateResponse } from './utils/respond';
 
 import { createLogger } from '@/lib/logger';
 
-import { logIncoming, logReply, logTrigger } from '@/utils/log';
+import { logReply } from '@/utils/log';
 import { getTrigger } from '@/utils/triggers';
 import type { ToolSet } from 'ai';
 import type { ToolCallPart } from 'ai';
@@ -74,13 +74,11 @@ export async function execute(message: Message) {
 
   if (trigger.type) {
     await resetMessageCount(ctxId);
-
-    logIncoming(ctxId, author.username, content);
-    logTrigger(ctxId, trigger);
+    logger.info(`[${ctxId}] Triggered by ${trigger.type}`);
 
     const { messages, hints } = await buildChatContext(message);
     const result = await generateResponse(message, messages, hints);
-    logReply(ctxId, author.username, result, 'explicit trigger');
+    logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
       await onSuccess(message, result.toolCalls);
     }
@@ -88,34 +86,25 @@ export async function execute(message: Message) {
   }
 
   const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
-  logger.debug(`[${ctxId}] Idle counter: ${idleCount}`);
 
   if (!hasQuota) {
-    logger.info(`[${ctxId}] Idle quota exhausted — staying silent`);
+    logger.debug(`[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`);
     return;
   }
 
-  logIncoming(ctxId, author.username, content);
-
   const { messages, hints } = await buildChatContext(message);
-  const { probability, reason } = await assessRelevance(
-    message,
-    messages,
-    hints
-  );
-  logger.info({ reason, probability }, `[${ctxId}] Relevance check`);
+  const { probability } = await assessRelevance(message, messages, hints);
 
   const willReply = probability > 0.5;
   await handleMessageCount(ctxId, willReply);
 
   if (!willReply) {
-    logger.debug(`[${ctxId}] Low relevance — ignoring`);
     return;
   }
 
-  logger.info(`[${ctxId}] Replying; idle counter reset`);
+  logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
   const result = await generateResponse(message, messages, hints);
-  logReply(ctxId, author.username, result, 'high relevance');
+  logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
     await onSuccess(message, result.toolCalls);
   }

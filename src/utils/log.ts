@@ -1,24 +1,6 @@
 import { createLogger } from '@/lib/logger';
 
-import type { TriggerType } from './triggers';
-
 const logger = createLogger('utils:log');
-
-export function logTrigger(
-  ctxId: string,
-  trigger: { type: TriggerType; info: string | string[] | null }
-) {
-  if (trigger.type) {
-    logger.info(
-      { trigger: trigger.type, triggeredBy: trigger.info },
-      `[${ctxId}] Triggered reply — idle counter cleared`
-    );
-  }
-}
-
-export function logIncoming(ctxId: string, username: string, content: string) {
-  logger.info({ user: username, content }, `[${ctxId}] Incoming message`);
-}
 
 export function logReply(
   ctxId: string,
@@ -27,16 +9,17 @@ export function logReply(
   reason?: string
 ) {
   if (result.success && result.response) {
+    const shortResponse = result.response.length > 100 
+      ? result.response.substring(0, 100) + '...' 
+      : result.response;
+    
     logger.info(
-      { response: result.response },
-      `[${ctxId}] Replied to "${author}"${reason ? ` (${reason})` : ''}`
+      `[${ctxId}] -> ${author}${reason ? ` (${reason})` : ''}: ${shortResponse}`
     );
   } else if (result.error) {
     logger.error(
       { error: result.error },
-      `[${ctxId}] Failed to generate response for "${author}"${
-        reason ? ` (${reason})` : ''
-      }`
+      `[${ctxId}] Failed reply to ${author}`
     );
   }
 }
