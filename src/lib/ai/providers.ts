@@ -1,4 +1,4 @@
-import { customProvider } from 'ai';
+import { customProvider, wrapLanguageModel } from 'ai';
 
 import { env } from '@/env';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
@@ -7,6 +7,7 @@ import { createFallback } from 'ai-fallback';
 import { createLogger } from '../logger';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { imageFilterMiddleware } from './middleware';
 
 const logger = createLogger('ai:providers');
 
@@ -38,36 +39,38 @@ const chatModel = createFallback({
   modelResetInterval: 60000,
 });
 
-const relevanceModel = createFallback({
-  models: [
-    // Top tier
-    // openrouter('openrouter/horizon-beta'),
-    openrouter('moonshotai/kimi-k2:free'),
+const relevanceModel = wrapLanguageModel({
+  model: createFallback({
+    models: [
+      // Top tier
+      // openrouter('openrouter/horizon-beta'),
+      openrouter('moonshotai/kimi-k2:free'),
 
-    // Mistral
-    openrouter('cognitivecomputations/dolphin-mistral-24b-venice-edition:free'),
-    openrouter('mistralai/mistral-small-3.2-24b-instruct:free'),
+      // Mistral
+      openrouter('cognitivecomputations/dolphin-mistral-24b-venice-edition:free'),
+      openrouter('mistralai/mistral-small-3.2-24b-instruct:free'),
 
-    // Qwen
-    openrouter('qwen/qwen3-235b-a22b:free'),
-    openrouter('qwen/qwen3-30b-a3b:free'),
-    openrouter('qwen/qwen3-14b:free'),
-    openrouter('qwen/qwen3-8b:free'),
+      // Qwen
+      openrouter('qwen/qwen3-235b-a22b:free'),
+      openrouter('qwen/qwen3-30b-a3b:free'),
+      openrouter('qwen/qwen3-14b:free'),
+      openrouter('qwen/qwen3-8b:free'),
 
-    // Deepseek
-    openrouter('deepseek/deepseek-r1-0528-qwen3-8b:free'),
+      // Deepseek
+      openrouter('deepseek/deepseek-r1-0528-qwen3-8b:free'),
 
-    // Gemma
-    // openrouter('google/gemma-3n-e4b-it:free'),
-    // openrouter('google/gemma-3n-e2b-it:free'),
-    // openrouter('z-ai/glm-4.5-air:free')
-  ],
-  onError: (error, modelId) => {
-    logger.error(`error with model ${modelId}, switching to next model`);
-  },
-  modelResetInterval: 60000,
+      // Gemma
+      // openrouter('google/gemma-3n-e4b-it:free'),
+      // openrouter('google/gemma-3n-e2b-it:free'),
+      // openrouter('z-ai/glm-4.5-air:free')
+    ],
+    onError: (error, modelId) => {
+      logger.error(`error with model ${modelId}, switching to next model`);
+    },
+    modelResetInterval: 60000,
+  }),
+  middleware: imageFilterMiddleware,
 });
-
 
 export const myProvider = customProvider({
   languageModels: {

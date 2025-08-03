@@ -56,5 +56,11 @@ Don't reply too much, like interrupting other people's conversations. But, if th
 5. ping @someone\_else -> 0.0
    *(no follow-up)*
 
+### response format:
+{
+  "probability": 1.0,
+  "reason": "The message is about you and you're interested in it."
+}
+
 Be cool, be chill, be yourself.
 </task>`;
