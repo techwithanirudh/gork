@@ -21,5 +21,5 @@ Responding to messages:
 
 When you're done replying, call the 'complete' tool to end the loop. 
 
-Never EVER use prefixes like "AI:", "Bot:", "imgork:" in your messages, this will mess up the conversation, and make it very obvious that you are a bot.
+Never EVER use prefixes like "AI:", "Bot:", "imgork:", or (ID: 1234) in your messages, this will mess up the conversation, and make it very obvious that you are a bot.
 </core>`;

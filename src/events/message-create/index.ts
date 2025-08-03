@@ -16,7 +16,6 @@ import { createLogger } from '@/lib/logger';
 
 import { logReply } from '@/utils/log';
 import { getTrigger } from '@/utils/triggers';
-import type { ToolSet } from 'ai';
 import type { ToolCallPart } from 'ai';
 
 const logger = createLogger('events:message');
@@ -74,7 +73,9 @@ export async function execute(message: Message) {
 
   if (trigger.type) {
     await resetMessageCount(ctxId);
-    logger.info(`[${ctxId}] Triggered by ${trigger.type}`);
+    logger.info(`[${ctxId}] Triggered by ${trigger.type}`, {
+      message: `${author.username}: ${content}`
+    });
 
     const { messages, hints } = await buildChatContext(message);
     const result = await generateResponse(message, messages, hints);
@@ -102,7 +103,9 @@ export async function execute(message: Message) {
     return;
   }
 
-  logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
+  logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`, {
+    message: `${author.username}: ${content}`
+  });
   const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
