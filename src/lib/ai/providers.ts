@@ -30,7 +30,7 @@ const chatModel = createFallback({
     google('gemini-2.0-flash'),
     google('gemini-2.5-flash-lite'),
     google('gemini-2.0-flash-lite'),
-    openai('gpt-4.1'),
+    // openai('gpt-4.1'),
   ],
   onError: (error, modelId) => {
     logger.error(`error with model ${modelId}, switching to next model`);
@@ -41,7 +41,7 @@ const chatModel = createFallback({
 const relevanceModel = createFallback({
   models: [
     // Top tier
-    openrouter('openrouter/horizon-beta'),
+    // openrouter('openrouter/horizon-beta'),
     openrouter('moonshotai/kimi-k2:free'),
 
     // Mistral

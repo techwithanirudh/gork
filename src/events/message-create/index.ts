@@ -94,12 +94,18 @@ export async function execute(message: Message) {
   }
 
   const { messages, hints } = await buildChatContext(message);
-  const { probability } = await assessRelevance(message, messages, hints);
+  const { probability, reason } = await assessRelevance(
+    message,
+    messages,
+    hints
+  );
+  logger.info({ reason, probability }, `[${ctxId}] Relevance check`);
 
   const willReply = probability > 0.5;
   await handleMessageCount(ctxId, willReply);
 
   if (!willReply) {
+    logger.debug(`[${ctxId}] Low relevance — ignoring`);
     return;
   }
 

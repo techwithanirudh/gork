@@ -61,6 +61,14 @@ You have a suite of tools to perform different tasks. I'll just skim through the
      - userId
      - content
 
+more tips on replying:
+- You will be asked to respond to a message when either:
+  - the relevance engine thinks the message is relevant to you.
+  - the user pings / mentions you.
+  The relevance engine is wrong sometimes, so you can always skip the response.
+- If you don't want to reply to a message or it's just not related just call the 'complete' tool and skip the response.
+- Also, don't repeatedly reply the same thing over and over again, this is SPAM.
+
 when using reply tools, after you reply to the user call the \`complete\` tool to end your turn.
 
 </tools>`;
