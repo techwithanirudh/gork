@@ -9,6 +9,63 @@ import {
 
 const logger = createLogger('utils:messages');
 
+interface MessageFormatOptions {
+  withAuthor?: boolean;
+  withContext?: boolean;
+  withReactions?: boolean;
+  withTimestamp?: boolean;
+  withId?: boolean;
+}
+
+function formatDiscordMessage(
+  msg: DiscordMessage,
+  ref: DiscordMessage | null = null,
+  options: MessageFormatOptions = {}
+): string {
+  const {
+    withAuthor = true,
+    withContext = true,
+    withReactions = true,
+    withTimestamp = false,
+    withId = true,
+  } = options;
+
+  let result = '';
+  
+  if (withTimestamp) {
+    result += `[${msg.createdAt.toISOString()}] `;
+  }
+  
+  const context = ref && withContext 
+    ? `Reply to ${ref.author.username}: "${ref.content.slice(0, 50)}${ref.content.length > 50 ? '...' : ''}"` 
+    : null;
+  
+  if (withAuthor) {
+    if (context) {
+      result += `${msg.author.username} (${context}): `;
+    } else {
+      result += `${msg.author.username}: `;
+    }
+  } else if (context) {
+    result += `(${context}) `;
+  }
+  
+  result += msg.content;
+  
+  if (withId) {
+    result += ` (ID: ${msg.id})`;
+  }
+  
+  if (withReactions && msg.reactions.cache.size > 0) {
+    const reactions = Array.from(msg.reactions.cache.values())
+      .map(reaction => `${reaction.emoji.name}:${reaction.count}`)
+      .join(', ');
+    result += ` | Reactions: ${reactions}`;
+  }
+  
+  return result;
+}
+
 export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>
 ): Promise<Array<ModelMessage>> {
@@ -17,26 +74,35 @@ export async function convertToModelMessages(
       const ref = msg.reference
         ? await msg.fetchReference().catch(() => null)
         : null;
-      const text = ref
-        ? `${msg.author.username}: ${msg.content} (${msg.id})`
-        : `${msg.author.username}: ${msg.content} (${msg.id})`;
+      
       const isBot = msg.author.id === msg.client.user?.id;
+      const structuredText = formatDiscordMessage(msg, ref, {
+        withAuthor: true,
+        withContext: true,
+        withReactions: false,
+        withTimestamp: false,
+        withId: true
+      });
+
+      console.log(structuredText);
 
       if (isBot) {
         return {
           role: 'assistant' as const,
-          content: [{ type: 'text' as const, text }],
+          content: [{ type: 'text' as const, text: structuredText }],
           createdAt: msg.createdAt,
+          name: msg.author.username,
         };
       }
 
       return {
         role: 'user' as const,
         content: [
-          { type: 'text' as const, text },
+          { type: 'text' as const, text: structuredText },
           ...(await processAttachments(msg.attachments)),
         ],
         createdAt: msg.createdAt,
+        name: msg.author.username,
       };
     })
   );
