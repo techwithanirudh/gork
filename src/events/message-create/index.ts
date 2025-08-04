@@ -67,7 +67,7 @@ export async function execute(message: Message) {
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
   if (!(await canReply(ctxId))) return;
-  
+
   const botId = client.user?.id;
   const trigger = await getTrigger(message, keywords, botId);
 
@@ -99,7 +99,7 @@ export async function execute(message: Message) {
     messages,
     hints
   );
-  logger.info({ reason, probability }, `[${ctxId}] Relevance check`);
+  logger.info({ reason, probability, message: `${author.username}: ${content}` }, `[${ctxId}] Relevance check`);
 
   const willReply = probability > 0.5;
   await handleMessageCount(ctxId, willReply);
