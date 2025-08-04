@@ -1,6 +1,6 @@
 import { createLogger } from '@/lib/logger';
 
-import type { ImagePart, ModelMessage } from 'ai';
+import type { FilePart, ModelMessage } from 'ai';
 import {
   Message as DiscordMessage,
   type Collection,
@@ -44,7 +44,7 @@ export async function convertToModelMessages(
 
 export async function processAttachments(
   attachments: Collection<string, DiscordAttachment>
-): Promise<ImagePart[]> {
+): Promise<FilePart[]> {
   const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
   const validAttachments = Array.from(attachments.values()).filter(
@@ -61,8 +61,8 @@ export async function processAttachments(
 
   return validAttachments
     .map((attachment) => ({
-      type: 'image' as const,
-      image: attachment.url,
+      type: 'file' as const,
+      data: attachment.url,
       mediaType: attachment.contentType || 'application/octet-stream',
     }))
     .filter(Boolean);
