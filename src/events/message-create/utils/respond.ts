@@ -29,7 +29,7 @@ export async function generateResponse(
 
     const { toolCalls } = await generateText({
       model: myProvider.languageModel('chat-model'),
-      messages: [...messages],
+      messages: [...messages, { role: 'user', content: 'You are replying to the following message: ' + msg.content }],
       activeTools: [
         'getWeather',
         'searchWeb',

@@ -84,8 +84,6 @@ export async function convertToModelMessages(
         withId: true
       });
 
-      console.log(structuredText);
-
       if (isBot) {
         return {
           role: 'assistant' as const,
@@ -111,7 +109,7 @@ export async function convertToModelMessages(
 export async function processAttachments(
   attachments: Collection<string, DiscordAttachment>
 ): Promise<FilePart[]> {
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
   const validAttachments = Array.from(attachments.values()).filter(
     (a) => a.contentType && validTypes.includes(a.contentType)

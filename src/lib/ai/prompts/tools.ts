@@ -48,10 +48,12 @@ You have a suite of tools to perform different tasks. I'll just skim through the
 
 7. reply:
    purpose: reply in thread or send a new message in a channel
-   note: does not start a DM, use startDM for that
+   note: 
+      - does not start a DM, use startDM for that
+      - do NOT send any other data in the content, other than the pure line of text. NO metadata, like username, or any other data.
    parameters:
      - id: the ID of the message to reply under
-     - content: an array of text lines to send (one line per message). do NOT send a single line with periods, as that won't split into multiple messages. always separate each line into its own list item so it can be sent as individual messages.
+     - content: an array of PURE text lines to send (one line per message). do NOT send a single line with periods, as that won't split into multiple messages. always separate each line into its own list item so it can be sent as individual messages.
      - type: either "reply" or "message" (thread reply vs fresh post)
     
 8. startDM:
