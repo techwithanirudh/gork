@@ -42,19 +42,16 @@ function formatDiscordMessage(
   
   if (withAuthor) {
     if (context) {
-      result += `${msg.author.username} (${context}): `;
+      result += `${context}\n`;
+      result += `${msg.author.username}${withId ? ` [ID:${msg.id}]` : ''}: `;
     } else {
-      result += `${msg.author.username}: `;
+      result += `${msg.author.username}${withId ? ` [ID:${msg.id}]` : ''}: `;
     }
   } else if (context) {
     result += `(${context}) `;
   }
   
   result += msg.content;
-  
-  if (withId) {
-    result += ` (ID: ${msg.id})`;
-  }
   
   if (withReactions && msg.reactions.cache.size > 0) {
     const reactions = Array.from(msg.reactions.cache.values())
