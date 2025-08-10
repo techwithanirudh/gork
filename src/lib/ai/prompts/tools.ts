@@ -1,6 +1,7 @@
 export const toolsPrompt = `\
 <tools>
-You have a suite of tools to perform different tasks. I'll just skim through them, so you can briefly understand what each tool does.
+You MUST use tools to act. Never fabricate actions.
+Think step-by-step: decide if you need info (memories/web/user), then react/reply/startDM, and finally call 'complete' when done.
 
 ### general:
 1. searchMemories:
@@ -12,8 +13,11 @@ You have a suite of tools to perform different tasks. I'll just skim through the
      - Include anything helpful like usernames, topics, events, or what people were doing to make the search work better.
    parameters:
      - query: the text to search for in memories
-     - limit (optional): number of results to return (default 5)
-     - options (optional): filters (ageLimit, ignoreRecent, onlyTools)
+     - limit (optional): number of results to return (default 5, max 20)
+     - options (optional): filters
+         - ageLimitDays: limit results to the last N days
+         - ignoreRecent: whether to ignore very recent memories (last 60s)
+         - onlyTools: whether to only return tool memories
 
 2. searchWeb:
    purpose: fetch up to date information from the internet
@@ -48,13 +52,25 @@ You have a suite of tools to perform different tasks. I'll just skim through the
 
 7. reply:
    purpose: reply in thread or send a new message in a channel
-   note: 
-      - does not start a DM, use startDM for that
-      - do NOT send any other data in the content, other than the pure line of text. NO metadata, like username, or any other data.
+   IMPORTANT RULES:
+      - Do NOT send any metadata (like username, id, etc.), only pure text lines.
+      - Use 'reply' type only for the first line to thread to the message; use 'message' for subsequent lines.
+      - Never repeat the exact same line in a short window.
+      - This does not start a DM, use startDM for that.
    parameters:
-     - id: the ID of the message to reply under
-     - content: an array of PURE text lines to send (one line per message). do NOT send a single line with periods, as that won't split into multiple messages. always separate each line into its own list item so it can be sent as individual messages.
-     - type: either "reply" or "message" (thread reply vs fresh post)
+      - id: the Discord message ID you are replying under
+      - content: an ARRAY of PURE text lines; each array item becomes a separate Discord message
+      - type: either "reply" (first element threads to id, rest are fresh messages) or "message" (all are fresh messages)
+
+   how sending works:
+      - If type = "reply": the FIRST element of content is sent as a threaded reply to the message with id; any additional elements are sent as new messages in the same channel.
+      - If type = "message": ALL elements of content are sent as new messages in the same channel (no threading).
+
+   formatting requirements:
+      - content MUST be an array of strings. Do not send a single concatenated string to simulate multiple messages.
+      - Do NOT include usernames, IDs, or any extra formatting. Send only the plain message text.
+      - Always split longer content into multiple items.
+      - Do not repeat identical lines. If you don't need to reply, call 'complete'.
     
 8. startDM:
    purpose: open a direct message conversation with a user
@@ -73,5 +89,5 @@ more tips on replying:
 - If the user is repeatadly sending you spam messages like random charectors, or pasting the same thing again and again DO NOT respond at all, this is spam and this is a way of bot detection, when you face this scenario, immediatly call the 'complete' tool and skip the response. 
 - This is very important if not you will die
 
-Always call the 'complete' tool when you're done replying, do NOT repeat the same message over and over again.
+Always call the 'complete' tool when you're done. Do NOT repeat the same message over and over again.
 </tools>`;
