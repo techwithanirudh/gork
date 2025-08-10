@@ -1,0 +1,12 @@
+node_modules
+logs
+.git
+.gitignore
+.vscode
+Dockerfile*
+README.md
+bun.lockb
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+

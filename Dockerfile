@@ -11,28 +11,20 @@ RUN apt-get update \
 # install dependencies into temp directory
 # this will cache them and speed up future builds
 FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lock /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
-
-# install with --production (exclude devDependencies)
-RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-RUN cd /temp/prod && bun install --production --ignore-scripts --frozen-lockfile
-
-# copy node_modules from temp directory
-# then copy all (non-ignored) project files into the image
-FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
-COPY . .
+COPY package.json bun.lock* ./
+RUN bun install --production --ignore-scripts --frozen-lockfile
 
 # copy production dependencies and source code into final image
 FROM base AS release
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app . 
+WORKDIR /usr/src/app
+
+# copy node_modules from temp directory
+COPY --from=install /usr/src/app/node_modules ./node_modules
+
+# then copy all (non-ignored) project files into the image
+COPY . .
 RUN mkdir -p logs \
  && chmod 0777 logs
 
-# run the app
 USER bun
-ENTRYPOINT [ "bun", "run", "start" ]
+CMD ["bun", "run", "start"]
