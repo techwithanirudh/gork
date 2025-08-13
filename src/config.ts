@@ -13,7 +13,12 @@ export const speed = {
   speedFactor: 180 * 180,
 };
 
-export const statuses: PresenceStatusData[] = ['online', 'idle', 'dnd', 'invisible'];
+export const statuses: PresenceStatusData[] = [
+  'online',
+  'idle',
+  'dnd',
+  'invisible',
+];
 
 export const activities: Activity[] = [
   {

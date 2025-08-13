@@ -27,4 +27,3 @@ export const skip = ({ message }: { message: Message }) =>
       };
     },
   });
-

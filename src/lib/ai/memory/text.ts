@@ -47,7 +47,7 @@ function formatChatMemory({
   guild,
   channel,
   context,
-  createdAt
+  createdAt,
 }: {
   guild: { id?: string | null; name?: string | null } | null;
   channel: { id: string; name: string } | null;
@@ -104,5 +104,3 @@ function formatToolMemory({
   ];
   return lines.join('\n');
 }
-
-

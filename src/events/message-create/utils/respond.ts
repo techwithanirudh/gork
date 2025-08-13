@@ -5,10 +5,10 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { joinServer } from '@/lib/ai/tools/join-server';
 import { react } from '@/lib/ai/tools/react';
 import { reply } from '@/lib/ai/tools/reply';
-import { skip } from '@/lib/ai/tools/skip';
 import { report } from '@/lib/ai/tools/report';
 import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
+import { skip } from '@/lib/ai/tools/skip';
 import { startDM } from '@/lib/ai/tools/start-dm';
 import { saveToolMemory } from '@/lib/memory';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
@@ -16,7 +16,6 @@ import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
 import { generateText, hasToolCall, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
-import { z } from 'zod/v4';
 
 export async function generateResponse(
   msg: Message,
@@ -28,12 +27,18 @@ export async function generateResponse(
     const system = systemPrompt({
       selectedChatModel: 'chat-model',
       requestHints: hints,
-      memories
+      memories,
     });
 
     const { toolCalls } = await generateText({
       model: myProvider.languageModel('chat-model'),
-      messages: [...messages, { role: 'user', content: 'You are replying to the following message: ' + msg.content }],
+      messages: [
+        ...messages,
+        {
+          role: 'user',
+          content: 'You are replying to the following message: ' + msg.content,
+        },
+      ],
       activeTools: [
         'getWeather',
         'searchWeb',
@@ -60,7 +65,12 @@ export async function generateResponse(
         skip: skip({ message: msg }),
       },
       system,
-      stopWhen: [hasToolCall('reply'), hasToolCall('react'), hasToolCall('skip'), stepCountIs(10)],
+      stopWhen: [
+        hasToolCall('reply'),
+        hasToolCall('react'),
+        hasToolCall('skip'),
+        stepCountIs(10),
+      ],
       onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
         if (!toolCalls.length) return;
 

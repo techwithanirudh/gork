@@ -3,9 +3,9 @@ import { ratelimit, redisKeys } from '@/lib/kv';
 import { saveChatMemory } from '@/lib/memory';
 import { buildChatContext } from '@/utils/context';
 import {
-  resetMessageCount,
   checkMessageQuota,
   handleMessageCount,
+  resetMessageCount,
 } from '@/utils/message-rate-limiter';
 import { Message } from 'discord.js';
 import { assessRelevance } from './utils/relevance';
@@ -30,7 +30,7 @@ async function canReply(ctxId: string): Promise<boolean> {
   return success;
 }
 
-async function onSuccess(message: Message, toolCalls: ToolCallPart[]) {
+async function onSuccess(message: Message, _toolCalls: ToolCallPart[]) {
   await saveChatMemory(message, 5);
 }
 
@@ -50,7 +50,7 @@ export async function execute(message: Message) {
   if (trigger.type) {
     await resetMessageCount(ctxId);
     logger.info(`[${ctxId}] Triggered by ${trigger.type}`, {
-      message: `${author.username}: ${content}`
+      message: `${author.username}: ${content}`,
     });
 
     const { messages, hints, memories } = await buildChatContext(message);
@@ -65,7 +65,9 @@ export async function execute(message: Message) {
   const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
 
   if (!hasQuota) {
-    logger.debug(`[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`);
+    logger.debug(
+      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`
+    );
     return;
   }
 
@@ -76,7 +78,10 @@ export async function execute(message: Message) {
     hints,
     memories
   );
-  logger.info({ reason, probability, message: `${author.username}: ${content}` }, `[${ctxId}] Relevance check`);
+  logger.info(
+    { reason, probability, message: `${author.username}: ${content}` },
+    `[${ctxId}] Relevance check`
+  );
 
   const willReply = probability > 0.5;
   await handleMessageCount(ctxId, willReply);
@@ -87,7 +92,7 @@ export async function execute(message: Message) {
   }
 
   logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`, {
-    message: `${author.username}: ${content}`
+    message: `${author.username}: ${content}`,
   });
   const result = await generateResponse(message, messages, hints, memories);
   logReply(ctxId, author.username, result, 'relevance');

@@ -12,7 +12,7 @@ async function incrementMessageCount(ctxId: string): Promise<number> {
   const pipeline = redis.pipeline();
   pipeline.incr(key);
   pipeline.expire(key, 3600);
-  
+
   const results = await pipeline.exec();
   const n = (results?.[0] as [unknown, number])?.[1];
   return n || 1;
@@ -29,13 +29,16 @@ export async function checkMessageQuota(ctxId: string): Promise<{
   const count = await getMessageCount(ctxId);
   return {
     count,
-    hasQuota: count < messageThreshold
+    hasQuota: count < messageThreshold,
   };
 }
 
-export async function handleMessageCount(ctxId: string, willReply: boolean): Promise<number> {
+export async function handleMessageCount(
+  ctxId: string,
+  willReply: boolean
+): Promise<number> {
   const key = redisKeys.messageCount(ctxId);
-  
+
   if (willReply) {
     await redis.del(key);
     return 0;

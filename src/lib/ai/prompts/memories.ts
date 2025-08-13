@@ -1,6 +1,6 @@
+import { formatMemories } from '@/lib/ai/memory/text';
 import type { PineconeMetadataOutput } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import { formatMemories } from '@/lib/ai/memory/text';
 
 export const memoriesPrompt = (
   memories: ScoredPineconeRecord<PineconeMetadataOutput>[]

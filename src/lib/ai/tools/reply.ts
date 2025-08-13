@@ -14,7 +14,9 @@ export const reply = ({ message }: { message: Message }) =>
         .string()
         .trim()
         .optional()
-        .describe('The ID of the message to reply to (optional). If omitted, replies to the latest message (the provided message).'),
+        .describe(
+          'The ID of the message to reply to (optional). If omitted, replies to the latest message (the provided message).'
+        ),
       content: z.array(z.string()).describe('Lines of text to send'),
       type: z
         .enum(['reply', 'message'])
@@ -28,9 +30,8 @@ export const reply = ({ message }: { message: Message }) =>
           return { success: false, error: 'Channel is not text-based' };
         }
 
-        const target = id && id.length > 0
-          ? await channel.messages.fetch(id)
-          : message;
+        const target =
+          id && id.length > 0 ? await channel.messages.fetch(id) : message;
 
         if (!target) {
           logger.warn({ id }, 'Message not found');
@@ -45,11 +46,21 @@ export const reply = ({ message }: { message: Message }) =>
           }
         }
 
-        logger.info({ id: id ?? message.id, content, type }, 'Replied to message');
+        logger.info(
+          { id: id ?? message.id, content, type },
+          'Replied to message'
+        );
 
-        return { success: true, content: 'Successfully replied to message. Do NOT repeat the same message again.' };
+        return {
+          success: true,
+          content:
+            'Successfully replied to message. Do NOT repeat the same message again.',
+        };
       } catch (error) {
-        logger.error({ error, id: id ?? message.id, content, type }, 'Failed to send reply');
+        logger.error(
+          { error, id: id ?? message.id, content, type },
+          'Failed to send reply'
+        );
         return { success: false, error: String(error) };
       }
     },

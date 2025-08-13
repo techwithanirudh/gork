@@ -1,6 +1,6 @@
+import { formatMemories } from '@/lib/ai/memory/text';
 import { createLogger } from '@/lib/logger';
 import { queryMemories } from '@/lib/pinecone/operations';
-import { formatMemories } from '@/lib/ai/memory/text';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
 
@@ -26,7 +26,9 @@ export const searchMemories = () =>
             .int()
             .positive()
             .optional()
-            .describe('Number of days to limit results to (e.g. 7 for last week)'),
+            .describe(
+              'Number of days to limit results to (e.g. 7 for last week)'
+            ),
           ignoreRecent: z
             .boolean()
             .optional()
