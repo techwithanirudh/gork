@@ -52,7 +52,7 @@ export const searchMemories = () =>
         logger.info({ results }, 'Memory search results');
 
         const data = formatMemories(results);
-        console.log(data)
+
         return {
           success: true,
           data,

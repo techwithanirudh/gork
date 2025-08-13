@@ -4,7 +4,7 @@ import type { FilePart, ModelMessage } from 'ai';
 import {
   Message as DiscordMessage,
   type Collection,
-  type MessageAttachment as DiscordAttachment,
+  type Attachment as DiscordAttachment,
 } from 'discord.js';
 
 const logger = createLogger('utils:messages');

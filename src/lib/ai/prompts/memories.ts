@@ -7,7 +7,5 @@ export const memoriesPrompt = (
 ) => {
   const text = formatMemories(memories);
   if (!text) return '';
-  return `\n\n<memories>\n${text}\n</memories>`;
+  return `<memories>\n${text}\n</memories>`;
 };
-
-

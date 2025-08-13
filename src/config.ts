@@ -1,3 +1,4 @@
+import type { PresenceStatusData } from 'discord.js';
 import type { Activity } from './types';
 
 export const keywords = ['gork', 'grok'];
@@ -12,7 +13,7 @@ export const speed = {
   speedFactor: 180 * 180,
 };
 
-export const statuses = ['online', 'idle', 'dnd', 'offline'];
+export const statuses: PresenceStatusData[] = ['online', 'idle', 'dnd', 'invisible'];
 
 export const activities: Activity[] = [
   {
