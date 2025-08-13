@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import * as join from './join';
 import * as leave from './leave';
 
@@ -27,7 +27,7 @@ export async function execute(
     default:
       return interaction.reply({
         content: 'Unknown subcommand',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
   }
 }

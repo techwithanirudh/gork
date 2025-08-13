@@ -33,7 +33,7 @@
     "@cspell/dict-bash": "^4.2.0",
     "@cspell/dict-redis": "^1.0.5",
     "@date-fns/tz": "^1.2.0",
-    "@deepgram/sdk": "^4.4.0",
+    "@deepgram/sdk": "^4.11.2",
     "@discordjs/opus": "^0.10.0",
     "@discordjs/voice": "^0.18.0",
     "@elevenlabs/elevenlabs-js": "^2.2.0",
@@ -60,7 +60,6 @@
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
     "prism-media": "^2.0.0-alpha.0",
-    "wink-bm25-text-search": "^3.1.2",
     "ws": "^8.18.2",
     "zod": "^3.25.63"
   },

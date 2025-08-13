@@ -1,5 +1,5 @@
 import { getVoiceConnection } from '@discordjs/voice';
-import type { ChatInputCommandInteraction } from 'discord.js';
+import { MessageFlags, type ChatInputCommandInteraction } from 'discord.js';
 
 // export const data = new SlashCommandBuilder()
 //   .setName('leave')
@@ -14,7 +14,7 @@ export async function execute(
     await interaction.reply({
       // cspell:disable-next-line
       content: "wdym? i'm not in a voice channel",
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
 
     return;
@@ -23,5 +23,8 @@ export async function execute(
   connection.destroy();
 
   // cspell:disable-next-line
-  await interaction.reply({ content: 'okay byeee!', ephemeral: true });
+  await interaction.reply({
+    content: 'okay byeee!',
+    flags: [MessageFlags.Ephemeral],
+  });
 }
