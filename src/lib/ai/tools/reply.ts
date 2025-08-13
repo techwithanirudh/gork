@@ -40,7 +40,7 @@ export const reply = ({ message: { channel } }: { message: Message }) =>
 
         logger.info({ id, content, type }, 'Replied to message');
 
-        return { success: true };
+        return { success: true, content: 'Successfully replied to message. Do NOT repeat the same message again.' };
       } catch (error) {
         logger.error({ error, id, content, type }, 'Failed to send reply');
         return { success: false, error: String(error) };

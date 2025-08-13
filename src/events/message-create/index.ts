@@ -1,7 +1,6 @@
 import { keywords, messageThreshold } from '@/config';
 import { ratelimit, redisKeys } from '@/lib/kv';
-import { addMemory } from '@/lib/pinecone/queries';
-import { getMessagesByChannel } from '@/lib/queries';
+import { saveChatMemory } from '@/lib/memory';
 import { buildChatContext } from '@/utils/context';
 import {
   resetMessageCount,
@@ -32,30 +31,7 @@ async function canReply(ctxId: string): Promise<boolean> {
 }
 
 async function onSuccess(message: Message, toolCalls: ToolCallPart[]) {
-  const messages = await getMessagesByChannel({
-    channel: message.channel,
-    limit: 5,
-  });
-
-  const data = messages
-    .map((msg) => `${msg.author.username}: ${msg.content}`)
-    .join('\n');
-  const metadata = {
-    type: 'chat' as const,
-    context: data,
-    createdAt: Date.now(),
-    lastRetrievalTime: Date.now(),
-    guild: {
-      id: message.guild?.id ?? null,
-      name: message.guild?.name ?? null,
-    },
-    channel: {
-      id: message.channel.id,
-      name: message.channel.type === 'DM' ? 'DM' : message.channel.name ?? '',
-    },
-  };
-
-  await addMemory(data, metadata);
+  await saveChatMemory(message, 5);
 }
 
 export async function execute(message: Message) {
@@ -77,8 +53,8 @@ export async function execute(message: Message) {
       message: `${author.username}: ${content}`
     });
 
-    const { messages, hints } = await buildChatContext(message);
-    const result = await generateResponse(message, messages, hints);
+    const { messages, hints, memories } = await buildChatContext(message);
+    const result = await generateResponse(message, messages, hints, memories);
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
       await onSuccess(message, result.toolCalls);
@@ -93,11 +69,12 @@ export async function execute(message: Message) {
     return;
   }
 
-  const { messages, hints } = await buildChatContext(message);
+  const { messages, hints, memories } = await buildChatContext(message);
   const { probability, reason } = await assessRelevance(
     message,
     messages,
-    hints
+    hints,
+    memories
   );
   logger.info({ reason, probability, message: `${author.username}: ${content}` }, `[${ctxId}] Relevance check`);
 
@@ -112,7 +89,7 @@ export async function execute(message: Message) {
   logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`, {
     message: `${author.username}: ${content}`
   });
-  const result = await generateResponse(message, messages, hints);
+  const result = await generateResponse(message, messages, hints, memories);
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
     await onSuccess(message, result.toolCalls);

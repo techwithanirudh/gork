@@ -9,8 +9,9 @@ import { report } from '@/lib/ai/tools/report';
 import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
 import { startDM } from '@/lib/ai/tools/start-dm';
-import { addMemory } from '@/lib/pinecone/queries';
-import type { RequestHints } from '@/types';
+import { saveToolMemory } from '@/lib/memory';
+import type { PineconeMetadataOutput, RequestHints } from '@/types';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
 import { generateText, stepCountIs, tool } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
@@ -19,12 +20,14 @@ import { z } from 'zod/v4';
 export async function generateResponse(
   msg: Message,
   messages: ModelMessage[],
-  hints: RequestHints
+  hints: RequestHints,
+  memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ) {
   try {
     const system = systemPrompt({
       selectedChatModel: 'chat-model',
       requestHints: hints,
+      memories
     });
 
     const { toolCalls } = await generateText({
@@ -72,24 +75,7 @@ export async function generateResponse(
             if (!call || !result) return;
             if (call.toolName === 'searchMemories') return;
 
-            const data = JSON.stringify({ call, result }, null, 2);
-            const metadata = {
-              type: 'tool' as const,
-              name: call.toolName,
-              response: result,
-              createdAt: Date.now(),
-              channel: {
-                id: msg.channel.id,
-                name: msg.channel.type === 'DM' ? 'DM' : msg.channel.name ?? '',
-              },
-              guild: {
-                id: msg.guild?.id,
-                name: msg.guild?.name,
-              },
-              userId: msg.author.id,
-            };
-
-            await addMemory(data, metadata);
+            await saveToolMemory(msg, call.toolName, result);
           })
         );
       },

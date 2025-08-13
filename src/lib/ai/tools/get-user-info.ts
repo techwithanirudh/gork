@@ -42,12 +42,22 @@ export const getUserInfo = ({ message }: { message: Message }) =>
           };
         }
 
+        // Try to fetch user profile for bio information
+        let bio = null;
+        try {
+          const profile = await user.getProfile();
+          bio = profile.bio || null;
+        } catch {
+          // Profile fetching failed, bio will remain null
+        }
+
         return {
           success: true,
           data: {
             id: user.id,
             username: user.username,
             displayName: user.displayName,
+            description: bio,
             bot: user.bot,
             createdAt: user.createdAt.toISOString(),
             avatarURL: user.displayAvatarURL(),

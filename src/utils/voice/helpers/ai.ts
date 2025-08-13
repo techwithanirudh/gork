@@ -1,4 +1,6 @@
 import { systemPrompt } from '@/lib/ai/prompts';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import { myProvider } from '@/lib/ai/providers';
 import { generateText } from 'ai';
 
@@ -10,6 +12,17 @@ export async function getAIResponse(prompt: string): Promise<string> {
     system:
       systemPrompt({
         selectedChatModel: 'chat-model',
+        requestHints: {
+          time: new Date().toISOString(),
+          city: undefined,
+          country: undefined,
+          server: 'Voice Channel',
+          channel: 'voice',
+          joined: Date.now(),
+          status: 'online',
+          activity: 'voice',
+        },
+        memories: [] as unknown as ScoredPineconeRecord<PineconeMetadataOutput>[],
       }) +
       '\n\nYou are talking to a person through a call, do not use markdown formatting, or emojis.',
     model: myProvider.languageModel('chat-model'),

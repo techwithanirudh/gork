@@ -12,16 +12,20 @@ export const searchMemories = () =>
       query: z.string().describe('The text query to search for in memories'),
       limit: z
         .number()
+        .int()
+        .positive()
+        .max(20)
         .default(5)
-        .describe('Number of results to return (defaults to 5)'),
+        .describe('Number of results to return (defaults to 5, max 20)'),
       options: z
         .object({
-          ageLimit: z
+          // ageLimitDays converts to ms in the executor for clarity
+          ageLimitDays: z
             .number()
+            .int()
+            .positive()
             .optional()
-            .describe(
-              'Number of days to limit results to (e.g. 7 for last week)'
-            ),
+            .describe('Number of days to limit results to (e.g. 7 for last week)'),
           ignoreRecent: z
             .boolean()
             .optional()
@@ -37,7 +41,11 @@ export const searchMemories = () =>
       try {
         const results = await queryMemories(query, {
           limit,
-          ...options,
+          ageLimit: options?.ageLimitDays
+            ? options.ageLimitDays * 24 * 60 * 60 * 1000
+            : undefined,
+          ignoreRecent: options?.ignoreRecent,
+          onlyTools: options?.onlyTools,
         });
 
         logger.info({ results }, 'Memory search results');
