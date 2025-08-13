@@ -62,6 +62,7 @@ IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any
       - This does not start a DM, use startDM for that.
       - termination rule: calling 'reply' ends the loop. Do not call any more tools after replying.
    parameters:
+      - id (optional): the Discord message ID you are replying under
       - content: an ARRAY of PURE text lines; each array item becomes a separate Discord message
       - type: either "reply" (first element threads to target, rest are fresh messages) or "message" (all are fresh messages)
       - offset (optional): how many messages BEFORE the latest to reply to (0..100)
@@ -75,17 +76,6 @@ IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any
       - Do NOT include usernames, IDs, or any extra formatting. Send only the plain message text.
       - Always split longer content into multiple items.
       - Do not repeat identical lines. If you don't need to reply, call 'complete'.
-    
-8. getMessages:
-   purpose: list recent messages in the current channel to help select a specific target message without memorizing IDs
-   parameters:
-      - limit (optional): number of messages to fetch (default 25, max 100)
-      - anchor (optional):
-          - id (optional): anchor message id (defaults to latest you are responding to)
-          - position: one of "before", "after", or "around" (default "before")
-   guidance:
-      - Use this to locate the target message, then call reply with an 'offset' relative to the latest (0 = latest, 1 = previous, etc.). Avoid passing raw IDs.
-      - After calling 'reply' or 'react', you are done. Do not call any other tools.
 
 9. skip:
    purpose: end the loop without replying (use when the message is spam, irrelevant, or you choose not to respond)

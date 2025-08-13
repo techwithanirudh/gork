@@ -6,7 +6,6 @@ import { joinServer } from '@/lib/ai/tools/join-server';
 import { react } from '@/lib/ai/tools/react';
 import { reply } from '@/lib/ai/tools/reply';
 import { skip } from '@/lib/ai/tools/skip';
-import { getMessages } from '@/lib/ai/tools/get-messages';
 import { report } from '@/lib/ai/tools/report';
 import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
@@ -43,7 +42,6 @@ export async function generateResponse(
         'startDM',
         'getUserInfo',
         'searchMemories',
-        'getMessages',
         'react',
         'reply',
         'skip',
@@ -57,7 +55,6 @@ export async function generateResponse(
         startDM: startDM({ message: msg }),
         getUserInfo: getUserInfo({ message: msg }),
         searchMemories: searchMemories(),
-        getMessages: getMessages({ message: msg }),
         react: react({ message: msg }),
         reply: reply({ message: msg }),
         skip: skip({ message: msg }),
