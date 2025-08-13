@@ -1,5 +1,6 @@
 import { createLogger } from '@/lib/logger';
 import { queryMemories } from '@/lib/pinecone/operations';
+import { formatMemories } from '@/lib/ai/memory/text';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
 
@@ -50,12 +51,11 @@ export const searchMemories = () =>
 
         logger.info({ results }, 'Memory search results');
 
+        const data = formatMemories(results);
+        console.log(data)
         return {
           success: true,
-          data: results.map((result) => ({
-            score: result.score,
-            metadata: result.metadata,
-          })),
+          data,
         };
       } catch (error) {
         logger.error({ error }, 'Error in searchMemories tool');

@@ -1,15 +1,16 @@
 import { addMemory } from '@/lib/pinecone/queries';
 import { getMessagesByChannel } from '@/lib/queries';
-import type { Message } from 'discord.js';
+import { ChannelType, type Message } from 'discord.js';
 
 export function buildLocationFromMessage(message: Message) {
   const guild = message.guild
     ? { id: message.guild.id, name: message.guild.name }
     : { id: null, name: null };
 
+    // todo: add DM with person name if we have a DM
   const channel = {
     id: message.channel.id,
-    name: message.channel.type === 'DM' ? 'DM' : message.channel.name ?? '',
+    name: message.channel.type === ChannelType.DM ? 'DM (Name)' : message.channel.name ?? '',
   };
 
   return { guild, channel } as const;

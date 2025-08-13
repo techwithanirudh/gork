@@ -2,7 +2,7 @@ import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
-import { formatMemoriesForPrompt } from './memories';
+import { memoriesPrompt } from './memories';
 import { personalityPrompt } from './personality';
 import { relevancePrompt, replyPrompt } from './tasks';
 import { toolsPrompt } from './tools';
@@ -30,7 +30,7 @@ export const systemPrompt = ({
   memories: ScoredPineconeRecord<PineconeMetadataOutput>[];
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
-  const memoriesText = formatMemoriesForPrompt(memories);
+
   if (selectedChatModel === 'chat-model') {
     return [
       corePrompt,
@@ -38,7 +38,7 @@ export const systemPrompt = ({
       examplesPrompt,
       requestPrompt,
       toolsPrompt,
-      memoriesText,
+      memoriesPrompt(memories),
       replyPrompt,
     ]
       .filter(Boolean)
@@ -50,7 +50,7 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
-      memoriesText,
+      memoriesPrompt(memories),
       relevancePrompt,
     ]
       .filter(Boolean)
