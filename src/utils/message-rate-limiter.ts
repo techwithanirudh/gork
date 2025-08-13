@@ -14,7 +14,7 @@ async function incrementMessageCount(ctxId: string): Promise<number> {
   pipeline.expire(key, 3600);
   
   const results = await pipeline.exec();
-  const n = (results?.[0] as [any, number])?.[1];
+  const n = (results?.[0] as [unknown, number])?.[1];
   return n || 1;
 }
 

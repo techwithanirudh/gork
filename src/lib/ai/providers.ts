@@ -1,4 +1,4 @@
-import { customProvider, wrapLanguageModel } from 'ai';
+import { customProvider } from 'ai';
 
 import { env } from '@/env';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';

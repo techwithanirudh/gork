@@ -13,7 +13,7 @@ const logger = createLogger('pinecone:queries');
 export interface MemorySearchOptions {
   namespace?: string;
   topK?: number;
-  filter?: Record<string, any>;
+  filter?: Record<string, unknown>;
 }
 
 export const searchMemories = async (

@@ -2,7 +2,6 @@ import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
-import { setTimeout } from 'timers/promises';
 
 const logger = createLogger('tools:reply');
 

@@ -9,15 +9,22 @@ export const skip = ({ message }: { message: Message }) =>
   tool({
     description: 'End without replying to the provided message.',
     inputSchema: z.object({
-      reason: z.string().optional().describe('Optional short reason for skipping'),
+      reason: z
+        .string()
+        .optional()
+        .describe('Optional short reason for skipping'),
     }),
     execute: async ({ reason }) => {
-      if (reason) logger.info({ reason }, 'Skipping reply');
+      const { author, content } = message;
+      if (reason)
+        logger.info(
+          { reason, message: `${author.username}: ${content}` },
+          'Skipping reply'
+        );
 
       return {
-        success: true
+        success: true,
       };
     },
   });
-
 

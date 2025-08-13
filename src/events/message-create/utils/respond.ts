@@ -14,7 +14,7 @@ import { saveToolMemory } from '@/lib/memory';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
-import { generateText, hasToolCall, stepCountIs, tool } from 'ai';
+import { generateText, hasToolCall, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod/v4';
 
