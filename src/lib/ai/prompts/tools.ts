@@ -54,16 +54,17 @@ Think step-by-step: decide if you need info (memories/web/user), then react/repl
    purpose: reply in thread or send a new message in a channel
    IMPORTANT RULES:
       - Do NOT send any metadata (like username, id, etc.), only pure text lines.
-      - Use 'reply' type only for the first line to thread to the message; use 'message' for subsequent lines.
+      - Use 'reply' type only for the first line; it threads to the latest message (the one you're responding to). Use 'message' for subsequent lines.
+      - You can optionally set 'offset' to pick an earlier message relative to the latest: 0 or omitted = latest, 1 = previous, 2 = two back, up to 100.
       - Never repeat the exact same line in a short window.
       - This does not start a DM, use startDM for that.
    parameters:
-      - id: the Discord message ID you are replying under
       - content: an ARRAY of PURE text lines; each array item becomes a separate Discord message
-      - type: either "reply" (first element threads to id, rest are fresh messages) or "message" (all are fresh messages)
+      - type: either "reply" (first element threads to target, rest are fresh messages) or "message" (all are fresh messages)
+      - offset (optional): how many messages BEFORE the latest to reply to (0..100)
 
    how sending works:
-      - If type = "reply": the FIRST element of content is sent as a threaded reply to the message with id; any additional elements are sent as new messages in the same channel.
+      - If type = "reply": the FIRST element of content is sent as a threaded reply to the target message determined by 'offset'; any additional elements are sent as new messages in the same channel.
       - If type = "message": ALL elements of content are sent as new messages in the same channel (no threading).
 
    formatting requirements:
@@ -72,7 +73,18 @@ Think step-by-step: decide if you need info (memories/web/user), then react/repl
       - Always split longer content into multiple items.
       - Do not repeat identical lines. If you don't need to reply, call 'complete'.
     
-8. startDM:
+8. getMessages:
+   purpose: list recent messages in the current channel to help select a specific target message without memorizing IDs
+   parameters:
+      - limit (optional): number of messages to fetch (default 25, max 100)
+      - anchor (optional):
+          - id (optional): anchor message id (defaults to latest you are responding to)
+          - position: one of "before", "after", or "around" (default "before")
+   guidance:
+      - Use this to locate the target message, then call reply with an 'offset' relative to the latest (0 = latest, 1 = previous, etc.). Avoid passing raw IDs.
+      - After finishing your response or deciding not to reply, you MUST call 'complete'.
+
+9. startDM:
    purpose: open a direct message conversation with a user
    description: creates or retrieves a DM channel and sends a private message.
    parameters:

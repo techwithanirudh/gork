@@ -5,6 +5,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { joinServer } from '@/lib/ai/tools/join-server';
 import { react } from '@/lib/ai/tools/react';
 import { reply } from '@/lib/ai/tools/reply';
+import { getMessages } from '@/lib/ai/tools/get-messages';
 import { report } from '@/lib/ai/tools/report';
 import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
@@ -13,7 +14,7 @@ import { saveToolMemory } from '@/lib/memory';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
-import { generateText, stepCountIs, tool } from 'ai';
+import { generateText, hasToolCall, stepCountIs, tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod/v4';
 
@@ -41,9 +42,9 @@ export async function generateResponse(
         'startDM',
         'getUserInfo',
         'searchMemories',
+        'getMessages',
         'react',
-        'reply',
-        'complete',
+        'reply'
       ],
       toolChoice: 'required',
       tools: {
@@ -54,18 +55,16 @@ export async function generateResponse(
         startDM: startDM({ message: msg }),
         getUserInfo: getUserInfo({ message: msg }),
         searchMemories: searchMemories(),
+        getMessages: getMessages({ message: msg }),
         react: react({ message: msg }),
-        reply: reply({ message: msg }),
-        complete: tool({
-          description: 'A tool for providing the final answer.',
-          inputSchema: z.object({
-            success: z.boolean().describe('Whether the operation was successful'),
-          }),
-          // no execute function - invoking it will terminate the agent
-        }),
+        reply: reply({ message: msg })
       },
       system,
-      stopWhen: stepCountIs(10),
+      stopWhen: [
+        hasToolCall('reply'),
+        hasToolCall('react'),
+        stepCountIs(10),
+      ],
       onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
         if (!toolCalls.length) return;
 
