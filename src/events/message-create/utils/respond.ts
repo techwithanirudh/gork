@@ -5,6 +5,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { joinServer } from '@/lib/ai/tools/join-server';
 import { react } from '@/lib/ai/tools/react';
 import { reply } from '@/lib/ai/tools/reply';
+import { skip } from '@/lib/ai/tools/skip';
 import { getMessages } from '@/lib/ai/tools/get-messages';
 import { report } from '@/lib/ai/tools/report';
 import { searchMemories } from '@/lib/ai/tools/search-memories';
@@ -44,7 +45,8 @@ export async function generateResponse(
         'searchMemories',
         'getMessages',
         'react',
-        'reply'
+        'reply',
+        'skip',
       ],
       toolChoice: 'required',
       tools: {
@@ -57,14 +59,11 @@ export async function generateResponse(
         searchMemories: searchMemories(),
         getMessages: getMessages({ message: msg }),
         react: react({ message: msg }),
-        reply: reply({ message: msg })
+        reply: reply({ message: msg }),
+        skip: skip({ message: msg }),
       },
       system,
-      stopWhen: [
-        hasToolCall('reply'),
-        hasToolCall('react'),
-        stepCountIs(10),
-      ],
+      stopWhen: [hasToolCall('reply'), hasToolCall('react'), hasToolCall('skip'), stepCountIs(10)],
       onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
         if (!toolCalls.length) return;
 
