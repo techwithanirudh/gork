@@ -7,7 +7,7 @@ import {
   checkMessageQuota,
   handleMessageCount,
 } from '@/utils/message-rate-limiter';
-import { Message } from 'discord.js-selfbot-v13';
+import { Message } from 'discord.js';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
 

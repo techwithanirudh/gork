@@ -6,7 +6,7 @@ import {
   VoiceChannel,
   type Channel,
   type Message as DiscordMessage,
-} from 'discord.js-selfbot-v13';
+} from 'discord.js';
 
 export async function getMessagesByChannel({
   channel,

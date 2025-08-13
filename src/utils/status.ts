@@ -1,12 +1,11 @@
 import { activities, statuses } from '@/config';
 import { createLogger } from '@/lib/logger';
+import type { PresenceStatusData } from 'discord.js';
+import { Client } from 'discord.js';
 
-import type { ActivityType, PresenceStatusData } from 'discord.js-selfbot-v13';
-import { Client, RichPresence } from 'discord.js-selfbot-v13';
+const logger = createLogger('presence');
 
-import type { Activity } from '@/types';
-
-const logger = createLogger('status');
+type Activity = (typeof activities)[number];
 
 const getRandomItem = <T>(arr: readonly T[]): T => {
   if (arr.length === 0) throw new Error('Array must not be empty');
@@ -16,55 +15,25 @@ const getRandomItem = <T>(arr: readonly T[]): T => {
   return item;
 };
 
-const updateStatus = async (client: Client): Promise<void> => {
+const updateStatus = (client: Client): void => {
   if (!client.user) return;
 
   const status = getRandomItem(statuses) as PresenceStatusData;
   const activity = getRandomItem(activities) as Activity;
 
-  const activityType = [
-    'PLAYING',
-    'STREAMING',
-    'LISTENING',
-    'WATCHING',
-    'CUSTOM',
-    'COMPETING',
-    'HANG',
-  ][activity.type] as ActivityType;
-
-  const richPresence = new RichPresence(client)
-    .setName(activity.name)
-    .setType(activityType);
-
-  if (activity.image) {
-    try {
-      const externalImage = await RichPresence.getExternal(
-        client,
-        client.user.id,
-        activity.image
-      );
-      if (externalImage?.[0]?.external_asset_path) {
-        richPresence.setAssetsLargeImage(externalImage[0].external_asset_path);
-        logger.debug(`Set external image for activity: ${activity.name}`);
-      }
-    } catch (error) {
-      logger.error(`Failed to set external image for activity: ${error}`);
-    }
-  }
-
   client.user.setPresence({
     status,
-    activities: [richPresence],
+    activities: [{ name: activity.name, type: activity.type }],
   });
 
   logger.info(`Status: ${status}, Activity: ${activity.name}`);
 };
 
-const beginStatusUpdates = async (
+const beginStatusUpdates = (
   client: Client,
-  intervalMs = 10 * 60 * 1000
-): Promise<void> => {
-  await updateStatus(client);
+  intervalMs = 10 * 60 * 1000,
+): void => {
+  updateStatus(client);
   setInterval(() => updateStatus(client), intervalMs);
 };
 

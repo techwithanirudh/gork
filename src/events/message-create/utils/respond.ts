@@ -14,7 +14,7 @@ import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
 import { generateText, stepCountIs, tool } from 'ai';
-import type { Message } from 'discord.js-selfbot-v13';
+import type { Message } from 'discord.js';
 import { z } from 'zod/v4';
 
 export async function generateResponse(

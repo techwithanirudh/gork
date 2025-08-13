@@ -1,44 +1,63 @@
+import { commands } from '@/commands';
+import { deployCommands } from '@/deploy-commands';
 import { env } from '@/env';
 import { events } from '@/events';
 import { createLogger } from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
-import { Client } from 'discord.js-selfbot-v13';
+import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 
 const logger = createLogger('core');
-export const client = new Client();
+export const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageTyping,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.DirectMessageTyping,
+    GatewayIntentBits.DirectMessageReactions,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates,
+  ],
+  partials: [Partials.Channel, Partials.Message],
+});
 
-client.once('ready', async () => {
+client.once(Events.ClientReady, (client) => {
   if (!client.user) return;
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info('Bot is ready!');
-  await beginStatusUpdates(client);
+  
+  beginStatusUpdates(client);
 });
 
-client.on('guildCreate', (guild) => {
+client.on(Events.GuildCreate, async (guild) => {
+  await deployCommands({ guildId: guild.id });
+
   const channel = guild.systemChannel;
   if (channel) {
-    channel
-      .send('hi')
-      .catch((err) => logger.error('Failed to send greeting:', err));
+    await channel.send('hi');
   }
 });
 
-Object.keys(events).forEach((key) => {
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isCommand()) {
+    return;
+  }
+  const { commandName } = interaction;
+  if (commands[commandName as keyof typeof commands]) {
+    // @ts-expect-error todo: fix this
+    commands[commandName as keyof typeof commands].execute(interaction);
+  }
+});
+
+Object.keys(events).forEach(function (key) {
   const event = events[key as keyof typeof events];
-  if (!event) return;
 
-  const listener = (...args: Parameters<typeof event.execute>) => {
-    try {
-      event.execute(...args);
-    } catch (err) {
-      logger.error(`Error in event ${event.name}:`, err);
-    }
-  };
-
-  if (event.once) {
-    client.once(event.name, listener);
+  if (event?.once) {
+    client.once(event.name, (...args) => event.execute(...args));
   } else {
-    client.on(event.name, listener);
+    client.on(event.name, (...args) => event.execute(...args));
   }
 });
 

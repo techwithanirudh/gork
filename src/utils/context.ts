@@ -3,7 +3,7 @@ import { getChannelName, getMessagesByChannel } from '@/lib/queries';
 import { convertToModelMessages } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
 import type { ModelMessage } from 'ai';
-import { Channel, Message } from 'discord.js-selfbot-v13';
+import { Message } from 'discord.js';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { queryMemories } from '@/lib/pinecone/operations';
@@ -19,8 +19,7 @@ export async function buildChatContext(
   let messages = opts?.messages;
   let hints = opts?.hints;
   let memories = opts?.memories;
-
-  const channel = msg.channel as Channel;
+  const channel = msg.channel;
 
   if (!messages) {
     const raw = await getMessagesByChannel({ channel: msg.channel, limit: 50 });

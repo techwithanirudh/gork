@@ -1,11 +1,8 @@
-import type { ApplicationCommandData } from 'discord.js-selfbot-v13';
-import { CommandInteraction } from 'discord.js-selfbot-v13';
+import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
 
-export const data: ApplicationCommandData = {
-  name: 'ping',
-  description: 'Replies with Pong!',
-  type: 1, // ChatInput
-};
+export const data = new SlashCommandBuilder()
+  .setName('ping')
+  .setDescription('Replies with Pong!');
 
 export async function execute(interaction: CommandInteraction) {
   return interaction.reply('Pong!');

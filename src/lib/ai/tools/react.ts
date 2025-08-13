@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import type { Message } from 'discord.js-selfbot-v13';
+import type { Message } from 'discord.js';
 import { z } from 'zod';
 
 export const react = ({ message: { channel } }: { message: Message }) =>

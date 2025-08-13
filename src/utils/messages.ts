@@ -5,7 +5,7 @@ import {
   Message as DiscordMessage,
   type Collection,
   type MessageAttachment as DiscordAttachment,
-} from 'discord.js-selfbot-v13';
+} from 'discord.js';
 
 const logger = createLogger('utils:messages');
 

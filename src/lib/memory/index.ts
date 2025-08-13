@@ -1,6 +1,6 @@
 import { addMemory } from '@/lib/pinecone/queries';
 import { getMessagesByChannel } from '@/lib/queries';
-import type { Message } from 'discord.js-selfbot-v13';
+import type { Message } from 'discord.js';
 
 export function buildLocationFromMessage(message: Message) {
   const guild = message.guild

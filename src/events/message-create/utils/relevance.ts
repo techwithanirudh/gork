@@ -5,7 +5,7 @@ import { createLogger } from '@/lib/logger';
 import { probabilitySchema, type Probability } from '@/lib/validators';
 import type { RequestHints } from '@/types';
 import { generateObject, type ModelMessage } from 'ai';
-import type { Message } from 'discord.js-selfbot-v13';
+import type { Message } from 'discord.js';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { PineconeMetadataOutput } from '@/types';
 
