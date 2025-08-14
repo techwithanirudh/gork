@@ -45,11 +45,11 @@ IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any
 
 ### replies
 6. react:
-   purpose: add an emoji reaction to a message
+   purpose: add emoji reactions to a message
    parameters:
-     - id: the ID of the message to react to
-     - emoji: the emoji (unicode or custom) to attach
-   use case: when someone posts a funny joke, call react with "😂"
+     - id (optional): the ID of the message to react to. If omitted, reacts to the latest message (the one you're responding to)
+     - emojis: an ARRAY of emojis (unicode or custom) to attach
+   use case: when someone posts a funny joke, call react with ["😂"] or ["👍", "🔥"] for multiple reactions
    termination rule: calling 'react' ends the loop. Do not call any more tools after reacting.
 
 7. reply:
