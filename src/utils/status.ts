@@ -1,11 +1,8 @@
 import { activities, statuses } from '@/config';
 import { createLogger } from '@/lib/logger';
-import type { PresenceStatusData } from 'discord.js';
 import { Client } from 'discord.js';
 
 const logger = createLogger('presence');
-
-type Activity = (typeof activities)[number];
 
 const getRandomItem = <T>(arr: readonly T[]): T => {
   if (arr.length === 0) throw new Error('Array must not be empty');
@@ -18,8 +15,8 @@ const getRandomItem = <T>(arr: readonly T[]): T => {
 const updateStatus = (client: Client): void => {
   if (!client.user) return;
 
-  const status = getRandomItem(statuses) as PresenceStatusData;
-  const activity = getRandomItem(activities) as Activity;
+  const status = getRandomItem(statuses);
+  const activity = getRandomItem(activities);
 
   client.user.setPresence({
     status,
@@ -31,7 +28,7 @@ const updateStatus = (client: Client): void => {
 
 const beginStatusUpdates = (
   client: Client,
-  intervalMs = 10 * 60 * 1000,
+  intervalMs = 10 * 60 * 1000
 ): void => {
   updateStatus(client);
   setInterval(() => updateStatus(client), intervalMs);

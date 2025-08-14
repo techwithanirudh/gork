@@ -27,7 +27,7 @@ client.once(Events.ClientReady, (client) => {
   if (!client.user) return;
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info('Bot is ready!');
-  
+
   beginStatusUpdates(client);
 });
 

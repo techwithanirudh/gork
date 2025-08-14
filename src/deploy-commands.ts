@@ -5,7 +5,6 @@ import { createLogger } from './lib/logger';
 
 const logger = createLogger('commands');
 
-
 const commandsData = Object.values(commands).map((command) => command.data);
 
 const rest = new REST({ version: '10' }).setToken(env.DISCORD_TOKEN);
@@ -22,7 +21,7 @@ export async function deployCommands({ guildId }: DeployCommandsProps) {
       Routes.applicationGuildCommands(env.DISCORD_CLIENT_ID, guildId),
       {
         body: commandsData,
-      },
+      }
     );
 
     logger.info('Successfully reloaded application (/) commands.');

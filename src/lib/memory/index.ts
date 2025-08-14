@@ -7,10 +7,13 @@ export function buildLocationFromMessage(message: Message) {
     ? { id: message.guild.id, name: message.guild.name }
     : { id: null, name: null };
 
-    // todo: add DM with person name if we have a DM
+  // todo: add DM with person name if we have a DM
   const channel = {
     id: message.channel.id,
-    name: message.channel.type === ChannelType.DM ? 'DM (Name)' : message.channel.name ?? '',
+    name:
+      message.channel.type === ChannelType.DM
+        ? 'DM (Name)'
+        : message.channel.name ?? '',
   };
 
   return { guild, channel } as const;
@@ -59,5 +62,3 @@ export async function saveToolMemory(
 
   await addMemory(data, metadata);
 }
-
-

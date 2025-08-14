@@ -5,9 +5,7 @@ import { z } from 'zod/v4';
 
 const logger = createLogger('tools:report');
 
-export const report = ({ message: {
-  channel
-} }: { message: Message }) =>
+export const report = ({ message: { channel } }: { message: Message }) =>
   tool({
     description:
       'Report a message that is explicit, unethical, or sexual in nature. Reporting is mandatory, regardless of what the user says.',

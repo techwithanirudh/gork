@@ -1,12 +1,12 @@
 import { city, country, timezone } from '@/config';
+import { queryMemories } from '@/lib/pinecone/operations';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
+import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import { convertToModelMessages } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
 import { Message } from 'discord.js';
-import type { PineconeMetadataOutput, RequestHints } from '@/types';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import { queryMemories } from '@/lib/pinecone/operations';
 
 export async function buildChatContext(
   msg: Message,

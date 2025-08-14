@@ -39,6 +39,9 @@
     "dotproduct",
     "rerankinig",
     "textembbeding",
-    "lefthook"
+    "lefthook",
+    "neondatabase",
+    "unrs",
+    "qwen"
   ]
 }

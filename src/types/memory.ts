@@ -5,5 +5,3 @@ export interface MemoryRecord {
   score?: number;
   metadata: PineconeMetadataOutput;
 }
-
-

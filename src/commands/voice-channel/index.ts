@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import * as join from './join';
 import * as leave from './leave';
 
@@ -8,14 +8,14 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName('join')
-      .setDescription('Joins the voice channel that you are in'),
+      .setDescription('Joins the voice channel that you are in')
   )
   .addSubcommand((subcommand) =>
-    subcommand.setName('leave').setDescription('Leave the voice channel'),
+    subcommand.setName('leave').setDescription('Leave the voice channel')
   );
 
 export async function execute(
-  interaction: ChatInputCommandInteraction<'cached'>,
+  interaction: ChatInputCommandInteraction<'cached'>
 ) {
   const subcommand = interaction.options.getSubcommand();
 
@@ -27,7 +27,7 @@ export async function execute(
     default:
       return interaction.reply({
         content: 'Unknown subcommand',
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
   }
 }
