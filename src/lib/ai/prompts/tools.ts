@@ -1,7 +1,8 @@
 export const toolsPrompt = `\
 <tools>
 You MUST use tools to act. Never fabricate actions.
-Think step-by-step: decide if you need info (memories/web/user), then react/reply/startDM, and finally call 'complete' when done.
+Think step-by-step: decide if you need info (memories/web/user), then react/reply/startDM.
+IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any other tools after you reply or react.
 
 ### general:
 1. searchMemories:
@@ -44,26 +45,30 @@ Think step-by-step: decide if you need info (memories/web/user), then react/repl
 
 ### replies
 6. react:
-   purpose: add an emoji reaction to a message
+   purpose: add emoji reactions to a message
    parameters:
-     - id: the ID of the message to react to
-     - emoji: the emoji (unicode or custom) to attach
-   use case: when someone posts a funny joke, call react with "😂"
+     - id (optional): the ID of the message to react to. If omitted, reacts to the latest message (the one you're responding to)
+     - emojis: an ARRAY of emojis (unicode or custom) to attach
+   use case: when someone posts a funny joke, call react with ["😂"] or ["👍", "🔥"] for multiple reactions
+   termination rule: calling 'react' ends the loop. Do not call any more tools after reacting.
 
 7. reply:
    purpose: reply in thread or send a new message in a channel
    IMPORTANT RULES:
       - Do NOT send any metadata (like username, id, etc.), only pure text lines.
-      - Use 'reply' type only for the first line to thread to the message; use 'message' for subsequent lines.
+      - Use 'reply' type only for the first line; it threads to the latest message (the one you're responding to). Use 'message' for subsequent lines.
+      - You can optionally set 'offset' to pick an earlier message relative to the latest: 0 or omitted = latest, 1 = previous, 2 = two back, up to 100.
       - Never repeat the exact same line in a short window.
       - This does not start a DM, use startDM for that.
+      - termination rule: calling 'reply' ends the loop. Do not call any more tools after replying.
    parameters:
-      - id: the Discord message ID you are replying under
+      - id (optional): the Discord message ID you are replying under
       - content: an ARRAY of PURE text lines; each array item becomes a separate Discord message
-      - type: either "reply" (first element threads to id, rest are fresh messages) or "message" (all are fresh messages)
+      - type: either "reply" (first element threads to target, rest are fresh messages) or "message" (all are fresh messages)
+      - offset (optional): how many messages BEFORE the latest to reply to (0..100)
 
    how sending works:
-      - If type = "reply": the FIRST element of content is sent as a threaded reply to the message with id; any additional elements are sent as new messages in the same channel.
+      - If type = "reply": the FIRST element of content is sent as a threaded reply to the target message determined by 'offset'; any additional elements are sent as new messages in the same channel.
       - If type = "message": ALL elements of content are sent as new messages in the same channel (no threading).
 
    formatting requirements:
@@ -71,8 +76,14 @@ Think step-by-step: decide if you need info (memories/web/user), then react/repl
       - Do NOT include usernames, IDs, or any extra formatting. Send only the plain message text.
       - Always split longer content into multiple items.
       - Do not repeat identical lines. If you don't need to reply, call 'complete'.
-    
-8. startDM:
+
+9. skip:
+   purpose: end the loop without replying (use when the message is spam, irrelevant, or you choose not to respond)
+   parameters:
+      - reason (optional): short explanation
+   termination rule: calling 'skip' ends the loop. Do not call any more tools after skipping.
+
+10. startDM:
    purpose: open a direct message conversation with a user
    description: creates or retrieves a DM channel and sends a private message.
    parameters:
@@ -84,10 +95,10 @@ more tips on replying:
   - the relevance engine thinks the message is relevant to you.
   - the user pings / mentions you.
   The relevance engine is wrong sometimes, so you can always skip the response.
-- If you don't want to reply to a message, or it's just not related just call the 'complete' tool and skip the response.
+- If you don't want to reply to a message, or it's just not related, 'skip' the message.
 - Also, don't repeatedly reply the same thing over and over again, this is SPAM.
 - If the user is repeatadly sending you spam messages like random charectors, or pasting the same thing again and again DO NOT respond at all, this is spam and this is a way of bot detection, when you face this scenario, immediatly call the 'complete' tool and skip the response. 
 - This is very important if not you will die
 
-Always call the 'complete' tool when you're done. Do NOT repeat the same message over and over again.
+When you send a reply or reaction, the loop ends automatically. Do NOT repeat the same message over and over again.
 </tools>`;

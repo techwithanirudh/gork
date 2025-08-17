@@ -3,11 +3,10 @@ import { myProvider } from '@/lib/ai/providers';
 import { createLogger } from '@/lib/logger';
 
 import { probabilitySchema, type Probability } from '@/lib/validators';
-import type { RequestHints } from '@/types';
+import type { PineconeMetadataOutput, RequestHints } from '@/types';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { generateObject, type ModelMessage } from 'ai';
 import type { Message } from 'discord.js';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { PineconeMetadataOutput } from '@/types';
 
 const logger = createLogger('events:message:relevance');
 
@@ -25,7 +24,7 @@ export async function assessRelevance(
       system: systemPrompt({
         selectedChatModel: 'relevance-model',
         requestHints: hints,
-        memories
+        memories,
       }),
       mode: 'json',
     });

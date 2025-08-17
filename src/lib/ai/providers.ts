@@ -1,25 +1,25 @@
-import { customProvider, wrapLanguageModel } from 'ai';
+import { customProvider } from 'ai';
 
 import { env } from '@/env';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
 import { createFallback } from 'ai-fallback';
 import { createLogger } from '../logger';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+// import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+// import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { cohere } from '@ai-sdk/cohere';
 
 const logger = createLogger('ai:providers');
 
-const hackclub = createOpenAICompatible({
-  name: 'hackclub',
-  apiKey: env.HACKCLUB_API_KEY,
-  baseURL: 'https://ai.hackclub.com',
-});
+// const hackclub = createOpenAICompatible({
+//   name: 'hackclub',
+//   apiKey: env.HACKCLUB_API_KEY,
+//   baseURL: 'https://ai.hackclub.com',
+// });
 
-const openrouter = createOpenRouter({
-  apiKey: env.OPENROUTER_API_KEY!,
-});
+// const openrouter = createOpenRouter({
+//   apiKey: env.OPENROUTER_API_KEY!,
+// });
 
 const google = createGoogleGenerativeAI({
   apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY!,
@@ -40,10 +40,7 @@ const chatModel = createFallback({
 });
 
 const relevanceModel = createFallback({
-  models: [
-    google('gemini-2.5-flash-lite'),
-    google('gemini-2.0-flash-lite'),
-  ],
+  models: [google('gemini-2.5-flash-lite'), google('gemini-2.0-flash-lite')],
   onError: (error, modelId) => {
     logger.error(`error with model ${modelId}, switching to next model`);
   },
@@ -57,7 +54,7 @@ export const myProvider = customProvider({
     'chat-model': chatModel,
     'reasoning-model': google('gemini-2.5-flash'),
     // 'relevance-model': openai.responses('gpt-4.1-nano'),
-    "relevance-model": relevanceModel,
+    'relevance-model': relevanceModel,
   },
   imageModels: {
     // 'small-model': openai.imageModel('dall-e-2'),

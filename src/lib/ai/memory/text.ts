@@ -11,23 +11,23 @@ export function formatMemories(
       const { metadata } = memory;
       if (!metadata) return null;
 
-      const guildObj = metadata.guild ? JSON.parse(metadata.guild) : null;
-      const channelObj = metadata.channel ? JSON.parse(metadata.channel) : null;
+      const guild = metadata.guild ? JSON.parse(metadata.guild) : null;
+      const channel = metadata.channel ? JSON.parse(metadata.channel) : null;
       const createdAt = metadata.createdAt
         ? new Date(metadata.createdAt).toISOString()
         : null;
 
       if (metadata.type === 'chat') {
         return formatChatMemory({
-          guild: guildObj,
-          channel: channelObj,
+          guild,
+          channel,
           context: metadata.context,
           createdAt,
         });
       } else if (metadata.type === 'tool') {
         return formatToolMemory({
-          guild: guildObj,
-          channel: channelObj,
+          guild,
+          channel,
           name: metadata.name,
           response: metadata.response,
           createdAt,
@@ -54,13 +54,21 @@ function formatChatMemory({
   context: string;
   createdAt: string | null;
 }) {
-  const location = guild?.name
-    ? `#${channel?.name} in ${guild.name}`
-    : channel?.name || 'Unknown';
-  const timestamp = createdAt ? `on ${createdAt.split('T')[0]}` : '';
-
-  return `Previous conversation ${location} ${timestamp}:
-${context}`;
+  const lines = [
+    '---',
+    'type: chat',
+    `createdAt: ${createdAt ?? 'unknown'}`,
+    'guild:',
+    `  id: ${guild?.id ?? 'null'}`,
+    `  name: ${guild?.name ?? 'null'}`,
+    'channel:',
+    `  id: ${channel?.id ?? 'null'}`,
+    `  name: ${channel?.name ?? 'null'}`,
+    'context: |',
+    ...context.split('\n').map((l) => `  ${l}`),
+    '---',
+  ];
+  return lines.join('\n');
 }
 
 function formatToolMemory({
@@ -76,17 +84,23 @@ function formatToolMemory({
   response: unknown;
   createdAt: string | null;
 }) {
-  const location = guild?.name
-    ? `#${channel?.name} in ${guild.name}`
-    : channel?.name || 'Unknown';
-  const timestamp = createdAt ? `on ${createdAt.split('T')[0]}` : '';
-
   const responseText =
     typeof response === 'string' ? response : JSON.stringify(response, null, 2);
 
-  return `Previous tool usage ${location} ${timestamp}:
-Tool: ${name}
-Result: ${responseText}`;
+  const lines = [
+    '---',
+    'type: tool',
+    `createdAt: ${createdAt ?? 'unknown'}`,
+    'guild:',
+    `  id: ${guild?.id ?? 'null'}`,
+    `  name: ${guild?.name ?? 'null'}`,
+    'channel:',
+    `  id: ${channel?.id ?? 'null'}`,
+    `  name: ${channel?.name ?? 'null'}`,
+    `toolName: ${name ?? 'unknown'}`,
+    'result: |',
+    ...responseText.split('\n').map((l) => `  ${l}`),
+    '---',
+  ];
+  return lines.join('\n');
 }
-
-
