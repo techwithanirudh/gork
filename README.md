@@ -1,4 +1,4 @@
-<h1 align="center">AI Discord Bot</h4>
+<h1 align="center">Gork</h4>
 
 ## 📋 Table of Contents
 
@@ -78,3 +78,4 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 [ai-sdk]: https://ai-sdk.dev/
 [bun]: https://bun.sh/
 [exa]: https://exa.ai/
+
