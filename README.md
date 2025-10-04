@@ -10,7 +10,7 @@
 
 ## <a name="introduction">🤖 Introduction</a>
 
-A human-like bot that is almost indistinguishable from a real person.
+A human-like bot (called Gork) that is almost indistinguishable from a real person.
 
 ## <a name="tech-stack">🚀 Tech Stack</a>
 
@@ -78,4 +78,5 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 [ai-sdk]: https://ai-sdk.dev/
 [bun]: https://bun.sh/
 [exa]: https://exa.ai/
+
 
