@@ -75,7 +75,7 @@ export const reply = ({ message }: { message: Message }) =>
         };
       } catch (error) {
         logger.error({ error, content, type, offset }, 'Failed to send reply');
-        return { success: false, error: String(error) };
+        return { success: false, error: String(error), content: 'Failed to reply' };
       }
     },
   });

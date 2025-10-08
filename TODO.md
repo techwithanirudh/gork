@@ -75,3 +75,11 @@ and properly document the tool for hte model
 Log all tools after completion
 
 Now the problem is the relevance agent can also reply to messages fix that
+
+Gork should verify in relevance engine if it mentiones gork the ping it unknowingly relevances
+the spam detector is borked
+the pings should be replaced
+
+      "responseBody": "{\n  \"error\": {\n    \"message\": \"'$.input' is invalid. Please check the API reference: https://platform.openai.com/docs/api-reference.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": null,\n    \"code\": null\n  }\n}\n",
+      I found the culprit of the issue here. The API accepts an empty string, and a list of strings, however, it returns the above-mentioned error when receiving a list with a single empty string. The documentation states that the input cannot be an empty string which is very confusion. The documentation should probably be updated, and meanwhile, to fix the issue, you should make sure to not send a list with a single empty string.
+

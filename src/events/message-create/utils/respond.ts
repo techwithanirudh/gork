@@ -12,8 +12,9 @@ import { saveToolMemory } from '@/lib/memory';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
-import { generateText, hasToolCall, stepCountIs } from 'ai';
+import { generateText, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
+import { successToolCall } from '@/lib/ai/utils';
 
 export async function generateResponse(
   msg: Message,
@@ -60,10 +61,10 @@ export async function generateResponse(
       },
       system,
       stopWhen: [
-        hasToolCall('reply'),
-        hasToolCall('react'),
-        hasToolCall('skip'),
         stepCountIs(10),
+        successToolCall('reply'),
+        successToolCall('react'),
+        successToolCall('skip'),
       ],
       onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
         if (!toolCalls.length) return;

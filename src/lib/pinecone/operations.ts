@@ -25,8 +25,12 @@ export const queryMemories = async (
     onlyTools = false,
   }: QueryMemoriesOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
+  if (!query || query.trim().length === 0) {
+    return [];
+  }
+
   const now = Date.now();
-  const filter: Record<string, unknown> = {};
+  const filter: Record<string, any> = {};
 
   if (ignoreRecent) {
     filter.createdAt = { $lt: now - 60_000 };
