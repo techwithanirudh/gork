@@ -1,4 +1,8 @@
-import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  MessageFlags,
+  SlashCommandBuilder,
+} from 'discord.js';
 import * as join from './join';
 import * as leave from './leave';
 

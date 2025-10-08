@@ -49,6 +49,10 @@ export async function execute(message: Message) {
 
   if (trigger.type) {
     await resetMessageCount(ctxId);
+    if ('sendTyping' in message.channel) {
+      await message.channel.sendTyping();
+    }
+
     logger.info(
       {
         message: `${author.username}: ${content}`,

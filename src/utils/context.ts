@@ -7,6 +7,7 @@ import { getTimeInCity } from '@/utils/time';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
 import { Message } from 'discord.js';
+import { buildUserMap, type UserMapEntry } from './users';
 
 export async function buildChatContext(
   msg: Message,
@@ -22,11 +23,13 @@ export async function buildChatContext(
   const channel = msg.channel;
 
   let rawMessages: Message[] = [];
+  let userMap: Map<string, UserMapEntry> = new Map();
 
   if (!messages) {
     const raw = await getMessagesByChannel({ channel: msg.channel, limit: 50 });
     rawMessages = Array.from(raw.values());
     messages = await convertToModelMessages(raw);
+    userMap = buildUserMap(raw);
   }
 
   if (!hints) {
@@ -47,14 +50,19 @@ export async function buildChatContext(
   if (!memories) {
     const tinyHistory = rawMessages
       .slice(-3)
-      .map((rM) => formatDiscordMessage(rM, null))
+      .map((rM) => formatDiscordMessage(rM, null, {}, userMap))
       .join('\n');
     const onlyMessage = messages.length
-      ? formatDiscordMessage(rawMessages[rawMessages.length - 1]!, null, {
-          withAuthor: false,
-          withContext: false,
-          withReactions: false,
-        })
+      ? formatDiscordMessage(
+          rawMessages[rawMessages.length - 1]!,
+          null,
+          {
+            withAuthor: false,
+            withContext: false,
+            withReactions: false,
+          },
+          userMap
+        )
       : String(msg.content ?? '');
 
     const [

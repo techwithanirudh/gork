@@ -1,5 +1,5 @@
 import { createLogger } from '@/lib/logger';
-
+import { buildUserMap, type UserMapEntry } from '@/utils/users';
 import type { FilePart, ModelMessage } from 'ai';
 import {
   Message as DiscordMessage,
@@ -15,12 +15,14 @@ interface MessageFormatOptions {
   withReactions?: boolean;
   withTimestamp?: boolean;
   withId?: boolean;
+  replacePings?: boolean;
 }
 
 export function formatDiscordMessage(
   msg: DiscordMessage,
   ref: DiscordMessage | null = null,
-  options: MessageFormatOptions = {}
+  options: MessageFormatOptions = {},
+  userMap?: Map<string, UserMapEntry>
 ): string {
   const {
     withAuthor = true,
@@ -28,6 +30,7 @@ export function formatDiscordMessage(
     withReactions = true,
     withTimestamp = false,
     withId = false,
+    replacePings = true,
   } = options;
 
   let result = '';
@@ -54,7 +57,20 @@ export function formatDiscordMessage(
     result += `(${context}) `;
   }
 
-  result += msg.content;
+  let processedContent = msg.content;
+
+  if (replacePings && userMap) {
+    processedContent = processedContent
+      .replace(/<@!?(\d+)>/g, (_, userId) => {
+        const user = userMap.get(userId);
+        return user ? `@${user.username}` : '@unknown';
+      })
+      .replace(/<@&(\d+)>/g, '@role')
+      .replace(/@everyone/g, '@everyone')
+      .replace(/@here/g, '@here');
+  }
+
+  result += processedContent;
 
   if (withReactions && msg.reactions.cache.size > 0) {
     const reactions = Array.from(msg.reactions.cache.values())
@@ -69,6 +85,8 @@ export function formatDiscordMessage(
 export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>
 ): Promise<Array<ModelMessage>> {
+  const userMap = buildUserMap(messages);
+
   return await Promise.all(
     messages.map(async (msg) => {
       const ref = msg.reference
@@ -76,13 +94,19 @@ export async function convertToModelMessages(
         : null;
 
       const isBot = msg.author.id === msg.client.user?.id;
-      const structuredText = formatDiscordMessage(msg, ref, {
-        withAuthor: true,
-        withContext: true,
-        withReactions: true,
-        withTimestamp: false,
-        withId: false,
-      });
+      const structuredText = formatDiscordMessage(
+        msg,
+        ref,
+        {
+          withAuthor: true,
+          withContext: true,
+          withReactions: true,
+          withTimestamp: false,
+          withId: false,
+          replacePings: true,
+        },
+        userMap
+      );
 
       if (isBot) {
         return {
