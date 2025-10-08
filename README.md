@@ -1,4 +1,4 @@
-<h1 align="center">AI Discord Bot</h4>
+<h1 align="center">Gork</h4>
 
 ## 📋 Table of Contents
 
@@ -10,7 +10,7 @@
 
 ## <a name="introduction">🤖 Introduction</a>
 
-A human-like bot that is almost indistinguishable from a real person.
+A human-like bot (called Gork) that is almost indistinguishable from a real person.
 
 ## <a name="tech-stack">🚀 Tech Stack</a>
 
