@@ -1,5 +1,4 @@
-import { city, country, timezone, memories as memoriesConfig } from '@/config';
-import baseLogger from '@/lib/logger';
+import { city, country, memories as memoriesConfig, timezone } from '@/config';
 import { queryMemories } from '@/lib/pinecone/operations';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
@@ -31,15 +30,17 @@ export async function buildChatContext(
   }
 
   if (!hints) {
+    const me = msg.guild?.members.me;
+
     hints = {
       channel: getChannelName(channel),
       time: getTimeInCity(timezone),
       city,
       country,
       server: msg.guild?.name ?? 'DM',
-      joined: msg.guild?.members.me?.joinedTimestamp ?? 0,
-      status: msg.guild?.members.me?.presence?.status ?? 'offline',
-      activity: msg.guild?.members.me?.presence?.activities[0]?.name ?? 'none',
+      joined: me?.joinedTimestamp ?? 0,
+      status: me?.presence?.status ?? 'offline',
+      activity: me?.presence?.activities[0]?.name ?? 'none',
     };
   }
 
@@ -50,10 +51,10 @@ export async function buildChatContext(
       .join('\n');
     const onlyMessage = messages.length
       ? formatDiscordMessage(rawMessages[rawMessages.length - 1]!, null, {
-        withAuthor: false,
-        withContext: false,
-        withReactions: false
-      })
+          withAuthor: false,
+          withContext: false,
+          withReactions: false,
+        })
       : String(msg.content ?? '');
 
     const [
@@ -65,14 +66,23 @@ export async function buildChatContext(
       memories5,
       memories6,
     ] = await Promise.all([
-      queryMemories(msg.content, { namespace: 'default', limit: memoriesConfig.eachLimit }),
-      queryMemories(tinyHistory, { namespace: 'default', limit: memoriesConfig.eachLimit }),
+      queryMemories(msg.content, {
+        namespace: 'default',
+        limit: memoriesConfig.eachLimit,
+      }),
+      queryMemories(tinyHistory, {
+        namespace: 'default',
+        limit: memoriesConfig.eachLimit,
+      }),
       queryMemories(tinyHistory, {
         namespace: 'default',
         limit: memoriesConfig.eachLimit,
         ageLimit: 1000 * 60 * 60, // 1 hour in ms
       }),
-      queryMemories(onlyMessage, { namespace: 'default', limit: memoriesConfig.eachLimit }),
+      queryMemories(onlyMessage, {
+        namespace: 'default',
+        limit: memoriesConfig.eachLimit,
+      }),
       queryMemories(onlyMessage, {
         namespace: 'default',
         limit: memoriesConfig.eachLimit,
