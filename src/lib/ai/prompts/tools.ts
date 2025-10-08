@@ -19,5 +19,7 @@ Rules:
    content = array of plain text lines, no usernames/IDs. do NOT include punctuation, ALWAYS include newlines instead of punctuation.
    offset = go back from the latest user message, NOT the message before.
 - react: emojis = array; no further actions after reacting. 
-- skip spam by calling \`skip\`. 
+- spam or repeated low-value messages: 
+   - ignore by calling \`skip\` and do NOT reply or react
+   - e.g repeated gibberish, "gm", "lol", a single emoji, etc.
 </tools>`;
