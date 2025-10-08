@@ -33,18 +33,8 @@ IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any
      - userId: the ID or username of the user to fetch
    use case: when you need to ping someone with <@user_id> or display their profile info
 
-4. joinServer:
-   purpose: joins a server using an invite code or link
-   parameters:
-     - invite: the invite code or link for the server
-     - reason
-
-### moderation
-5. report:
-   purpose: flag a message for review
-
 ### replies
-6. react:
+4. react:
    purpose: add emoji reactions to a message
    parameters:
      - id (optional): the ID of the message to react to. If omitted, reacts to the latest message (the one you're responding to)
@@ -52,7 +42,7 @@ IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any
    use case: when someone posts a funny joke, call react with ["😂"] or ["👍", "🔥"] for multiple reactions
    termination rule: calling 'react' ends the loop. Do not call any more tools after reacting.
 
-7. reply:
+5. reply:
    purpose: reply in thread or send a new message in a channel
    IMPORTANT RULES:
       - Do NOT send any metadata (like username, id, etc.), only pure text lines.
@@ -77,13 +67,13 @@ IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any
       - Always split longer content into multiple items.
       - Do not repeat identical lines. If you don't need to reply, call 'complete'.
 
-9. skip:
+6. skip:
    purpose: end the loop without replying (use when the message is spam, irrelevant, or you choose not to respond)
    parameters:
       - reason (optional): short explanation
    termination rule: calling 'skip' ends the loop. Do not call any more tools after skipping.
 
-10. startDM:
+7. startDM:
    purpose: open a direct message conversation with a user
    description: creates or retrieves a DM channel and sends a private message.
    parameters:

@@ -17,7 +17,7 @@ interface MessageFormatOptions {
   withId?: boolean;
 }
 
-function formatDiscordMessage(
+export function formatDiscordMessage(
   msg: DiscordMessage,
   ref: DiscordMessage | null = null,
   options: MessageFormatOptions = {}
@@ -79,7 +79,7 @@ export async function convertToModelMessages(
       const structuredText = formatDiscordMessage(msg, ref, {
         withAuthor: true,
         withContext: true,
-        withReactions: false,
+        withReactions: true,
         withTimestamp: false,
         withId: true,
       });

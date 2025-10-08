@@ -2,10 +2,8 @@ import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { getUserInfo } from '@/lib/ai/tools/get-user-info';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { joinServer } from '@/lib/ai/tools/join-server';
 import { react } from '@/lib/ai/tools/react';
 import { reply } from '@/lib/ai/tools/reply';
-import { report } from '@/lib/ai/tools/report';
 import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
 import { skip } from '@/lib/ai/tools/skip';
@@ -42,8 +40,6 @@ export async function generateResponse(
       activeTools: [
         'getWeather',
         'searchWeb',
-        'report',
-        'joinServer',
         'startDM',
         'getUserInfo',
         'searchMemories',
@@ -55,8 +51,6 @@ export async function generateResponse(
       tools: {
         getWeather,
         searchWeb,
-        report: report({ message: msg }),
-        joinServer: joinServer({ message: msg }),
         startDM: startDM({ message: msg }),
         getUserInfo: getUserInfo({ message: msg }),
         searchMemories: searchMemories(),

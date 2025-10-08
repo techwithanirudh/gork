@@ -78,5 +78,3 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 [ai-sdk]: https://ai-sdk.dev/
 [bun]: https://bun.sh/
 [exa]: https://exa.ai/
-
-
