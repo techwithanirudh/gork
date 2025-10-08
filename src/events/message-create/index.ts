@@ -46,6 +46,8 @@ export async function execute(message: Message) {
   const botId = client.user?.id;
   const trigger = await getTrigger(message, keywords, botId);
 
+  const { messages, hints, memories } = await buildChatContext(message);
+
   if (trigger.type) {
     await resetMessageCount(ctxId);
     if ('sendTyping' in message.channel) {
@@ -59,7 +61,6 @@ export async function execute(message: Message) {
       `[${ctxId}] Triggered by ${trigger.type}`
     );
 
-    const { messages, hints, memories } = await buildChatContext(message);
     const result = await generateResponse(message, messages, hints, memories);
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
@@ -77,7 +78,6 @@ export async function execute(message: Message) {
     return;
   }
 
-  const { messages, hints, memories } = await buildChatContext(message);
   const { probability, reason } = await assessRelevance(
     message,
     messages,
