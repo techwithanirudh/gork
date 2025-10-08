@@ -46,21 +46,13 @@ export async function buildChatContext(
   if (!memories) {
     const tinyHistory = rawMessages
       .slice(-3)
-      .map((rM) => formatDiscordMessage(rM, null, {
-        withAuthor: true,
-        withContext: true,
-        withReactions: true,
-        withTimestamp: false,
-        withId: true,
-      }))
+      .map((rM) => formatDiscordMessage(rM, null))
       .join('\n');
     const onlyMessage = messages.length
       ? formatDiscordMessage(rawMessages[rawMessages.length - 1]!, null, {
         withAuthor: false,
         withContext: false,
-        withReactions: false,
-        withTimestamp: false,
-        withId: true,
+        withReactions: false
       })
       : String(msg.content ?? '');
 

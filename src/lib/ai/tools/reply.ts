@@ -8,34 +8,41 @@ const logger = createLogger('tools:reply');
 export const reply = ({ message }: { message: Message }) =>
   tool({
     description:
-      'Send messages in the channel. If ID is provided, reply to that message; otherwise reply to the provided message.',
+      'Send messages in the channel. If offset is provided, reply to that earlier message; otherwise reply to the provided message.',
     inputSchema: z.object({
-      id: z
-        .string()
-        .trim()
+      offset: z
+        .number()
         .optional()
         .describe(
-          'The ID of the message to reply to (optional). If omitted, replies to the latest message (the provided message).'
+          'Number of messages to go back from the current one. 0 or omitted means reply to the current message.'
         ),
       content: z.array(z.string()).describe('Lines of text to send'),
       type: z
         .enum(['reply', 'message'])
-        .describe('Whether to reply (threads) or just send'),
-      // author: z.string().describe('The author of the message to react to'),
+        .describe('Whether to reply (threaded) or just send in the channel'),
     }),
-    execute: async ({ id, content, type }) => {
+    execute: async ({ offset = 0, content, type }) => {
       try {
         const channel = message.channel;
         if (!('send' in channel) || typeof channel.send !== 'function') {
           return { success: false, error: 'Channel is not text-based' };
         }
 
-        const target =
-          id && id.length > 0 ? await channel.messages.fetch(id) : message;
+        let target: Message;
+        logger.info({ offset, message: message.content }, 'Replying to message');
+        if (offset > 0) {
+          const messages = await channel.messages.fetch({ limit: offset, before: message.id });
+          const sorted = [...messages.values()].sort(
+            (a, b) => b.createdTimestamp - a.createdTimestamp
+          );
+          target = sorted[offset - 1] ?? message;
+        } else {
+          target = message;
+        }
 
         if (!target) {
-          logger.warn({ id }, 'Message not found');
-          return { success: false, error: 'Message not found' };
+          logger.warn({ offset }, 'Target message not found');
+          return { success: false, error: 'Target message not found' };
         }
 
         for (const [idx, text] of content.entries()) {
@@ -47,8 +54,8 @@ export const reply = ({ message }: { message: Message }) =>
         }
 
         logger.info(
-          { id: id ?? message.id, content, type },
-          'Replied to message'
+          { id: target.id, content, type, offset },
+          'Successfully replied to message'
         );
 
         return {
@@ -58,7 +65,7 @@ export const reply = ({ message }: { message: Message }) =>
         };
       } catch (error) {
         logger.error(
-          { error, id: id ?? message.id, content, type },
+          { error, content, type, offset },
           'Failed to send reply'
         );
         return { success: false, error: String(error) };

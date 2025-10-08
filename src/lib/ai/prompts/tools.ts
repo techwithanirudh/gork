@@ -1,8 +1,7 @@
 export const toolsPrompt = `\
 <tools>
-You MUST use tools to act. Never fabricate actions.
 Think step-by-step: decide if you need info (memories/web/user), then react/reply/startDM.
-IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any other tools after you reply or react.
+IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do NOT call any other tools after you reply or react.
 
 ### general:
 1. searchMemories:
@@ -52,7 +51,6 @@ IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any
       - This does not start a DM, use startDM for that.
       - termination rule: calling 'reply' ends the loop. Do not call any more tools after replying.
    parameters:
-      - id (optional): the Discord message ID you are replying under
       - content: an ARRAY of PURE text lines; each array item becomes a separate Discord message
       - type: either "reply" (first element threads to target, rest are fresh messages) or "message" (all are fresh messages)
       - offset (optional): how many messages BEFORE the latest to reply to (0..100)
@@ -68,10 +66,10 @@ IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do not call any
       - Do not repeat identical lines. If you don't need to reply, call 'complete'.
 
 6. skip:
-   purpose: end the loop without replying (use when the message is spam, irrelevant, or you choose not to respond)
+   purpose: end the loop without replying
    parameters:
       - reason (optional): short explanation
-   termination rule: calling 'skip' ends the loop. Do not call any more tools after skipping.
+   termination rule: calling 'skip' ends the loop. Do NOT call any more tools after skipping.
 
 7. startDM:
    purpose: open a direct message conversation with a user
@@ -85,10 +83,7 @@ more tips on replying:
   - the relevance engine thinks the message is relevant to you.
   - the user pings / mentions you.
   The relevance engine is wrong sometimes, so you can always skip the response.
-- If you don't want to reply to a message, or it's just not related, 'skip' the message.
-- Also, don't repeatedly reply the same thing over and over again, this is SPAM.
-- If the user is repeatadly sending you spam messages like random charectors, or pasting the same thing again and again DO NOT respond at all, this is spam and this is a way of bot detection, when you face this scenario, immediatly call the 'complete' tool and skip the response. 
-- This is very important if not you will die
+- If a user repeatedly sends you spam messages, such as random characters or pastes the same thing over and over, this is considered spam. When you encounter this scenario, immediately call the 'complete' tool and skip the response.
 
 When you send a reply or reaction, the loop ends automatically. Do NOT repeat the same message over and over again.
 </tools>`;
