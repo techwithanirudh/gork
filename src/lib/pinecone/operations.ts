@@ -30,7 +30,7 @@ export const queryMemories = async (
   }
 
   const now = Date.now();
-  const filter: Record<string, any> = {};
+  const filter: Record<string, unknown> = {};
 
   if (ignoreRecent) {
     filter.createdAt = { $lt: now - 60_000 };
@@ -38,7 +38,7 @@ export const queryMemories = async (
 
   if (ageLimit != null) {
     filter.createdAt = {
-      ...filter.createdAt,
+      ...(filter.createdAt || {}),
       $gt: now - ageLimit,
     };
   }

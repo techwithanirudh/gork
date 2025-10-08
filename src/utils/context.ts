@@ -26,7 +26,11 @@ export async function buildChatContext(
   let userMap: Map<string, UserMapEntry> = new Map();
 
   if (!messages) {
-    const raw = await getMessagesByChannel({ channel: msg.channel, limit: 50 });
+    const raw = await getMessagesByChannel({
+      channel: msg.channel,
+      limit: 50,
+      before: msg.id,
+    });
     rawMessages = Array.from(raw.values());
     messages = await convertToModelMessages(raw);
     userMap = buildUserMap(raw);
@@ -52,18 +56,16 @@ export async function buildChatContext(
       .slice(-3)
       .map((rM) => formatDiscordMessage(rM, null, {}, userMap))
       .join('\n');
-    const onlyMessage = messages.length
-      ? formatDiscordMessage(
-          rawMessages[rawMessages.length - 1]!,
-          null,
-          {
-            withAuthor: false,
-            withContext: false,
-            withReactions: false,
-          },
-          userMap
-        )
-      : String(msg.content ?? '');
+    const onlyMessage = formatDiscordMessage(
+      msg,
+      null,
+      {
+        withAuthor: false,
+        withContext: false,
+        withReactions: false,
+      },
+      userMap
+    );
 
     const [
       memories0,

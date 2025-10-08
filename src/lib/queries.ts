@@ -11,12 +11,17 @@ import {
 export async function getMessagesByChannel({
   channel,
   limit,
+  before,
 }: {
   channel: DiscordMessage['channel'];
   limit?: number;
+  before?: string;
 }) {
   try {
-    const messages = await channel.messages.fetch({ limit: limit ?? 100 });
+    const messages = await channel.messages.fetch({
+      limit: limit ?? 100,
+      before: before,
+    });
     const sorted = messages.sort(
       (a, b) => a.createdTimestamp - b.createdTimestamp
     );

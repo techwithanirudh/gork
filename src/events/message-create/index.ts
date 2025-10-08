@@ -15,7 +15,6 @@ import { createLogger } from '@/lib/logger';
 
 import { logReply } from '@/utils/log';
 import { getTrigger } from '@/utils/triggers';
-import type { ToolCallPart } from 'ai';
 
 const logger = createLogger('events:message');
 
@@ -30,7 +29,7 @@ async function canReply(ctxId: string): Promise<boolean> {
   return success;
 }
 
-async function onSuccess(message: Message, _toolCalls: ToolCallPart[]) {
+async function onSuccess(message: Message) {
   await saveChatMemory(message, 5);
 }
 
@@ -64,7 +63,7 @@ export async function execute(message: Message) {
     const result = await generateResponse(message, messages, hints, memories);
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
-      await onSuccess(message, result.toolCalls);
+      await onSuccess(message);
     }
     return;
   }
@@ -105,6 +104,6 @@ export async function execute(message: Message) {
   const result = await generateResponse(message, messages, hints, memories);
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
-    await onSuccess(message, result.toolCalls);
+    await onSuccess(message);
   }
 }
