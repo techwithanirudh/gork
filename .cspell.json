@@ -42,6 +42,7 @@
     "lefthook",
     "neondatabase",
     "unrs",
-    "qwen"
+    "qwen",
+    "jsonrepair"
   ]
 }

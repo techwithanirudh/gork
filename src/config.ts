@@ -50,3 +50,8 @@ export const messageThreshold = 10;
 export const voice = {
   model: 'aura-arcas-en',
 };
+
+export const memories = {
+  eachLimit: 2,
+  maxMemories: 4,
+};

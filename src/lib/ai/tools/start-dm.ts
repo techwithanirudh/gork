@@ -46,10 +46,9 @@ export const startDM = ({ message }: { message: Message }) =>
           const dm = await user.createDM();
           await dm.send(content);
         } catch {
-          await user.sendFriendRequest();
           return {
             success: false,
-            error: 'Could not DM user, sent friend request instead',
+            error: 'Could not DM user',
           };
         }
 
@@ -74,7 +73,7 @@ export const startDM = ({ message }: { message: Message }) =>
           messageContent: content,
         };
       } catch (error) {
-        logger.error('Failed to start DM:', error);
+        logger.error({ error }, 'Failed to start DM:');
         return {
           success: false,
           error: 'Failed to send DM',
