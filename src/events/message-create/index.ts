@@ -49,9 +49,12 @@ export async function execute(message: Message) {
 
   if (trigger.type) {
     await resetMessageCount(ctxId);
-    logger.info({
-      message: `${author.username}: ${content}`,
-    }, `[${ctxId}] Triggered by ${trigger.type}`);
+    logger.info(
+      {
+        message: `${author.username}: ${content}`,
+      },
+      `[${ctxId}] Triggered by ${trigger.type}`
+    );
 
     const { messages, hints, memories } = await buildChatContext(message);
     const result = await generateResponse(message, messages, hints, memories);
@@ -91,6 +94,9 @@ export async function execute(message: Message) {
     return;
   }
 
+  if ('sendTyping' in message.channel) {
+    await message.channel.sendTyping();
+  }
   logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
   const result = await generateResponse(message, messages, hints, memories);
   logReply(ctxId, author.username, result, 'relevance');

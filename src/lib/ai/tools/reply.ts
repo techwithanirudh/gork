@@ -8,15 +8,19 @@ const logger = createLogger('tools:reply');
 export const reply = ({ message }: { message: Message }) =>
   tool({
     description:
-      'Send messages in the channel. If offset is provided, reply to that earlier message; otherwise reply to the provided message.',
+      'Send messages in the channel. If offset is provided, reply to that earlier message; otherwise reply to the latest user message.',
     inputSchema: z.object({
       offset: z
         .number()
         .optional()
         .describe(
-          'Number of messages to go back from the current one. 0 or omitted means reply to the current message.'
+          'Number of messages to go back from the latest user message. 0 or omitted means reply to the latest user message.'
         ),
-      content: z.array(z.string()).describe('Lines of text to send'),
+      content: z
+        .array(z.string())
+        .describe(
+          'Lines of text to send. Do NOT include punctuation, ALWAYS include newlines when ending a sentence.'
+        ),
       type: z
         .enum(['reply', 'message'])
         .describe('Whether to reply (threaded) or just send in the channel'),
@@ -29,9 +33,15 @@ export const reply = ({ message }: { message: Message }) =>
         }
 
         let target: Message;
-        logger.info({ offset, message: message.content }, 'Replying to message');
+        logger.info(
+          { offset, message: message.content },
+          'Replying to message'
+        );
         if (offset > 0) {
-          const messages = await channel.messages.fetch({ limit: offset, before: message.id });
+          const messages = await channel.messages.fetch({
+            limit: offset,
+            before: message.id,
+          });
           const sorted = [...messages.values()].sort(
             (a, b) => b.createdTimestamp - a.createdTimestamp
           );
@@ -64,10 +74,7 @@ export const reply = ({ message }: { message: Message }) =>
             'Successfully replied to message. Do NOT repeat the same message again.',
         };
       } catch (error) {
-        logger.error(
-          { error, content, type, offset },
-          'Failed to send reply'
-        );
+        logger.error({ error, content, type, offset }, 'Failed to send reply');
         return { success: false, error: String(error) };
       }
     },

@@ -1,8 +1,6 @@
 export const replyPrompt = `\
 <task>
 Reply briefly, naturally, and only once.
-Do NOT over-classify messages as spam. Low-effort messages (like "gm", "lol", a single emoji) are fine, be playful and reply when it feels natural.
-Make it sound real, like something you'd actually say in chat. No formal junk. Mess up spellings, grammar, whatever, it helps u sound human. If you start soundin like a bot, ppl are gonna know, deadass.
 </task>
 `;
 
