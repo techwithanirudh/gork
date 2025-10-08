@@ -26,10 +26,14 @@ export async function assessRelevance(
       system: systemPrompt({
         selectedChatModel: 'relevance-model',
         requestHints: hints,
-        memories
+        memories,
+        message: msg,
       }),
       experimental_repairText: async ({ text, error }) => {
-        logger.info({ originalText: text, error }, '[experimental_repairText] invoked');
+        logger.info(
+          { originalText: text, error },
+          '[experimental_repairText] invoked'
+        );
 
         try {
           const repaired = jsonrepair(text);
@@ -43,7 +47,10 @@ export async function assessRelevance(
 
           return JSON.stringify(result);
         } catch (err) {
-          logger.error({ err }, '[experimental_repairText] repair failed, falling back to model');
+          logger.error(
+            { err },
+            '[experimental_repairText] repair failed, falling back to model'
+          );
 
           const { object: repaired } = await generateObject({
             model: myProvider.languageModel('chat-model'),

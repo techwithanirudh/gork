@@ -1,10 +1,12 @@
+import type { Message } from 'discord.js';
+
 export const replyPrompt = `\
 <task>
 Reply briefly, naturally, and only once.
 </task>
 `;
 
-export const relevancePrompt = `\
+export const relevancePrompt = (message?: Message) => `\
 <task>
 Analyze the current message and provide a structured assessment:
 
@@ -60,6 +62,10 @@ IMPORTANT: Don't interrupt ongoing conversations between other people unless:
   "probability": 1.0,
   "reason": "The message is about you and you're interested in it."
 }
+
+YOU ARE ONLY SCORING THE MESSAGE FROM @${message?.author.username ?? 'user'}: ${
+  (message?.content ?? '').slice(0, 200) || 'message'
+}. DO NOT USE CONTEXT TO DETERMINE RELEVANCE
 
 Do NOT return anything else than the JSON object, LIKE the suggested reply. Do NOT wrap the JSON object in quotes, or a codeblock.
 ONLY return the JSON Object, nothing ELSE.

@@ -22,7 +22,7 @@ const logger = createLogger('ai:providers');
 // });
 
 const google = createGoogleGenerativeAI({
-  apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY!,
+  apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
 });
 
 const chatModel = createFallback({

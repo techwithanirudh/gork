@@ -7,9 +7,12 @@ const logger = createLogger('tools:react');
 
 export const react = ({ message }: { message: Message }) =>
   tool({
-    description: 'React to a message on discord with one or more emojis. If no ID is provided, reacts to the latest message (the provided message).',
+    description:
+      'React to a message on discord with one or more emojis. If no ID is provided, reacts to the latest message (the provided message).',
     inputSchema: z.object({
-      emojis: z.array(z.string()).describe('Array of emojis to react with (unicode or custom)'),
+      emojis: z
+        .array(z.string())
+        .describe('Array of emojis to react with (unicode or custom)'),
       id: z
         .string()
         .trim()
@@ -34,10 +37,7 @@ export const react = ({ message }: { message: Message }) =>
           await target.react(emoji);
         }
 
-        logger.info(
-          { id: id ?? message.id, emojis },
-          'Reacted to message'
-        );
+        logger.info({ id: id ?? message.id, emojis }, 'Reacted to message');
 
         return {
           success: true,

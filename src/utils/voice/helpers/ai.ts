@@ -24,6 +24,7 @@ export async function getAIResponse(prompt: string): Promise<string> {
         },
         memories:
           [] as unknown as ScoredPineconeRecord<PineconeMetadataOutput>[],
+        message: undefined,
       }) +
       '\n\nYou are talking to a person through a call, do not use markdown formatting, or emojis.',
     model: myProvider.languageModel('chat-model'),

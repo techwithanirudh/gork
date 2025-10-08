@@ -24,7 +24,7 @@ export async function execute(
 
   // cspell:disable-next-line
   await interaction.reply({
-    content: 'okay byeee!',
+    content: 'okay bye!',
     flags: [MessageFlags.Ephemeral],
   });
 }

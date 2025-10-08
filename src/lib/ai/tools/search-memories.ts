@@ -42,6 +42,13 @@ export const searchMemories = () =>
     }),
     execute: async ({ query, limit, options }) => {
       try {
+        if (!query || query.trim().length === 0) {
+          return {
+            success: true,
+            data: 'No query provided. Please provide a search term.',
+          };
+        }
+
         const results = await queryMemories(query, {
           limit,
           ageLimit: options?.ageLimitDays

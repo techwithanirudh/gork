@@ -8,11 +8,12 @@ import { searchMemories } from '@/lib/ai/tools/search-memories';
 import { searchWeb } from '@/lib/ai/tools/search-web';
 import { skip } from '@/lib/ai/tools/skip';
 import { startDM } from '@/lib/ai/tools/start-dm';
+import { successToolCall } from '@/lib/ai/utils';
 import { saveToolMemory } from '@/lib/memory';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
-import { generateText, hasToolCall, stepCountIs } from 'ai';
+import { generateText, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
 
 export async function generateResponse(
@@ -26,6 +27,7 @@ export async function generateResponse(
       selectedChatModel: 'chat-model',
       requestHints: hints,
       memories,
+      message: msg,
     });
 
     const { toolCalls } = await generateText({
@@ -60,10 +62,10 @@ export async function generateResponse(
       },
       system,
       stopWhen: [
-        hasToolCall('reply'),
-        hasToolCall('react'),
-        hasToolCall('skip'),
         stepCountIs(10),
+        successToolCall('reply'),
+        successToolCall('react'),
+        successToolCall('skip'),
       ],
       onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
         if (!toolCalls.length) return;

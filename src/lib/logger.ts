@@ -3,7 +3,7 @@ import { constants } from 'node:fs';
 import { access, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import type { Logger } from 'pino';
-import pino from 'pino';
+import { default as pino, stdTimeFunctions, transport } from 'pino';
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -20,7 +20,7 @@ if (!(await exists(logDir))) {
   await mkdir(logDir, { recursive: true });
 }
 
-const transport = pino.transport({
+const pinoTransport = transport({
   targets: [
     {
       target: 'pino/file',
@@ -42,9 +42,9 @@ const transport = pino.transport({
 const baseLogger = pino(
   {
     level: env.LOG_LEVEL || 'info',
-    timestamp: pino.stdTimeFunctions.isoTime,
+    timestamp: stdTimeFunctions.isoTime,
   },
-  transport
+  pinoTransport
 );
 
 export function createLogger(context: string): Logger {

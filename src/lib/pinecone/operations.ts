@@ -25,6 +25,10 @@ export const queryMemories = async (
     onlyTools = false,
   }: QueryMemoriesOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
+  if (!query || query.trim().length === 0) {
+    return [];
+  }
+
   const now = Date.now();
   const filter: Record<string, unknown> = {};
 
@@ -34,7 +38,7 @@ export const queryMemories = async (
 
   if (ageLimit != null) {
     filter.createdAt = {
-      ...filter.createdAt,
+      ...(filter.createdAt || {}),
       $gt: now - ageLimit,
     };
   }

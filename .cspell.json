@@ -43,6 +43,7 @@
     "neondatabase",
     "unrs",
     "qwen",
-    "jsonrepair"
+    "jsonrepair",
+    "Jsonify"
   ]
 }

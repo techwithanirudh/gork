@@ -1,5 +1,6 @@
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { Message } from 'discord.js';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { memoriesPrompt } from './memories';
@@ -24,10 +25,12 @@ export const systemPrompt = ({
   selectedChatModel,
   requestHints,
   memories,
+  message,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
   memories: ScoredPineconeRecord<PineconeMetadataOutput>[];
+  message?: Message;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
@@ -51,7 +54,7 @@ export const systemPrompt = ({
       examplesPrompt,
       requestPrompt,
       memoriesPrompt(memories),
-      relevancePrompt,
+      relevancePrompt(message),
     ]
       .filter(Boolean)
       .join('\n\n')
