@@ -27,7 +27,7 @@ export function formatDiscordMessage(
     withContext = true,
     withReactions = true,
     withTimestamp = false,
-    withId = true,
+    withId = false,
   } = options;
 
   let result = '';
@@ -81,7 +81,7 @@ export async function convertToModelMessages(
         withContext: true,
         withReactions: true,
         withTimestamp: false,
-        withId: true,
+        withId: false,
       });
 
       if (isBot) {
