@@ -53,7 +53,6 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
-      memoriesPrompt(memories),
       relevancePrompt(message),
     ]
       .filter(Boolean)
