@@ -47,12 +47,13 @@ const relevanceModel = createFallback({
   modelResetInterval: 60000,
 });
 
-export const myProvider = customProvider({
+export const provider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
     // 'chat-model': openai.responses('gpt-4.1-mini'),
     'chat-model': chatModel,
     'reasoning-model': google('gemini-2.5-flash'),
+    'agent-model': openai('gpt-4.1'),
     // 'relevance-model': openai.responses('gpt-4.1-nano'),
     'relevance-model': relevanceModel,
   },

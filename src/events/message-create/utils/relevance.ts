@@ -1,5 +1,5 @@
 import { systemPrompt } from '@/lib/ai/prompts';
-import { myProvider } from '@/lib/ai/providers';
+import { provider } from '@/lib/ai/providers';
 import { createLogger } from '@/lib/logger';
 
 import { probabilitySchema, type Probability } from '@/lib/validators';
@@ -16,17 +16,15 @@ export async function assessRelevance(
   msg: Message,
   messages: ModelMessage[],
   hints: RequestHints,
-  memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ): Promise<Probability> {
   try {
     const { object } = await generateObject({
-      model: myProvider.languageModel('relevance-model'),
+      model: provider.languageModel('relevance-model'),
       messages,
       schema: probabilitySchema,
       system: systemPrompt({
-        selectedChatModel: 'relevance-model',
+        agent: 'relevance',
         requestHints: hints,
-        memories,
         message: msg,
       }),
       experimental_repairText: async ({ text, error }) => {
@@ -53,7 +51,7 @@ export async function assessRelevance(
           );
 
           const { object: repaired } = await generateObject({
-            model: myProvider.languageModel('chat-model'),
+            model: provider.languageModel('chat'),
             schema: probabilitySchema,
             prompt: [
               'The model tried to output JSON with the following data:',

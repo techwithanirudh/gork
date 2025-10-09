@@ -1,5 +1,5 @@
 import { systemPrompt } from '@/lib/ai/prompts';
-import { myProvider } from '@/lib/ai/providers';
+import { provider } from '@/lib/ai/providers';
 import type { PineconeMetadataOutput } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { generateText } from 'ai';
@@ -11,7 +11,7 @@ export async function getAIResponse(prompt: string): Promise<string> {
   const { text } = await generateText({
     system:
       systemPrompt({
-        selectedChatModel: 'chat-model',
+        agent: 'chat',
         requestHints: {
           time: new Date().toISOString(),
           city: undefined,
@@ -27,7 +27,7 @@ export async function getAIResponse(prompt: string): Promise<string> {
         message: undefined,
       }) +
       '\n\nYou are talking to a person through a call, do not use markdown formatting, or emojis.',
-    model: myProvider.languageModel('chat-model'),
+    model: provider.languageModel('chat-model'),
     prompt,
   });
 

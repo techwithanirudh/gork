@@ -3,7 +3,7 @@ import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { Message } from 'discord.js';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
-import { memoriesPrompt } from './memories';
+import { memoryPrompt } from './tasks';
 import { personalityPrompt } from './personality';
 import { relevancePrompt, replyPrompt } from './tasks';
 import { toolsPrompt } from './tools';
@@ -22,38 +22,44 @@ Your current status is ${requestHints.status} and your activity is ${
 </context>`;
 
 export const systemPrompt = ({
-  selectedChatModel,
+  agent,
   requestHints,
-  memories,
   message,
 }: {
-  selectedChatModel: string;
+  agent: string;
   requestHints: RequestHints;
-  memories: ScoredPineconeRecord<PineconeMetadataOutput>[];
   message?: Message;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === 'chat-model') {
+  if (agent === 'chat') {
     return [
       corePrompt,
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
       toolsPrompt,
-      memoriesPrompt(memories),
       replyPrompt,
     ]
       .filter(Boolean)
-      .join('\n')
+      .join('\n\n')
       .trim();
-  } else if (selectedChatModel === 'relevance-model') {
+  } else if (agent === 'relevance') {
     return [
       corePrompt,
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
       relevancePrompt(message),
+    ]
+      .filter(Boolean)
+      .join('\n\n')
+      .trim();
+  } else if (agent === 'memory') {
+    return [
+      corePrompt,
+      memoryPrompt,
+      requestPrompt,
     ]
       .filter(Boolean)
       .join('\n\n')
