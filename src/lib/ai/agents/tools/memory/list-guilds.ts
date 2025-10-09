@@ -1,6 +1,6 @@
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 export const listGuilds = ({ message }: { message: Message }) =>
   tool({

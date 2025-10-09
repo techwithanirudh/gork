@@ -1,8 +1,8 @@
-import { formatMemories } from '@/lib/ai/memory/text';
+import { formatMemories } from '@/lib/ai/memory/format';
 import { createLogger } from '@/lib/logger';
 import { queryMemories } from '@/lib/pinecone/operations';
 import { tool } from 'ai';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const logger = createLogger('tools:search-memories');
 
@@ -39,8 +39,14 @@ export const searchMemories = () =>
             .describe('Whether to only return tool memories'),
         })
         .optional(),
+      filter: z
+        .record(z.string(), z.unknown())
+        .optional()
+        .describe(
+          'Metadata filters to apply (e.g. { guildId: "123", type: { $in: ["summary"] } })'
+        ),
     }),
-    execute: async ({ query, limit, options }) => {
+    execute: async ({ query, limit, options, filter }) => {
       try {
         if (!query || query.trim().length === 0) {
           return {
@@ -56,6 +62,7 @@ export const searchMemories = () =>
             : undefined,
           ignoreRecent: options?.ignoreRecent,
           onlyTools: options?.onlyTools,
+          filter: sanitizeFilter(filter),
         });
 
         const data = formatMemories(results);
@@ -65,6 +72,7 @@ export const searchMemories = () =>
           data,
         };
       } catch (error) {
+        logger.error({ error }, 'Error in searchMemories tool');
         return {
           success: false,
           error: 'Failed to search memories',
@@ -72,3 +80,33 @@ export const searchMemories = () =>
       }
     },
   });
+
+const ALLOWED_FILTER_KEYS = new Set([
+  'sessionId',
+  'sessionType',
+  'guildId',
+  'channelId',
+  'channelType',
+  'participantIds',
+  'entityIds',
+  'type',
+  'importance',
+  'confidence',
+  'createdAt',
+  'lastRetrievalTime',
+  'version',
+]);
+
+function sanitizeFilter(
+  filter?: Record<string, unknown>
+): Record<string, unknown> | undefined {
+  if (!filter) return undefined;
+
+  const cleaned: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(filter)) {
+    if (!ALLOWED_FILTER_KEYS.has(key)) continue;
+    cleaned[key] = value;
+  }
+
+  return Object.keys(cleaned).length ? cleaned : undefined;
+}

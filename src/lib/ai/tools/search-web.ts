@@ -1,7 +1,7 @@
 import { createLogger } from '@/lib/logger';
 import { exa } from '@/lib/search';
 import { tool } from 'ai';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const logger = createLogger('tools:search-web');
 

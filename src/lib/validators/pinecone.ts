@@ -20,7 +20,9 @@ export const GuildSchema = Jsonify(
     name: z.string().nullable().optional(),
   })
 );
-export type Guild = z.infer<typeof GuildSchema>;
+
+export type Guild = z.input<typeof GuildSchema>;
+export type GuildOutput = z.output<typeof GuildSchema>;
 
 export const ChannelSchema = Jsonify(
   z.object({
@@ -31,16 +33,18 @@ export const ChannelSchema = Jsonify(
       .default('unknown'),
   })
 );
-export type Channel = z.infer<typeof ChannelSchema>;
+export type Channel = z.input<typeof ChannelSchema>;
+export type ChannelOutput = z.output<typeof ChannelSchema>;
 
-export const ParticipantSchema = z.object({
+export const ParticipantSchema = Jsonify(z.object({
   id: z.string(),
   kind: z.enum(['user', 'bot', 'guild', 'channel']),
   handle: z.string().optional(),
   display: z.string().optional(),
   platform: z.literal('discord'),
-});
-export type Participant = z.infer<typeof ParticipantSchema>;
+}));
+export type Participant = z.input<typeof ParticipantSchema>;
+export type ParticipantOutput = z.output<typeof ParticipantSchema>;
 
 export const BaseSchema = z.object({
   id: z.string().optional(),
@@ -51,7 +55,7 @@ export const BaseSchema = z.object({
   sessionId: z.string(),
   guild: GuildSchema.optional(),
   channel: ChannelSchema.optional(),
-  participants: z.array(ParticipantSchema).default([]),
+  participants: (z.array(ParticipantSchema).default([])),
   importance: z.enum(['low', 'med', 'high']).default('med'),
   confidence: z.number().min(0).max(1).default(0.8),
 });
@@ -86,3 +90,5 @@ export const PineconeMetadataSchema = z.union([
 
 export type PineconeMetadataInput = z.input<typeof PineconeMetadataSchema>;
 export type PineconeMetadataOutput = z.output<typeof PineconeMetadataSchema>;
+
+// flatten pinecone metadata doesntl ike nesting

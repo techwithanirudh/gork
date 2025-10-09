@@ -1,4 +1,4 @@
-import { saveToolMemory } from '@/lib/memory';
+import { saveToolMemory } from '@/lib/ai/memory/ingest';
 import type { RequestHints } from '@/types/request';
 import { Experimental_Agent as Agent, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';

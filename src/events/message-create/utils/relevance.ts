@@ -21,7 +21,7 @@ export async function assessRelevance(
         {
           role: 'user',
           content:
-            'Analyze the above message and provide a structured assessment of its independent relevance to the bot.',
+            `Analyze the following message and provide a structured assessment of its relevance: ${msg.content}`,
         },
       ],
     });
