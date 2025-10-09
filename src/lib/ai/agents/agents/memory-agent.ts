@@ -23,7 +23,8 @@ export const memoryAgent = ({
       searchMemories: searchMemories(),
       listGuilds: listGuilds({ message }),
     },
-    stopWhen: [stepCountIs(5)],
+    toolChoice: 'required',
+    stopWhen: [stepCountIs(50)],
     experimental_telemetry: {
       isEnabled: true,
       functionId: 'memory',

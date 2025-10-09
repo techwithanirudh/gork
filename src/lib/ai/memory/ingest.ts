@@ -194,7 +194,9 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
   const sessionType = message.guild ? 'guild' : 'dm';
   const guild = guildInfoFromMessage(message);
   const channel = channelInfoFromMessage(message);
-  const guildIdForFilter = message.guild ? message.guild.id : `dm:${channel.id}`;
+  const guildIdForFilter = message.guild
+    ? message.guild.id
+    : `dm:${channel.id}`;
   const participants = participantsFromMessage(message, channel);
 
   const metadata: ChatMetadataPayload = {
@@ -232,7 +234,9 @@ export async function saveToolMemory(
   const sessionType = message.guild ? 'guild' : 'dm';
   const guild = guildInfoFromMessage(message);
   const channel = channelInfoFromMessage(message);
-  const guildIdForFilter = message.guild ? message.guild.id : `dm:${channel.id}`;
+  const guildIdForFilter = message.guild
+    ? message.guild.id
+    : `dm:${channel.id}`;
   const participants = participantsFromMessage(message, channel);
 
   const payload = JSON.stringify({ toolName, result }, null, 2);

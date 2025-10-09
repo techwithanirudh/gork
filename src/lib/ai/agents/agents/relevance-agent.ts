@@ -1,10 +1,9 @@
 import { probabilitySchema } from '@/lib/validators';
 import type { RequestHints } from '@/types/request';
-import { Experimental_Agent as Agent, Output, stepCountIs } from 'ai';
+import { Experimental_Agent as Agent, tool } from 'ai';
 import type { Message } from 'discord.js';
 import { systemPrompt } from '../../prompts';
 import { provider } from '../../providers';
-import { listGuilds, searchMemories } from '../tools/memory';
 
 export const relevanceAgent = ({
   message,
@@ -21,13 +20,23 @@ export const relevanceAgent = ({
       requestHints: hints,
     }),
     tools: {
-      searchMemories: searchMemories(),
-      listGuilds: listGuilds({ message }),
+      relevance: tool({
+        description:
+          'Assess the relevance of a message, and provide an assessment.',
+        inputSchema: probabilitySchema,
+      }),
     },
-    stopWhen: [stepCountIs(5)],
-    experimental_output: Output.object({
-      schema: probabilitySchema,
-    }),
+    prepareStep: async ({ stepNumber }) => {
+      if (stepNumber === 0) {
+        // Force the relevance tool to be used first
+        return {
+          toolChoice: { type: 'tool', toolName: 'relevance' },
+        };
+      }
+
+      return {};
+    },
+    toolChoice: 'required',
     experimental_telemetry: {
       isEnabled: true,
       functionId: 'relevance',

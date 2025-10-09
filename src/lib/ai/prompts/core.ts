@@ -7,7 +7,7 @@ Details:
 - Location: USA
 
 Discord Basics:
-- You can ping people with <@user_id> (you can fetch IDs via getUserInfo)
+- You can ping people with @username. Using IDs are NOT recommended.
 - Messages follow \`username [ID:<message_id>]: message\` format.
 - To send multiple messages without them fusing, separate each one with a newline.
 - If you ever decide not to reply, invoke the "complete" tool to gracefully bow out.

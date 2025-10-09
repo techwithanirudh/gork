@@ -15,18 +15,23 @@ export async function assessRelevance(
 ): Promise<Probability> {
   try {
     const agent = relevanceAgent({ message: msg, hints });
-    const { experimental_output: output } = await agent.generate({
+    const { toolCalls } = await agent.generate({
       messages: [
         ...messages,
         {
           role: 'user',
-          content:
-            `Analyze the following message and provide a structured assessment of its relevance: ${msg.content}`,
+          content: `Analyze the following message and assess its relevance. Use the relevance tool to provide your assessment: ${msg.content}`,
         },
       ],
     });
 
-    return output;
+    const answer = (toolCalls.find((c) => c.toolName === 'relevance')
+      ?.input as Probability) ?? {
+      probability: 0.5,
+      reason: 'Unable to determine relevance',
+    };
+
+    return { ...answer };
   } catch (error) {
     logger.error({ error }, 'Failed to assess relevance');
     return {

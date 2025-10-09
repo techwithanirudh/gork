@@ -36,13 +36,15 @@ export const ChannelSchema = Jsonify(
 export type Channel = z.input<typeof ChannelSchema>;
 export type ChannelOutput = z.output<typeof ChannelSchema>;
 
-export const ParticipantSchema = Jsonify(z.object({
-  id: z.string(),
-  kind: z.enum(['user', 'bot', 'guild', 'channel']),
-  handle: z.string().optional(),
-  display: z.string().optional(),
-  platform: z.literal('discord'),
-}));
+export const ParticipantSchema = Jsonify(
+  z.object({
+    id: z.string(),
+    kind: z.enum(['user', 'bot', 'guild', 'channel']),
+    handle: z.string().optional(),
+    display: z.string().optional(),
+    platform: z.literal('discord'),
+  })
+);
 export type Participant = z.input<typeof ParticipantSchema>;
 export type ParticipantOutput = z.output<typeof ParticipantSchema>;
 
@@ -55,7 +57,7 @@ export const BaseSchema = z.object({
   sessionId: z.string(),
   guild: GuildSchema.optional(),
   channel: ChannelSchema.optional(),
-  participants: (z.array(ParticipantSchema).default([])),
+  participants: z.array(ParticipantSchema).default([]),
   importance: z.enum(['low', 'med', 'high']).default('med'),
   confidence: z.number().min(0).max(1).default(0.8),
 });

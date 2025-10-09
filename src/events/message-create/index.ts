@@ -1,6 +1,6 @@
 import { keywords, messageThreshold } from '@/config';
-import { ratelimit, redisKeys } from '@/lib/kv';
 import { saveChatMemory } from '@/lib/ai/memory/ingest';
+import { ratelimit, redisKeys } from '@/lib/kv';
 import { buildChatContext } from '@/utils/context';
 import {
   checkMessageQuota,
@@ -25,34 +25,41 @@ async function canReply(message: Message): Promise<boolean> {
   const { guild, author } = message;
   const isDM = !guild;
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
-  
+
   // rate limiting
   const { success } = await ratelimit.limit(redisKeys.channelCount(ctxId));
   if (!success) {
     logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
     return false;
   }
-  
+
   // permissions
   if (guild) {
     const botMember = guild.members.me;
     if (!botMember) return false;
-    
+
     const channel = message.channel;
     if (!channel || !channel.isTextBased()) return false;
-    
+
     if (!channel.isDMBased() && 'guild' in channel) {
       const permissions = botMember.permissionsIn(channel);
-      const hasReadPermission = permissions.has(PermissionsBitField.Flags.ViewChannel);
-      const hasSendPermission = permissions.has(PermissionsBitField.Flags.SendMessages);
-      
+      const hasReadPermission = permissions.has(
+        PermissionsBitField.Flags.ViewChannel
+      );
+      const hasSendPermission = permissions.has(
+        PermissionsBitField.Flags.SendMessages
+      );
+
       if (!hasReadPermission || !hasSendPermission) {
-        logger.debug({ read: hasReadPermission, send: hasSendPermission }, `[${guild.id}] Missing permissions in channel ${channel.id}`);
+        logger.debug(
+          { read: hasReadPermission, send: hasSendPermission },
+          `[${guild.id}] Missing permissions in channel ${channel.id}`
+        );
         return false;
       }
     }
   }
-  
+
   return true;
 }
 
@@ -73,7 +80,7 @@ export async function execute(message: Message) {
   const botId = client.user?.id;
   const trigger = await getTrigger(message, keywords, botId);
 
-  const { messages, hints, memories } = await buildChatContext(message);
+  const { messages, hints } = await buildChatContext(message);
 
   if (trigger.type) {
     await resetMessageCount(ctxId);

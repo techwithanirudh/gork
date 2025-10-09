@@ -5,9 +5,7 @@ type MemoryWithMetadata = {
   metadata?: PineconeMetadataOutput | null;
 };
 
-export const memoriesPrompt = (
-  memories: MemoryWithMetadata[]
-) => {
+export const memoriesPrompt = (memories: MemoryWithMetadata[]) => {
   const text = formatMemories(memories);
   if (!text) return '';
   return `<memories>\n${text}\n</memories>`;
