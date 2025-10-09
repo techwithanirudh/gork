@@ -3,6 +3,9 @@ import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
 import { memoryAgent } from '../../agents';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('tools:chat:memories');
 
 export const memories = ({
   message,
@@ -19,8 +22,12 @@ export const memories = ({
     execute: async ({ query }) => {
       const agent = memoryAgent({ message, hints });
 
-      return agent.generate({
+      const results = await agent.generate({
         prompt: query,
       });
+
+      logger.info({ results }, 'Memory search results');
+
+      return results;
     },
   });

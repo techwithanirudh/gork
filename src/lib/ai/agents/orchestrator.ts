@@ -49,6 +49,7 @@ export const orchestratorAgent = ({
         toolCalls.map(async (call, i) => {
           const result = toolResults[i];
           if (!call || !result) return;
+          if (call.toolName === 'memories') return;
           if (call.toolName === 'searchMemories') return;
 
           await saveToolMemory(message, call.toolName, result);

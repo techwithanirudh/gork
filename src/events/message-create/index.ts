@@ -61,7 +61,7 @@ export async function execute(message: Message) {
       `[${ctxId}] Triggered by ${trigger.type}`
     );
 
-    const result = await generateResponse(message, messages, hints, memories);
+    const result = await generateResponse(message, messages, hints);
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
       await onSuccess(message);
@@ -81,8 +81,7 @@ export async function execute(message: Message) {
   const { probability, reason } = await assessRelevance(
     message,
     messages,
-    hints,
-    memories
+    hints
   );
   logger.info(
     { reason, probability, message: `${author.username}: ${content}` },
@@ -101,7 +100,7 @@ export async function execute(message: Message) {
     await message.channel.sendTyping();
   }
   logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
-  const result = await generateResponse(message, messages, hints, memories);
+  const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
     await onSuccess(message);

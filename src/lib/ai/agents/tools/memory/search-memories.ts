@@ -58,8 +58,6 @@ export const searchMemories = () =>
           onlyTools: options?.onlyTools,
         });
 
-        logger.info({ results }, 'Memory search results');
-
         const data = formatMemories(results);
 
         return {
@@ -67,7 +65,6 @@ export const searchMemories = () =>
           data,
         };
       } catch (error) {
-        logger.error({ error }, 'Error in searchMemories tool');
         return {
           success: false,
           error: 'Failed to search memories',
