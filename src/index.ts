@@ -4,9 +4,18 @@ import { env } from '@/env';
 import { events } from '@/events';
 import { createLogger } from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
+import { LangfuseExporter } from 'langfuse-vercel';
 
 const logger = createLogger('core');
+
+export const langfuse = new NodeSDK({
+  traceExporter: new LangfuseExporter(),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
 export const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -29,6 +38,7 @@ client.once(Events.ClientReady, (client) => {
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info('Bot is ready!');
 
+  langfuse.start();
   beginStatusUpdates(client);
 });
 
@@ -62,6 +72,7 @@ Object.keys(events).forEach(function (key) {
   }
 });
 
-client.login(env.DISCORD_TOKEN).catch((err) => {
+client.login(env.DISCORD_TOKEN).catch(async (err) => {
   logger.error('Login failed:', err);
+  await langfuse.shutdown();
 });

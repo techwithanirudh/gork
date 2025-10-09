@@ -11,7 +11,7 @@ const logger = createLogger('events:message:relevance');
 export async function assessRelevance(
   msg: Message,
   messages: ModelMessage[],
-  hints: RequestHints,
+  hints: RequestHints
 ): Promise<Probability> {
   try {
     const agent = relevanceAgent({ message: msg, hints });
@@ -20,11 +20,12 @@ export async function assessRelevance(
         ...messages,
         {
           role: 'user',
-          content: 'Analyze the above message and provide a structured assessment of its independent relevance to the bot.',
+          content:
+            'Analyze the above message and provide a structured assessment of its independent relevance to the bot.',
         },
       ],
     });
-    
+
     return output;
   } catch (error) {
     logger.error({ error }, 'Failed to assess relevance');

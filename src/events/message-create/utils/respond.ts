@@ -6,7 +6,7 @@ import type { Message } from 'discord.js';
 export async function generateResponse(
   msg: Message,
   messages: ModelMessage[],
-  hints: RequestHints,
+  hints: RequestHints
 ) {
   try {
     const agent = orchestratorAgent({ message: msg, hints });
@@ -17,7 +17,7 @@ export async function generateResponse(
           role: 'user',
           content: 'You are replying to the following message: ' + msg.content,
         },
-      ]
+      ],
     });
 
     return { success: true, toolCalls };

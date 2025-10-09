@@ -82,7 +82,7 @@ export function channelInfoFromMessage(message: Message): ChannelInfo {
     message.channel.type === ChannelType.DM
       ? dmDisplayName(message.channel as DMChannel, message.author)
       : 'name' in message.channel
-      ? ((message.channel as GuildTextBasedChannel).name ?? '')
+      ? (message.channel as GuildTextBasedChannel).name ?? ''
       : '';
 
   return {
@@ -97,7 +97,10 @@ function dmDisplayName(dm: DMChannel, author: User): string {
   return other?.username ?? 'Direct Message';
 }
 
-function participantsFromMessage(message: Message, channel: ChannelInfo): EntityRef[] {
+function participantsFromMessage(
+  message: Message,
+  channel: ChannelInfo
+): EntityRef[] {
   const participants: EntityRef[] = [
     {
       id: message.author.id,
@@ -203,7 +206,7 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
     entities: [],
     context: transcript,
     importance: gate.importance,
-    confidence: gate.importance === 'high' ? 0.9 : 0.82
+    confidence: gate.importance === 'high' ? 0.9 : 0.82,
   };
 
   return addMemory(transcript, metadata);
@@ -234,7 +237,7 @@ export async function saveToolMemory(
     name: toolName,
     response: result,
     importance: 'med',
-    confidence: 0.85
+    confidence: 0.85,
   };
 
   return addMemory(payload, metadata);

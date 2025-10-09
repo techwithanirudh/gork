@@ -25,7 +25,9 @@ const ChannelSchema = Jsonify(
   z.object({
     id: z.string(),
     name: z.string(),
-    type: z.enum(['dm', 'text', 'voice', 'thread', 'unknown']).default('unknown'),
+    type: z
+      .enum(['dm', 'text', 'voice', 'thread', 'unknown'])
+      .default('unknown'),
   })
 );
 
@@ -50,7 +52,7 @@ const BaseMetadataSchema = z.object({
   participants: EntityRefsSchema,
   entities: EntityRefsSchema,
   importance: z.enum(['low', 'med', 'high']).default('med'),
-  confidence: z.number().min(0).max(1).default(0.8)
+  confidence: z.number().min(0).max(1).default(0.8),
 });
 
 const ChatMetadataSchema = BaseMetadataSchema.extend({
