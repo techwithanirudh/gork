@@ -191,22 +191,32 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
 
   const now = Date.now();
   const sessionId = sessionIdFromMessage(message);
+  const sessionType = message.guild ? 'guild' : 'dm';
   const guild = guildInfoFromMessage(message);
   const channel = channelInfoFromMessage(message);
+  const guildIdForFilter = message.guild ? message.guild.id : `dm:${channel.id}`;
   const participants = participantsFromMessage(message, channel);
 
   const metadata: ChatMetadataPayload = {
     type: 'chat',
     createdAt: now,
     lastRetrievalTime: now,
+    schemaVersion: 'v2',
     sessionId,
+    sessionType,
     guild,
     channel,
     participants,
     entities: [],
+    guildId: guildIdForFilter,
+    channelId: channel.id,
+    channelType: channel.type,
+    participantIds: participants.map((p) => p.id),
+    entityIds: [],
     context: transcript,
     importance: gate.importance,
     confidence: gate.importance === 'high' ? 0.9 : 0.82,
+    writeReason: gate.reason,
   };
 
   return addMemory(transcript, metadata);
@@ -219,8 +229,10 @@ export async function saveToolMemory(
 ) {
   const now = Date.now();
   const sessionId = sessionIdFromMessage(message);
+  const sessionType = message.guild ? 'guild' : 'dm';
   const guild = guildInfoFromMessage(message);
   const channel = channelInfoFromMessage(message);
+  const guildIdForFilter = message.guild ? message.guild.id : `dm:${channel.id}`;
   const participants = participantsFromMessage(message, channel);
 
   const payload = JSON.stringify({ toolName, result }, null, 2);
@@ -229,16 +241,23 @@ export async function saveToolMemory(
     type: 'tool',
     createdAt: now,
     lastRetrievalTime: now,
+    schemaVersion: 'v2',
     sessionId,
+    sessionType,
     guild,
     channel,
     participants,
     entities: [],
+    guildId: guildIdForFilter,
+    channelId: channel.id,
+    channelType: channel.type,
+    participantIds: participants.map((p) => p.id),
+    entityIds: [],
     name: toolName,
     response: result,
     importance: 'med',
     confidence: 0.85,
+    writeReason: 'Tool invocation result',
   };
-
   return addMemory(payload, metadata);
 }

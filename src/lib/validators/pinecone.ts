@@ -14,14 +14,15 @@ const Jsonify = <T extends z.ZodTypeAny>(schema: T) =>
     ])
     .transform((obj) => JSON.stringify(obj));
 
-const GuildSchema = Jsonify(
+export const GuildSchema = Jsonify(
   z.object({
     id: z.string().nullable().optional(),
     name: z.string().nullable().optional(),
   })
 );
+export type Guild = z.infer<typeof GuildSchema>;
 
-const ChannelSchema = Jsonify(
+export const ChannelSchema = Jsonify(
   z.object({
     id: z.string(),
     name: z.string(),
@@ -30,57 +31,57 @@ const ChannelSchema = Jsonify(
       .default('unknown'),
   })
 );
+export type Channel = z.infer<typeof ChannelSchema>;
 
-const EntityRefSchemaInner = z.object({
+export const ParticipantSchema = z.object({
   id: z.string(),
   kind: z.enum(['user', 'bot', 'guild', 'channel']),
   handle: z.string().optional(),
   display: z.string().optional(),
   platform: z.literal('discord'),
 });
+export type Participant = z.infer<typeof ParticipantSchema>;
 
-const EntityRefsSchema = Jsonify(z.array(EntityRefSchemaInner));
-
-const BaseMetadataSchema = z.object({
-  hash: z.string(),
-  type: z.enum(['tool', 'chat', 'summary', 'entity']),
-  createdAt: z.number(),
+export const BaseSchema = z.object({
+  id: z.string().optional(),
+  version: z.literal('v2').default('v2'),
+  type: z.enum(['chat', 'tool', 'summary', 'entity']),
+  createdAt: z.number().int(),
   lastRetrievalTime: z.number().optional(),
   sessionId: z.string(),
-  guild: GuildSchema,
-  channel: ChannelSchema,
-  participants: EntityRefsSchema,
-  entities: EntityRefsSchema,
+  guild: GuildSchema.optional(),
+  channel: ChannelSchema.optional(),
+  participants: z.array(ParticipantSchema).default([]),
   importance: z.enum(['low', 'med', 'high']).default('med'),
   confidence: z.number().min(0).max(1).default(0.8),
 });
 
-const ChatMetadataSchema = BaseMetadataSchema.extend({
+export const ChatSchema = BaseSchema.extend({
   type: z.literal('chat'),
   context: z.string(),
 });
 
-const ToolMetadataSchema = BaseMetadataSchema.extend({
+export const ToolSchema = BaseSchema.extend({
   type: z.literal('tool'),
   name: z.string(),
   response: Jsonify(z.unknown()),
 });
 
-const SummaryMetadataSchema = BaseMetadataSchema.extend({
+export const SummarySchema = BaseSchema.extend({
   type: z.literal('summary'),
   summary: z.string(),
 });
 
-const EntityMetadataSchema = BaseMetadataSchema.extend({
+export const EntitySchema = BaseSchema.extend({
   type: z.literal('entity'),
   summary: z.string(),
 });
 
 export const PineconeMetadataSchema = z.union([
-  ChatMetadataSchema,
-  ToolMetadataSchema,
-  SummaryMetadataSchema,
-  EntityMetadataSchema,
+  ChatSchema,
+  ToolSchema,
+  SummarySchema,
+  EntitySchema,
 ]);
 
 export type PineconeMetadataInput = z.input<typeof PineconeMetadataSchema>;

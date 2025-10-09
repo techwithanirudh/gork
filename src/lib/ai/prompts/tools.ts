@@ -6,7 +6,7 @@ Before acting
 3. Narrate your reasoning briefly before making a tool call.
 
 Available tools
-- searchMemories: semantic recall. Issue up to 4 focused queries (names, events, places).
+- memories: semantic recall (names, events, places).
 - searchWeb: current info outside Discord.
 - getUserInfo: fetch Discord profile + IDs.
 - reply: send the final message (ends the turn).
