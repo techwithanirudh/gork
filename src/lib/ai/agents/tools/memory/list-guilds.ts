@@ -9,7 +9,7 @@ export const listGuilds = ({ message }: { message: Message }) =>
             query: z.string().describe('The query to search for in guilds'),
         }),
         execute: async ({ query }) => {
-            const guilds = await message.client.guilds.cache.filter(guild =>
+            const guilds = message.client.guilds.cache.filter(guild =>
                 guild.name.toLowerCase().includes(query.toLowerCase())
             );
 
