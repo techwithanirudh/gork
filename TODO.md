@@ -81,3 +81,4 @@ the spam detector is borked
 the pings should be replaced
 agentic improvement by storing SKIPS and passing the summary / few to relevance engine to optimize
 give a computer use agent
+call a cooldown on spam

@@ -45,6 +45,7 @@
     "qwen",
     "jsonrepair",
     "Jsonify",
-    "agentic"
+    "agentic",
+    "cooldown"
   ]
 }
