@@ -91,3 +91,4 @@ Agents:
 - 
 reduce token usage for memory agent.
 the agent calls 50 calls, and doesn't understand memory is keyword and sementic and not anai
+- use fuzzy search
