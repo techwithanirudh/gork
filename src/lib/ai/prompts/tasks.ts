@@ -103,10 +103,10 @@ You can call these tools:
    If none is mentioned, default to 14 days for topical questions, or broader if needed.
 
 4. **Query memory in layers**:
-   - First search summaries (type = summary).
-   - Then tool results (type = tool).
-   - Finally chat logs (type = chat).
-   Always include the \`guildId\` and, if relevant, the resolved \`userId\` in the filter.
+   - First search summaries (type = "summary").
+   - Then tool results (type = "tool").
+   - Finally chat logs (type = "chat").
+   Valid filter keys: version, type, sessionId, sessionType, guildId, guildName, channelId, channelName, channelType, participantIds, entityIds, importance, confidence, createdAt, lastRetrievalTime. Always include \`version: { "$eq": "v2" }\` implicitly (handled by the tool) and add \`guildId\` plus \`participantIds\` when you can resolve them.
 
 5. **Keep results concise**.  
    Return ~3-6 relevant snippets, not the entire conversation.
@@ -133,7 +133,7 @@ A:
   - query: "funny joke reaction"
   - limit: 5
   - options: ignoreRecent = true
-  - filter: guild.id = guildId, participants = userId, type = "chat"
+  - filter: { guildId, participantIds: { "$in": [userId] }, type: { "$eq": "chat" } }
 
 Q: What tools did we run during deployment in OpenAI last week?
 A:
@@ -142,7 +142,7 @@ A:
   - query: "deploy deployment release"
   - limit: 8
   - options: onlyTools = true, ageLimitDays = 8
-  - filter: guild.id = guildId, type = "tool"
+  - filter: { guildId, type: { "$eq": "tool" } }
 
 Q: What did Ayaan say last week?
 A:
@@ -152,7 +152,7 @@ A:
   - query: "Ayaan messages highlights"
   - limit: 5
   - options: ageLimitDays = 8
-  - filter: participants = userId, type = ["summary","chat"]
+  - filter: { guildId, participantIds: { "$in": [userId] }, type: { "$in": ["summary","chat"] } }
 
 
 Q: What did the bot do in OpenAI yesterday?
@@ -162,7 +162,7 @@ A:
   - query: "recent bot actions"
   - limit: 6
   - options: ageLimitDays = 2
-  - filter: guild.id = guildId, participants includes botId, type = ["summary","tool","chat"]
+  - filter: { guildId, participantIds: { "$in": [botId] }, type: { "$in": ["summary","tool","chat"] } }
 
 Q: What did we discuss in DMs last week?
 A:

@@ -36,15 +36,9 @@ interface EntityRef {
   platform: 'discord';
 }
 
-type ChatMetadataPayload = Omit<
-  Extract<PineconeMetadataInput, { type: 'chat' }>,
-  'hash'
->;
+type ChatMetadataPayload = Extract<PineconeMetadataInput, { type: 'chat' }>;
 
-type ToolMetadataPayload = Omit<
-  Extract<PineconeMetadataInput, { type: 'tool' }>,
-  'hash'
->;
+type ToolMetadataPayload = Extract<PineconeMetadataInput, { type: 'tool' }>;
 
 const IMPORTANT_KEYWORDS =
   /\b(decide|decision|deadline|todo|plan|commit|ship|deploy|invite|token|schedule|meeting)\b/i;
@@ -191,12 +185,9 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
 
   const now = Date.now();
   const sessionId = sessionIdFromMessage(message);
-  const sessionType = message.guild ? 'guild' : 'dm';
   const guild = guildInfoFromMessage(message);
   const channel = channelInfoFromMessage(message);
-  const guildIdForFilter = message.guild
-    ? message.guild.id
-    : `dm:${channel.id}`;
+
   const participants = participantsFromMessage(message, channel);
 
   const metadata: ChatMetadataPayload = {
@@ -205,20 +196,13 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
     lastRetrievalTime: now,
     version: 'v2',
     sessionId,
-    sessionType,
+    sessionType: message.guild ? 'guild' : 'dm',
     guild,
     channel,
     participants,
-    entities: [],
-    guildId: guildIdForFilter,
-    channelId: channel.id,
-    channelType: channel.type,
-    participantIds: participants.map((p) => p.id),
-    entityIds: [],
     context: transcript,
     importance: gate.importance,
     confidence: gate.importance === 'high' ? 0.9 : 0.82,
-    writeReason: gate.reason,
   };
 
   return addMemory(transcript, metadata);
@@ -231,12 +215,8 @@ export async function saveToolMemory(
 ) {
   const now = Date.now();
   const sessionId = sessionIdFromMessage(message);
-  const sessionType = message.guild ? 'guild' : 'dm';
   const guild = guildInfoFromMessage(message);
   const channel = channelInfoFromMessage(message);
-  const guildIdForFilter = message.guild
-    ? message.guild.id
-    : `dm:${channel.id}`;
   const participants = participantsFromMessage(message, channel);
 
   const payload = JSON.stringify({ toolName, result }, null, 2);
@@ -247,21 +227,14 @@ export async function saveToolMemory(
     lastRetrievalTime: now,
     version: 'v2',
     sessionId,
-    sessionType,
+    sessionType: message.guild ? 'guild' : 'dm',
     guild,
     channel,
     participants,
-    entities: [],
-    guildId: guildIdForFilter,
-    channelId: channel.id,
-    channelType: channel.type,
-    participantIds: participants.map((p) => p.id),
-    entityIds: [],
     name: toolName,
     response: result,
     importance: 'med',
     confidence: 0.85,
-    writeReason: 'Tool invocation result',
   };
   return addMemory(payload, metadata);
 }

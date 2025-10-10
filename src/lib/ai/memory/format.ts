@@ -1,8 +1,9 @@
-import type {
-  Channel,
-  Guild,
-  Participant,
-  PineconeMetadataOutput,
+import {
+  expandMetadata,
+  type Channel,
+  type Guild,
+  type Participant,
+  type PineconeMetadataOutput,
 } from '@/types';
 
 type MemoryWithMetadata = {
@@ -17,36 +18,29 @@ export function formatMemories(memories: MemoryWithMetadata[]): string {
       const { metadata } = memory;
       if (!metadata) return null;
 
-      const version = (metadata as unknown as { version?: string }).version;
-      if (version && version !== 'v2') {
-        return null; // ignore legacy formats
+      const structured = expandMetadata(metadata);
+      if (structured.version && structured.version !== 'v2') {
+        return null;
       }
 
-      const rawGuild = parseJson<Guild | null | string>(metadata.guild);
-      const rawChannel = parseJson<Channel | null | string>(metadata.channel);
-      const guild = typeof rawGuild === 'string' ? null : rawGuild;
-      const channel = typeof rawChannel === 'string' ? null : rawChannel;
-      const parsedParticipants = parseJson<Participant[] | string>(
-        metadata.participants
-      );
-      const participants = Array.isArray(parsedParticipants)
-        ? parsedParticipants
-        : [];
-      const createdAt = metadata.createdAt
-        ? new Date(metadata.createdAt).toISOString()
+      const guild = structured.guild ?? null;
+      const channel = structured.channel ?? null;
+      const participants = structured.participants ?? [];
+      const createdAt = structured.createdAt
+        ? new Date(structured.createdAt).toISOString()
         : 'unknown';
 
-      switch (metadata.type) {
+      switch (structured.type) {
         case 'chat':
           return formatChatMemory({
             createdAt,
             guild,
             channel,
             participants,
-            context: metadata.context,
-            sessionId: metadata.sessionId,
-            importance: metadata.importance,
-            confidence: metadata.confidence,
+            context: structured.context,
+            sessionId: structured.sessionId,
+            importance: structured.importance,
+            confidence: structured.confidence,
           });
         case 'tool':
           return formatToolMemory({
@@ -54,40 +48,31 @@ export function formatMemories(memories: MemoryWithMetadata[]): string {
             guild,
             channel,
             participants,
-            name: metadata.name,
-            response: metadata.response,
-            sessionId: metadata.sessionId,
-            importance: metadata.importance,
-            confidence: metadata.confidence,
+            name: structured.name,
+            response: structured.response,
+            sessionId: structured.sessionId,
+            importance: structured.importance,
+            confidence: structured.confidence,
           });
         case 'summary':
-          if ('summary' in metadata) {
-            return formatSummaryMemory({
-              createdAt,
-              sessionId: metadata.sessionId,
-              summary: metadata.summary,
-              importance: metadata.importance,
-              confidence: metadata.confidence,
-            });
-          }
-          return null;
-        case 'entity':
-          if ('summary' in metadata) {
-            const parsedEntities = parseJson<Participant[] | string>(
-              (metadata as unknown as Record<string, unknown>).entities
-            );
-            const entities = Array.isArray(parsedEntities)
-              ? parsedEntities
-              : participants;
-            return formatEntityMemory({
-              createdAt,
-              summary: metadata.summary,
-              entities,
-              importance: metadata.importance,
-              confidence: metadata.confidence,
-            });
-          }
-          return null;
+          return formatSummaryMemory({
+            createdAt,
+            sessionId: structured.sessionId,
+            summary: structured.summary,
+            importance: structured.importance,
+            confidence: structured.confidence,
+          });
+        case 'entity': {
+          const entities =
+            (structured.entities ?? structured.participants) ?? [];
+          return formatEntityMemory({
+            createdAt,
+            summary: structured.summary,
+            entities,
+            importance: structured.importance,
+            confidence: structured.confidence,
+          });
+        }
         default:
           return null;
       }
@@ -231,15 +216,6 @@ function formatEntityMemory({
   ].join('\n');
 }
 
-function parseJson<T>(value: unknown): T | null {
-  if (typeof value !== 'string') return (value as T) ?? null;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return null;
-  }
-}
-
 function formatParticipants(participants?: Participant[]) {
   if (!participants || !participants.length) return 'unknown';
   return participants
@@ -260,7 +236,7 @@ function sanitizeMultiline(value: string) {
     .split('\n')
     .map((line) => line.trimEnd())
     .filter((line, index, arr) => !(line === '' && arr[index - 1] === ''))
-    .slice(0, 40); // keep prompt compact
+    .slice(0, 40);
 }
 
 function formatConfidence(confidence?: number) {

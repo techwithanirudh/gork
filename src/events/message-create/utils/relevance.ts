@@ -20,7 +20,7 @@ export async function assessRelevance(
         ...messages,
         {
           role: 'user',
-          content: `Analyze the following message and assess its relevance. Use the relevance tool to provide your assessment: ${msg.content}`,
+          content: `Analyze the following message and assess its relevance: ${msg.content}`,
         },
       ],
     });

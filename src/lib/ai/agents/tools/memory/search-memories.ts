@@ -1,6 +1,7 @@
 import { formatMemories } from '@/lib/ai/memory/format';
 import { createLogger } from '@/lib/logger';
 import { queryMemories } from '@/lib/pinecone/operations';
+import { ALLOWED_MEMORY_FILTERS } from '@/lib/validators/pinecone';
 import { tool } from 'ai';
 import { z } from 'zod';
 
@@ -8,7 +9,9 @@ const logger = createLogger('tools:search-memories');
 
 export const searchMemories = () =>
   tool({
-    description: 'Search through stored memories using a text query.',
+    description:
+      'Search through stored memories using a text query. Valid filter keys: ' +
+      ALLOWED_MEMORY_FILTERS.join(', '),
     inputSchema: z.object({
       query: z.string().describe('The text query to search for in memories'),
       limit: z
@@ -81,21 +84,7 @@ export const searchMemories = () =>
     },
   });
 
-const ALLOWED_FILTER_KEYS = new Set([
-  'sessionId',
-  'sessionType',
-  'guildId',
-  'channelId',
-  'channelType',
-  'participantIds',
-  'entityIds',
-  'type',
-  'importance',
-  'confidence',
-  'createdAt',
-  'lastRetrievalTime',
-  'version',
-]);
+const ALLOWED_FILTER_KEYS = new Set<string>(ALLOWED_MEMORY_FILTERS);
 
 function sanitizeFilter(
   filter?: Record<string, unknown>

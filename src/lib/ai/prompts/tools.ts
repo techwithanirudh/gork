@@ -6,7 +6,9 @@ Before acting
 3. Narrate your reasoning briefly before making a tool call.
 
 Available tools
-- memories: semantic recall (names, events, places).
+- memories: 
+    semantic recall (names, events, places). 
+    provide the whole context for the query, because the memory does NOT have context.
 - searchWeb: current info outside Discord.
 - getUserInfo: fetch Discord profile + IDs.
 - reply: send the final message (ends the turn).

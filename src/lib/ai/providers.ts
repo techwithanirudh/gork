@@ -53,7 +53,7 @@ export const provider = customProvider({
     // 'chat-model': openai.responses('gpt-4.1-mini'),
     'chat-model': chatModel,
     'reasoning-model': google('gemini-2.5-flash'),
-    'agent-model': openai('gpt-4.1'),
+    'agent-model': openai('o3-mini'),
     // 'relevance-model': openai.responses('gpt-4.1-nano'),
     'relevance-model': relevanceModel,
   },

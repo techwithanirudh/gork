@@ -17,7 +17,7 @@ export const memories = ({
   tool({
     description: 'Search through stored memories using a text query.',
     inputSchema: z.object({
-      query: z.string().describe('The text query to search for in memories'),
+      query: z.string().describe('The fully-detailed question to search for in memories'),
     }),
     execute: async ({ query }) => {
       const agent = memoryAgent({ message, hints });

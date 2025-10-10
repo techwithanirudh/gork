@@ -88,3 +88,6 @@ Agents:
 - Implement Summaries + Additional context on queries
 - Implement observa
 - Repair ext For Relevance
+- 
+reduce token usage for memory agent.
+the agent calls 50 calls, and doesn't understand memory is keyword and sementic and not anai
