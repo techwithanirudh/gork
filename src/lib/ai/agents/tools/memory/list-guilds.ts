@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
+import { createFuzzySearch } from '../../utils/fuzzy';
 
 export const listGuilds = ({ message }: { message: Message }) =>
   tool({
@@ -12,15 +13,8 @@ export const listGuilds = ({ message }: { message: Message }) =>
         .describe('Optional name query to filter guilds'),
     }),
     execute: async ({ query }) => {
-      const normalizedQuery = (query ?? '').trim().toLowerCase();
-      const guilds = message.client.guilds.cache.filter((guild) => {
-        if (!normalizedQuery) return true;
-        return guild.name.toLowerCase().includes(normalizedQuery);
-      });
-
-      return guilds.map((guild) => ({
-        id: guild.id,
-        name: guild.name,
-      }));
+      const all = message.client.guilds.cache.map((g) => ({ id: g.id, name: g.name }));
+      const { search } = createFuzzySearch(all, ['name', 'id']);
+      return search(query, 50);
     },
   });

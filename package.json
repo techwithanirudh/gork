@@ -60,6 +60,7 @@
     "drizzle-orm": "^0.44.6",
     "exa-js": "^1.10.1",
     "ffmpeg-static": "^5.2.0",
+    "fuse.js": "^7.1.0",
     "jsonrepair": "^3.13.1",
     "langfuse-vercel": "^3.38.5",
     "libsodium-wrappers": "^0.7.15",

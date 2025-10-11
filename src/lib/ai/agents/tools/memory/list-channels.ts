@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
+import { createFuzzySearch } from '../../utils/fuzzy';
 
 export const listChannels = ({ message }: { message: Message }) =>
   tool({
@@ -26,17 +27,12 @@ export const listChannels = ({ message }: { message: Message }) =>
         return [];
       }
 
-      const normalizedQuery = (query ?? '').trim().toLowerCase();
-      const channels = guild.channels.cache
+      const all = guild.channels.cache
         .filter((c) => c.isTextBased())
-        .filter((c) => {
-          if (!normalizedQuery) return true;
-          return (c.name ?? '').toLowerCase().includes(normalizedQuery);
-        })
-        .map((c) => ({ id: c.id, name: c.name, type: c.type }))
-        .slice(0, limit ?? 50);
+        .map((c) => ({ id: c.id, name: c.name, type: c.type }));
 
-      return channels;
+      const { search } = createFuzzySearch(all, ['name', 'id']);
+      return search(query, limit ?? 50);
     },
   });
 

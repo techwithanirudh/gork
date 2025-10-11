@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
+import { createFuzzySearch } from '../../utils/fuzzy';
 
 export const listUsers = ({ message }: { message: Message }) =>
   tool({
@@ -34,38 +35,26 @@ export const listUsers = ({ message }: { message: Message }) =>
         // @ts-ignore: discord.js typings vary by channel type; we guard via 'in'
         const members = channel.members as Map<string, any> | undefined;
         if (!members) return [];
-        const users = [...members.values()]
-          .map((m) => ({
-            id: m.user?.id ?? m.id,
-            username: m.user?.username ?? m.user?.tag ?? m.id,
-            nickname: m.nickname ?? undefined,
-          }))
-          .filter((u) => {
-            if (!normalizedQuery) return true;
-            const name = `${u.username} ${u.nickname ?? ''}`.toLowerCase();
-            return name.includes(normalizedQuery);
-          })
-          .slice(0, max);
-        return users;
+        const all = [...members.values()].map((m) => ({
+          id: m.user?.id ?? m.id,
+          username: m.user?.username ?? m.user?.tag ?? m.id,
+          nickname: m.nickname ?? undefined,
+        }));
+        const { search } = createFuzzySearch(all, ['username', 'nickname', 'id']);
+        return search(query, max);
       }
 
       if (guildId) {
         const guild = message.client.guilds.cache.get(guildId);
         if (!guild) return [];
         await guild.members.fetch();
-        const users = guild.members.cache
-          .map((m) => ({
-            id: m.user.id,
-            username: m.user.username,
-            nickname: m.nickname ?? undefined,
-          }))
-          .filter((u) => {
-            if (!normalizedQuery) return true;
-            const name = `${u.username} ${u.nickname ?? ''}`.toLowerCase();
-            return name.includes(normalizedQuery);
-          })
-          .slice(0, max);
-        return users;
+        const all = guild.members.cache.map((m) => ({
+          id: m.user.id,
+          username: m.user.username,
+          nickname: m.nickname ?? undefined,
+        }));
+        const { search } = createFuzzySearch(all, ['username', 'nickname', 'id']);
+        return search(query, max);
       }
 
       // No scope specified

@@ -92,3 +92,6 @@ Agents:
 reduce token usage for memory agent.
 the agent calls 50 calls, and doesn't understand memory is keyword and sementic and not anai
 - use fuzzy search
+- exclude old memory
+- check how it would scale with longer date and time
+- the agent has an issue trying to provide the answer by calling searchMemroies, instead of replying and hitting rate limits calling it 30 times
