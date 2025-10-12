@@ -97,3 +97,4 @@ the agent calls 50 calls, and doesn't understand memory is keyword and sementic 
 - the agent has an issue trying to provide the answer by calling searchMemroies, instead of replying and hitting rate limits calling it 30 times
 
 give more examples to the memory and search tool calls the model tries to search with Loop'd Server for the guidl search, and x doing y for search memories
+optimize memory format structure
