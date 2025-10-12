@@ -26,7 +26,6 @@ export const memoryAgent = ({
       listDMs: listDMs({ message }),
       listUsers: listUsers({ message }),
     },
-    toolChoice: 'required',
     stopWhen: [stepCountIs(12)],
     experimental_telemetry: {
       isEnabled: true,
