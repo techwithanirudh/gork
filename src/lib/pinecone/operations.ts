@@ -35,7 +35,7 @@ export const queryMemories = async (
   const filter: Record<string, unknown> = { ...(customFilter ?? {}) };
 
   if (!('version' in filter)) {
-    filter.version = { $eq: 'v2' };
+    filter.version = { $eq: 2 };
   }
 
   if (ignoreRecent) {

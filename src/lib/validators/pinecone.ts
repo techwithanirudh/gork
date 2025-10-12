@@ -27,7 +27,7 @@ export type Channel = z.infer<typeof ChannelObjectSchema>;
 export type Participant = z.infer<typeof ParticipantObjectSchema>;
 
 const StructuredBaseSchema = z.object({
-  version: z.literal('v2').default('v2'),
+  version: z.literal(2).default(2),
   type: z.enum(['chat', 'tool', 'summary', 'entity']),
   createdAt: z.number().int(),
   lastRetrievalTime: z.number().optional(),
@@ -35,10 +35,7 @@ const StructuredBaseSchema = z.object({
   sessionType: z.enum(['dm', 'guild']).optional(),
   guild: GuildObjectSchema.nullable().optional(),
   channel: ChannelObjectSchema.nullable().optional(),
-  participants: z.array(ParticipantObjectSchema).default([]),
-  importance: z.enum(['low', 'med', 'high']).default('med'),
-  confidence: z.number().min(0).max(1).default(0.8),
-  writeReason: z.string().optional(),
+  participants: z.array(ParticipantObjectSchema).default([])
 });
 
 const StructuredChatSchema = StructuredBaseSchema.extend({
@@ -77,7 +74,7 @@ export type PineconeMetadataInput = z.infer<typeof StructuredMetadataSchema>;
  */
 const StorageBaseSchema = z.object({
   hash: z.string().optional(),
-  version: z.literal('v2'),
+  version: z.literal(2),
   type: z.enum(['chat', 'tool', 'summary', 'entity']),
   createdAt: z.number().int(),
   lastRetrievalTime: z.number().optional(),
@@ -93,10 +90,7 @@ const StorageBaseSchema = z.object({
   channelName: z.string().optional(),
   channelType: z.string().optional(),
   participantIds: z.array(z.string()).default([]),
-  entityIds: z.array(z.string()).default([]),
-  importance: z.enum(['low', 'med', 'high']).default('med'),
-  confidence: z.number().min(0).max(1).default(0.8),
-  writeReason: z.string().optional(),
+  entityIds: z.array(z.string()).default([])
 });
 
 const StorageChatSchema = StorageBaseSchema.extend({
@@ -189,8 +183,6 @@ export function expandMetadata(
     guild,
     channel,
     participants,
-    importance: metadata.importance ?? 'med',
-    confidence: metadata.confidence ?? 0.8,
   };
 
   switch (metadata.type) {
@@ -245,8 +237,6 @@ export const ALLOWED_MEMORY_FILTERS = [
   'channelType',
   'participantIds',
   'entityIds',
-  'importance',
-  'confidence',
   'createdAt',
   'lastRetrievalTime',
 ] as const;

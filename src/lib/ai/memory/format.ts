@@ -19,7 +19,7 @@ export function formatMemories(memories: MemoryWithMetadata[]): string {
       if (!metadata) return null;
 
       const structured = expandMetadata(metadata);
-      if (structured.version && structured.version !== 'v2') {
+      if (structured.version && structured.version !== 2) {
         return null;
       }
 

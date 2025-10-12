@@ -45,6 +45,7 @@
     "@opentelemetry/sdk-logs": "^0.206.0",
     "@opentelemetry/sdk-node": "^0.206.0",
     "@pinecone-database/pinecone": "^6.1.2",
+    "@trigger.dev/sdk": "^3.1.0",
     "@t3-oss/env-core": "^0.13.8",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.5",

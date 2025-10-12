@@ -54,10 +54,18 @@ export const searchMemories = () =>
         if (!query || query.trim().length === 0) {
           return {
             success: true,
-            data: 'No query provided. Please provide a search term.',
+            data: {
+              memories: '',
+              query: '',
+              limit,
+              options: options ?? null,
+              filter: null,
+              message: 'No query provided. Please supply a semantic search phrase before calling this tool.',
+            },
           };
         }
 
+        const sanitizedFilter = sanitizeFilter(filter);
         const results = await queryMemories(query, {
           limit,
           ageLimit: options?.ageLimitDays
@@ -65,14 +73,24 @@ export const searchMemories = () =>
             : undefined,
           ignoreRecent: options?.ignoreRecent,
           onlyTools: options?.onlyTools,
-          filter: sanitizeFilter(filter),
+          filter: sanitizedFilter,
         });
 
-        const data = formatMemories(results);
+        const memories = formatMemories(results);
+        const trimmedQuery = query.trim();
 
         return {
           success: true,
-          data,
+          data: {
+            memories,
+            query: trimmedQuery,
+            limit,
+            options: options ?? null,
+            filter: sanitizedFilter ?? null,
+            message: memories
+              ? 'Memory search completed.'
+              : 'No matching memories found for this scope.',
+          },
         };
       } catch (error) {
         logger.error({ error }, 'Error in searchMemories tool');
