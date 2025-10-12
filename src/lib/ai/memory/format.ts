@@ -81,7 +81,7 @@ export function formatMemories(memories: MemoryWithMetadata[]): string {
 
   if (!sections.length) return '';
 
-  return ['[memory-pack v2]', ...sections, '[/memory-pack]'].join('\n');
+  return ['[memory]', ...sections, '[/memory]'].join('\n');
 }
 
 function formatChatMemory({

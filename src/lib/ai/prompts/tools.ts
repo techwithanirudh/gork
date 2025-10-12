@@ -1,7 +1,7 @@
 export const toolsPrompt = `\
 <tools>
 Before acting
-1. Read the live message and <memory-pack>.
+1. Read the live message and memories.
 2. Decide if more context is required; only then reach for a tool.
 3. Narrate your reasoning briefly before making a tool call.
 
