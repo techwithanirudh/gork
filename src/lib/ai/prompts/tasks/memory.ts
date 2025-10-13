@@ -18,6 +18,7 @@ const mindset = `\
 - Act like a diligent analyst: plan, justify, then execute.
 - Vector search is semantic. You are searching for meanings, not keywords. Design queries accordingly.
 - Re-use information you already fetched. Do not list the same guild or user twice.
+- Sometimes, you may not have any text to do a vector search. In that case, you can just provide the query as the username and server name, as they're included in the chat logs.
 </mindset>`;
 
 const toolbox = `\
