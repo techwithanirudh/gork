@@ -39,8 +39,6 @@ export function formatMemories(memories: MemoryWithMetadata[]): string {
             participants,
             context: structured.context,
             sessionId: structured.sessionId,
-            importance: structured.importance,
-            confidence: structured.confidence,
           });
         case 'tool':
           return formatToolMemory({
@@ -51,16 +49,12 @@ export function formatMemories(memories: MemoryWithMetadata[]): string {
             name: structured.name,
             response: structured.response,
             sessionId: structured.sessionId,
-            importance: structured.importance,
-            confidence: structured.confidence,
           });
         case 'summary':
           return formatSummaryMemory({
             createdAt,
             sessionId: structured.sessionId,
             summary: structured.summary,
-            importance: structured.importance,
-            confidence: structured.confidence,
           });
         case 'entity': {
           const entities =
@@ -69,8 +63,6 @@ export function formatMemories(memories: MemoryWithMetadata[]): string {
             createdAt,
             summary: structured.summary,
             entities,
-            importance: structured.importance,
-            confidence: structured.confidence,
           });
         }
         default:
@@ -91,8 +83,6 @@ function formatChatMemory({
   participants,
   context,
   sessionId,
-  importance,
-  confidence,
 }: {
   createdAt: string;
   guild: Guild | null;
@@ -100,8 +90,6 @@ function formatChatMemory({
   participants: Participant[];
   context: string;
   sessionId: string;
-  importance: string;
-  confidence: number;
 }) {
   const location = formatLocation(guild, channel);
   const snippet = sanitizeMultiline(context);
@@ -113,8 +101,6 @@ function formatChatMemory({
     `    session: ${sessionId}`,
     `    where: ${location}`,
     `    participants: ${formatParticipants(participants)}`,
-    `    importance: ${importance ?? 'med'}`,
-    `    confidence: ${formatConfidence(confidence)}`,
     `    transcript: |`,
     ...snippet.map((line) => `      ${line}`),
   ].join('\n');
@@ -128,8 +114,6 @@ function formatToolMemory({
   name,
   response,
   sessionId,
-  importance,
-  confidence,
 }: {
   createdAt: string;
   guild: Guild | null;
@@ -138,8 +122,6 @@ function formatToolMemory({
   name: string;
   response: unknown;
   sessionId: string;
-  importance: string;
-  confidence: number;
 }) {
   const location = formatLocation(guild, channel);
   const payload =
@@ -154,8 +136,6 @@ function formatToolMemory({
     `    session: ${sessionId}`,
     `    where: ${location}`,
     `    participants: ${formatParticipants(participants)}`,
-    `    importance: ${importance ?? 'med'}`,
-    `    confidence: ${formatConfidence(confidence)}`,
     `    tool: ${name ?? 'unknown'}`,
     `    output: |`,
     ...payload.map((line) => `      ${line}`),
@@ -166,14 +146,10 @@ function formatSummaryMemory({
   createdAt,
   sessionId,
   summary,
-  importance,
-  confidence,
 }: {
   createdAt: string;
   sessionId: string;
   summary: string;
-  importance: string;
-  confidence: number;
 }) {
   const snippet = sanitizeMultiline(summary);
 
@@ -182,8 +158,6 @@ function formatSummaryMemory({
     `    type: summary`,
     `    when: ${createdAt}`,
     `    session: ${sessionId}`,
-    `    importance: ${importance ?? 'med'}`,
-    `    confidence: ${formatConfidence(confidence)}`,
     `    recap: |`,
     ...snippet.map((line) => `      ${line}`),
   ].join('\n');
@@ -193,14 +167,10 @@ function formatEntityMemory({
   createdAt,
   summary,
   entities,
-  importance,
-  confidence,
 }: {
   createdAt: string;
   summary: string;
   entities: Participant[];
-  importance: string;
-  confidence: number;
 }) {
   const snippet = sanitizeMultiline(summary);
 
@@ -209,8 +179,6 @@ function formatEntityMemory({
     `    type: entity`,
     `    when: ${createdAt}`,
     `    subjects: ${formatParticipants(entities)}`,
-    `    importance: ${importance ?? 'med'}`,
-    `    confidence: ${formatConfidence(confidence)}`,
     `    card: |`,
     ...snippet.map((line) => `      ${line}`),
   ].join('\n');
@@ -237,8 +205,4 @@ function sanitizeMultiline(value: string) {
     .map((line) => line.trimEnd())
     .filter((line, index, arr) => !(line === '' && arr[index - 1] === ''))
     .slice(0, 40);
-}
-
-function formatConfidence(confidence?: number) {
-  return typeof confidence === 'number' ? confidence.toFixed(2) : '0.80';
 }

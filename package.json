@@ -45,7 +45,6 @@
     "@opentelemetry/sdk-logs": "^0.206.0",
     "@opentelemetry/sdk-node": "^0.206.0",
     "@pinecone-database/pinecone": "^6.1.2",
-    "@trigger.dev/sdk": "^3.1.0",
     "@t3-oss/env-core": "^0.13.8",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.5",
@@ -88,6 +87,7 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.6.0",
     "husky": "^9.1.7",
+    "lefthook": "^1.13.6",
     "prettier": "^2.8.8",
     "prettier-plugin-organize-imports": "^4.3.0"
   },
@@ -108,6 +108,7 @@
     "@discordjs/opus",
     "esbuild",
     "ffmpeg-static",
+    "lefthook",
     "node-crc",
     "unrs-resolver"
   ]

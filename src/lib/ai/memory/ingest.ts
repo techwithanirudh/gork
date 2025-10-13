@@ -1,3 +1,5 @@
+import { redis, redisKeys } from '@/lib/kv';
+import { createLogger } from '@/lib/logger';
 import { addMemory } from '@/lib/pinecone/queries';
 import { getMessagesByChannel } from '@/lib/queries';
 import type { PineconeMetadataInput } from '@/types';
@@ -8,14 +10,6 @@ import {
   type Message,
   type User,
 } from 'discord.js';
-
-type Importance = 'low' | 'med' | 'high';
-
-interface StoreGateResult {
-  store: boolean;
-  importance: Importance;
-  reason: string;
-}
 
 interface GuildInfo {
   id: string | null;
@@ -35,6 +29,8 @@ interface EntityRef {
   display?: string;
   platform: 'discord';
 }
+
+const logger = createLogger('memory:ingest');
 
 type ChatMetadataPayload = Extract<PineconeMetadataInput, { type: 'chat' }>;
 
@@ -134,35 +130,16 @@ function participantsFromMessage(
   return participants;
 }
 
-function shouldStoreChat(context: string): StoreGateResult {
-  const trimmed = context.trim();
-  if (!trimmed) {
-    return { store: false, importance: 'low', reason: 'Empty context' };
+async function trackSession(sessionId: string) {
+  if (!sessionId) return;
+  try {
+    await redis.sadd(redisKeys.memorySessions(), sessionId);
+  } catch (error) {
+    logger.warn({ sessionId, error }, 'Failed to track session for memory');
   }
-
-  if (IMPORTANT_KEYWORDS.test(trimmed)) {
-    return {
-      store: true,
-      importance: 'high',
-      reason: 'Contains commitments or planning keywords',
-    };
-  }
-
-  if (trimmed.length > 160 || trimmed.split('\n').length >= 4) {
-    return {
-      store: true,
-      importance: 'med',
-      reason: 'Meaningful multi-turn conversation',
-    };
-  }
-
-  return {
-    store: false,
-    importance: 'low',
-    reason: 'Small talk or trivial exchange',
-  };
 }
 
+// TODO: why not use the discord message formatter?
 function formatTranscript(messages: Message[]): string {
   return messages
     .map((msg) => `${msg.author.username}: ${msg.content ?? ''}`.trim())
@@ -177,14 +154,11 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
   });
 
   const transcript = formatTranscript(Array.from(recentMessages.values()));
-  const gate = shouldStoreChat(transcript);
+  const sessionId = sessionIdFromMessage(message);
 
-  if (!gate.store) {
-    return null;
-  }
+  if (!transcript.trim()) return;
 
   const now = Date.now();
-  const sessionId = sessionIdFromMessage(message);
   const guild = guildInfoFromMessage(message);
   const channel = channelInfoFromMessage(message);
 
@@ -200,11 +174,10 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
     guild,
     channel,
     participants,
-    context: transcript,
-    importance: gate.importance,
-    confidence: gate.importance === 'high' ? 0.9 : 0.82,
+    context: transcript
   };
 
+  await trackSession(sessionId);
   return addMemory(transcript, metadata);
 }
 
@@ -232,9 +205,9 @@ export async function saveToolMemory(
     channel,
     participants,
     name: toolName,
-    response: result,
-    importance: 'med',
-    confidence: 0.85,
+    response: result
   };
+
+  await trackSession(sessionId);
   return addMemory(payload, metadata);
 }

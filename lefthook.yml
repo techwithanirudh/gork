@@ -1,0 +1,32 @@
+pre-commit:
+  parallel: true
+  commands:
+    check:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      exclude:
+        - node_modules/**
+        - dist/**
+      run: bun eslint {staged_files} --fix --max-warnings 0
+      stage_fixed: true
+    format:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      exclude:
+        - node_modules/**
+        - dist/**
+      run: bun prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+    typecheck:
+      run: bun typecheck
+    spelling:
+      run: bun check:spelling {staged_files}
+      stage_fixed: true
+
+post-merge:
+  commands:
+    install-deps:
+      run: bun i
+
+commit-msg:
+  commands:
+    'lint commit message':
+      run: bun commitlint --edit {1}
