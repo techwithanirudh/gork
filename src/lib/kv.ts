@@ -10,10 +10,30 @@ const logger = createLogger('redis');
 
 export const redis = createClient({
   url: env.REDIS_URL,
+  socket: {
+    keepAlive: true,
+    reconnectStrategy(retries) {
+      const backoff = Math.min(retries * 200, 5_000);
+      return backoff;
+    },
+  },
+  pingInterval: 60_000,
 });
 
 redis.on('error', (error) => {
-  logger.warn({ error }, 'Redis client error');
+  if (error instanceof Error) {
+    logger.warn({ err: error }, 'Redis client error');
+  } else {
+    logger.warn({ error }, 'Redis client error');
+  }
+});
+
+redis.on('reconnecting', (delay) => {
+  logger.debug({ delay }, 'Redis reconnecting');
+});
+
+redis.on('ready', () => {
+  logger.debug('Redis connection ready');
 });
 
 export const ratelimit = {
