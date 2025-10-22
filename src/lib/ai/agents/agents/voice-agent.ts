@@ -1,15 +1,18 @@
-import { saveToolMemory } from '@/lib/ai/memory/ingest';
 import type { RequestHints } from '@/types/request';
 import { Experimental_Agent as Agent, stepCountIs } from 'ai';
-import type { Message } from 'discord.js';
 import { systemPrompt } from '../../prompts';
 import { provider } from '../../providers';
 import { getWeather } from '../../tools/get-weather';
 import { searchWeb } from '../../tools/search-web';
 
 export const voiceAgent = ({
+  speaker,
   hints,
 }: {
+  speaker: {
+    id: string;
+    name: string;
+  };
   hints: RequestHints;
 }) =>
   new Agent({
@@ -17,34 +20,21 @@ export const voiceAgent = ({
     system: systemPrompt({
       agent: 'voice',
       requestHints: hints,
+      speakerName: speaker.name,
     }),
-    stopWhen: [
-      stepCountIs(10)
-    ],
-    toolChoice: 'required',
+    stopWhen: [stepCountIs(6)],
+    toolChoice: 'auto',
     tools: {
       getWeather,
-      searchWeb
+      searchWeb,
     },
-    temperature: 0,
-    onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
-      if (!toolCalls.length) return;
-
-      await Promise.all(
-        toolCalls.map(async (call, i) => {
-          const result = toolResults[i];
-          if (!call || !result) return;
-          if (call.toolName === 'memories') return;
-          if (call.toolName === 'searchMemories') return;
-
-          await saveToolMemory({} as Message, call.toolName, result);
-        })
-      );
-    },
+    temperature: 0.7,
     experimental_telemetry: {
       isEnabled: true,
       functionId: 'voice',
       metadata: {
+        speakerId: speaker.id,
+        speakerName: speaker.name,
         hints: JSON.stringify(hints),
       },
     },

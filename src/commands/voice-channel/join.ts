@@ -6,7 +6,7 @@ import {
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
-import type { ChatInputCommandInteraction } from 'discord.js';
+import type { ChatInputCommandInteraction, GuildMember } from 'discord.js';
 
 // export const data = new SlashCommandBuilder()
 //   .setName('join')
@@ -43,8 +43,40 @@ export async function execute(
     connection.subscribe(player);
 
     receiver.speaking.on('start', async (userId) => {
-      const user = await interaction.client.users.fetch(userId);
-      await createListeningStream(receiver, player, user);
+      const memberPromise = (async (): Promise<GuildMember | null> => {
+        try {
+          return await interaction.guild.members.fetch(userId);
+        } catch {
+          return null;
+        }
+      })();
+
+      const [user, member] = await Promise.all([
+        interaction.client.users.fetch(userId),
+        memberPromise,
+      ]);
+
+      const channelId = connection.joinConfig.channelId;
+      let channel = channelId
+        ? interaction.guild.channels.cache.get(channelId)
+        : null;
+
+      if (!channel && channelId) {
+        channel = await interaction.guild.channels
+          .fetch(channelId)
+          .catch(() => null);
+      }
+
+      if (!channel || !channel.isVoiceBased()) {
+        return;
+      }
+
+      await createListeningStream(receiver, player, {
+        user,
+        member,
+        guild: interaction.guild,
+        channel,
+      });
     });
   } catch (error) {
     console.warn(error);
