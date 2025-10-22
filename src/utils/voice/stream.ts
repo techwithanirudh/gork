@@ -60,7 +60,6 @@ export async function createListeningStream(
         logger.info({ text }, `[Deepgram] AI Response`);
         const audio = await speak({ text, model: voice.model });
         if (!audio) return;
-        // @ts-expect-error this is a ReadableStream
         playAudio(player, audio);
       }
     });

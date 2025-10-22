@@ -17,8 +17,8 @@ Available tools
 - startDM: open a direct message when continuing privately makes sense.
 - discord tools:
     listGuilds: list all guilds the bot is in.
-    listChannels: list all channels in the current guild.
-    listDMs: list all DMs the bot has.
+    listChannels: list all channels in the current guild. e.g, joining a voice channel.
+    listDMs: list all DMs the bot has. helpful when continuing a DM.
     listUsers: list all users the bot can see.
 - joinVC: join a voice channel.
 - leaveVC: leave the current voice channel.
