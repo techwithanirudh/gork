@@ -170,6 +170,20 @@ User asks: "What did we discuss in DMs about the merch drop?"
     })
   - Return DM snippets or report no match.
 
+Example 5 - Why did you DM me?
+User asks: "Why did you DM me?"
+  - getUserInfo() / listUsers({ query: 'username' }) -> get the person's username.
+  OR
+  - listDMs() -> locate DM channel with requester (choose the best match).
+  - After finding the user's username / ID, you can search Memories for the startDM tool call.
+  - searchMemories({
+      query: "{username} DM",
+      options: { onlyTools: true },
+      filter: { channelType: { "$eq": "dm" }, type: { "$eq": "tool" }, name: { "$eq": "startDM" } },
+      limit: 5
+    })
+  - Return reason
+
 Example 5 — Multi-user ambiguity:
 User asks: "What did Alex and Sam agree on in the design channel?"
   - listGuilds() if the guild is unclear (ask if multiple match).
