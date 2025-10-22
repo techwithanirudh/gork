@@ -1,4 +1,5 @@
 import { getVoiceConnection } from '@discordjs/voice';
+import { getVoiceHandler, deleteVoiceHandler } from '@/voice/state';
 import { MessageFlags, type ChatInputCommandInteraction } from 'discord.js';
 
 // export const data = new SlashCommandBuilder()
@@ -18,6 +19,12 @@ export async function execute(
     });
 
     return;
+  }
+
+  const handler = getVoiceHandler(interaction.guildId);
+  if (handler) {
+    await handler.stopListening();
+    deleteVoiceHandler(interaction.guildId);
   }
 
   connection.destroy();

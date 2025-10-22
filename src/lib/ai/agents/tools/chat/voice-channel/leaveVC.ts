@@ -1,5 +1,6 @@
 import { createLogger } from '@/lib/logger';
 import { getVoiceConnection } from '@discordjs/voice';
+import { getVoiceHandler, deleteVoiceHandler } from '@/voice/state';
 import { tool } from 'ai';
 import { type Message } from 'discord.js';
 import { z } from 'zod';
@@ -21,6 +22,12 @@ export const leaveVC = ({ message }: { message: Message }) =>
             success: false,
             error: 'Not currently in a voice channel',
           };
+        }
+
+        const handler = getVoiceHandler(guildId);
+        if (handler) {
+          await handler.stopListening();
+          deleteVoiceHandler(guildId);
         }
 
         connection.destroy();

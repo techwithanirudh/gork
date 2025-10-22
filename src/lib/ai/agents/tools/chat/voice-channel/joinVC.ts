@@ -1,19 +1,15 @@
 import { createLogger } from '@/lib/logger';
-import { createListeningStream } from '@/utils/voice/stream';
 import {
-  createAudioPlayer,
   entersState,
   getVoiceConnection,
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { tool } from 'ai';
-import {
-  ChannelType,
-  type GuildMember,
-  type Message,
-} from 'discord.js';
+import { ChannelType, type Message } from 'discord.js';
 import { z } from 'zod';
+import { VoiceHandler } from '@/voice';
+import { getVoiceHandler, setVoiceHandler } from '@/voice/state';
 
 const logger = createLogger('tools:joinVC');
 
@@ -55,47 +51,17 @@ export const joinVC = ({ message }: { message: Message }) =>
 
         try {
           await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
-          const receiver = connection.receiver;
 
-          const player = createAudioPlayer();
-          connection.subscribe(player);
+          let handler = getVoiceHandler(guild.id);
+          if (!handler) {
+            handler = new VoiceHandler();
+            setVoiceHandler(guild.id, handler);
+          } else {
+            await handler.stopListening();
+          }
 
-          receiver.speaking.on('start', async (userId) => {
-            const memberPromise = (async (): Promise<GuildMember | null> => {
-              try {
-                return await guild.members.fetch(userId);
-              } catch {
-                return null;
-              }
-            })();
-
-            const [user, member] = await Promise.all([
-              message.client.users.fetch(userId),
-              memberPromise,
-            ]);
-
-            const joinedChannelId = connection.joinConfig.channelId;
-            let joinedChannel = joinedChannelId
-              ? guild.channels.cache.get(joinedChannelId)
-              : null;
-
-            if (!joinedChannel && joinedChannelId) {
-              joinedChannel = await guild.channels
-                .fetch(joinedChannelId)
-                .catch(() => null);
-            }
-
-            if (!joinedChannel || !joinedChannel.isVoiceBased()) {
-              return;
-            }
-
-            await createListeningStream(receiver, player, {
-              user,
-              member,
-              guild,
-              channel: joinedChannel,
-            });
-          });
+          await handler.attach(connection);
+          await handler.startListening();
 
           logger.info(`Successfully joined voice channel ${channel.name} in guild ${guild.name}`);
           
