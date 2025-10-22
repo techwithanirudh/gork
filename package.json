@@ -46,8 +46,6 @@
     "@opentelemetry/sdk-node": "^0.206.0",
     "@pinecone-database/pinecone": "^6.1.2",
     "@t3-oss/env-core": "^0.13.8",
-    "@upstash/ratelimit": "^2.0.6",
-    "@upstash/redis": "^1.35.5",
     "@vercel/functions": "^2.2.13",
     "@vercel/otel": "^2.0.1",
     "ai": "^5.0.64",
@@ -69,6 +67,7 @@
     "pino": "^9.13.1",
     "pino-pretty": "^13.1.1",
     "prism-media": "^2.0.0-alpha.0",
+    "redis": "^5.8.3",
     "ws": "^8.18.3",
     "zod": "^4.1.12"
   },

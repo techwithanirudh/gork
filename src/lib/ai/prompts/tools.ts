@@ -15,6 +15,13 @@ Available tools
 - react: add emoji reaction (ends the turn).
 - skip: bow out silently when a response has no value.
 - startDM: open a direct message when continuing privately makes sense.
+- discord tools:
+    listGuilds: list all guilds the bot is in.
+    listChannels: list all channels in the current guild.
+    listDMs: list all DMs the bot has.
+    listUsers: list all users the bot can see.
+- joinVC: join a voice channel.
+- leaveVC: leave the current voice channel.
 
 Hard rules
 - Once you call reply or react you must STOP. No follow-up tools.

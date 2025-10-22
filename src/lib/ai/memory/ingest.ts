@@ -133,7 +133,7 @@ function participantsFromMessage(
 async function trackSession(sessionId: string) {
   if (!sessionId) return;
   try {
-    await redis.sadd(redisKeys.memorySessions(), sessionId);
+    await redis.sAdd(redisKeys.memorySessions(), sessionId);
   } catch (error) {
     logger.warn({ sessionId, error }, 'Failed to track session for memory');
   }

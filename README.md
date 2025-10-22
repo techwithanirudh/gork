@@ -38,7 +38,8 @@ $ git clone https://github.com/techwithanirudh/discord-ai-bot.git
 $ bun install
 ```
 
-Next, copy the .env.example file, rename it to .env, and add your environment variables.
+Next, copy the .env.example file, rename it to .env, and add your environment variables.  
+The app now expects a standard Redis connection string via `REDIS_URL` (defaults to `redis://localhost:6379/0`) and uses the official `node-redis` client, so make sure you have a Redis instance running or update the URL accordingly.
 Great! Now you just need to start the development server.
 
 ```bash

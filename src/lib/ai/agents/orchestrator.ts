@@ -9,6 +9,7 @@ import { getWeather } from '../tools/get-weather';
 import { searchWeb } from '../tools/search-web';
 import { successToolCall } from '../utils';
 import { memories, react, reply, skip, startDM } from './tools/chat';
+import { joinVC, leaveVC } from './tools/chat/voice-channel';
 import { listGuilds, listChannels, listDMs, listUsers } from './tools/memory';
 
 export const orchestratorAgent = ({
@@ -45,6 +46,8 @@ export const orchestratorAgent = ({
       listChannels: listChannels({ message }),
       listDMs: listDMs({ message }),
       listUsers: listUsers({ message }),
+      joinVC: joinVC({ message }),
+      leaveVC: leaveVC({ message }),
     },
     temperature: 0,
     onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
