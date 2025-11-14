@@ -62,7 +62,8 @@ export const joinVC = ({ message }: { message: Message }) =>
 
           await handler.attach(connection);
           await handler.startListening();
-
+          await handler.startListeningToUser(message.author.id);
+          
           logger.info(`Successfully joined voice channel ${channel.name} in guild ${guild.name}`);
           
           return {

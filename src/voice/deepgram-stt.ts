@@ -49,6 +49,7 @@ export class DeepgramSTT {
 
   constructor(config?: Partial<DeepgramConfig>) {
     const apiKey = process.env.DEEPGRAM_API_KEY;
+    logger.info({ apiKey }, 'DEEPGRAM_API_KEY');
     if (!apiKey) throw new Error('DEEPGRAM_API_KEY not set');
 
     this.config = {

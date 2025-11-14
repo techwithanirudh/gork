@@ -29,7 +29,7 @@ export async function execute(
 
     connection = joinVoiceChannel({
       adapterCreator: interaction.guild.voiceAdapterCreator,
-      channelId: interaction.member.voice.channel.id,
+      channelId: memberChannel.id,
       guildId: interaction.guild.id,
       selfDeaf: false,
       selfMute: true,
@@ -49,6 +49,7 @@ export async function execute(
 
     await handler.attach(connection);
     await handler.startListening();
+    handler.startListeningToUser(interaction.user.id);
   } catch (error) {
     console.warn(error);
 
