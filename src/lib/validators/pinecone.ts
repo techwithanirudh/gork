@@ -35,7 +35,7 @@ const StructuredBaseSchema = z.object({
   sessionType: z.enum(['dm', 'guild']).optional(),
   guild: GuildObjectSchema.nullable().optional(),
   channel: ChannelObjectSchema.nullable().optional(),
-  participants: z.array(ParticipantObjectSchema).default([])
+  participants: z.array(ParticipantObjectSchema).default([]),
 });
 
 const StructuredChatSchema = StructuredBaseSchema.extend({
@@ -90,7 +90,7 @@ const StorageBaseSchema = z.object({
   channelName: z.string().optional(),
   channelType: z.string().optional(),
   participantIds: z.array(z.string()).default([]),
-  entityIds: z.array(z.string()).default([])
+  entityIds: z.array(z.string()).default([]),
 });
 
 const StorageChatSchema = StorageBaseSchema.extend({
@@ -145,7 +145,9 @@ export function flattenMetadata(
     ...structured,
     guild: guild ? JSON.stringify(guild) : undefined,
     channel: channel ? JSON.stringify(channel) : undefined,
-    participants: participants.length ? JSON.stringify(participants) : undefined,
+    participants: participants.length
+      ? JSON.stringify(participants)
+      : undefined,
     entities: entities.length ? JSON.stringify(entities) : undefined,
     guildId: guild?.id ?? undefined,
     guildName: guild?.name ?? undefined,
@@ -175,7 +177,8 @@ export function expandMetadata(
 ): PineconeMetadataInput {
   const guild = safeParseJson<Guild | null>(metadata.guild);
   const channel = safeParseJson<Channel | null>(metadata.channel);
-  const participants = safeParseJson<Participant[]>(metadata.participants) ?? [];
+  const participants =
+    safeParseJson<Participant[]>(metadata.participants) ?? [];
   const entities = safeParseJson<Participant[]>(metadata.entities) ?? [];
 
   const base = {
@@ -191,7 +194,8 @@ export function expandMetadata(
     case 'tool':
       return StructuredToolSchema.parse({
         ...base,
-        response: safeParseJson<unknown>(metadata.response) ?? metadata.response,
+        response:
+          safeParseJson<unknown>(metadata.response) ?? metadata.response,
       });
     case 'summary':
       return StructuredSummarySchema.parse(base);

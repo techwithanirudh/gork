@@ -2,8 +2,8 @@ import { commands } from '@/commands';
 import { deployCommands } from '@/deploy-commands';
 import { env } from '@/env';
 import { events } from '@/events';
-import { createLogger } from '@/lib/logger';
 import { redis } from '@/lib/kv';
+import { createLogger } from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
@@ -99,7 +99,7 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('beforeExit', () => {
   if (redis.isOpen) {
-    redis.quit()
+    redis.quit();
   }
 });
 

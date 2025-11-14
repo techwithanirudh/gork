@@ -1,9 +1,9 @@
 import { tool } from 'ai';
 import type {
   DMChannel,
-  PartialGroupDMChannel,
-  PartialDMChannel,
   Message,
+  PartialDMChannel,
+  PartialGroupDMChannel,
   User,
 } from 'discord.js';
 import { z } from 'zod';
@@ -23,7 +23,9 @@ function getParticipantIds(
   const anyChan = chan as any;
 
   if (Array.isArray(anyChan.recipientIds)) {
-    return anyChan.recipientIds.filter((x: unknown): x is string => typeof x === 'string');
+    return anyChan.recipientIds.filter(
+      (x: unknown): x is string => typeof x === 'string'
+    );
   }
 
   if (typeof anyChan.recipientId === 'string') {
@@ -81,8 +83,9 @@ export const listDMs = ({ message }: { message: Message }) =>
     execute: async ({ limit }) => {
       const max = limit ?? 25;
 
-      const dmLike = [...message.client.channels.cache.values()]
-        .filter((m) => m.isDMBased());
+      const dmLike = [...message.client.channels.cache.values()].filter((m) =>
+        m.isDMBased()
+      );
       dmLike.sort((a, b) => {
         const aTime = snowflakeToBigInt(a.lastMessageId);
         const bTime = snowflakeToBigInt(b.lastMessageId);
@@ -105,10 +108,7 @@ export const listDMs = ({ message }: { message: Message }) =>
 
           let participantIds = getParticipantIds(chan);
 
-          if (
-            participantIds.length === 0 &&
-            'messages' in chan
-          ) {
+          if (participantIds.length === 0 && 'messages' in chan) {
             try {
               const recent = await chan.messages.fetch({ limit: 5 });
               const me = message.client.user?.id;
@@ -118,8 +118,7 @@ export const listDMs = ({ message }: { message: Message }) =>
                 if (authorId && authorId !== me) otherIds.add(authorId);
               });
               participantIds = Array.from(otherIds);
-            } catch {
-            }
+            } catch {}
           }
 
           const users = await Promise.all(

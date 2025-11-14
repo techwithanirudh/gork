@@ -2,7 +2,10 @@ import Fuse from 'fuse.js';
 
 export type FuzzyKey<T> = keyof T | string;
 
-export function createFuzzySearch<T extends object>(items: T[], keys: FuzzyKey<T>[]) {
+export function createFuzzySearch<T extends object>(
+  items: T[],
+  keys: FuzzyKey<T>[]
+) {
   const fuse = new Fuse(items, {
     keys: keys as string[],
     threshold: 0.4, // reasonably strict but typo-tolerant
@@ -22,5 +25,3 @@ export function createFuzzySearch<T extends object>(items: T[], keys: FuzzyKey<T
 
   return { search };
 }
-
-

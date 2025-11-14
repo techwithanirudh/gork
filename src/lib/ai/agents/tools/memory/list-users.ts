@@ -1,6 +1,5 @@
 import { tool } from 'ai';
-import type { Collection, Message } from 'discord.js';
-import type { GuildMember } from 'discord.js';
+import type { Collection, GuildMember, Message } from 'discord.js';
 import { z } from 'zod';
 import { createFuzzySearch } from '../../utils/fuzzy';
 
@@ -13,11 +12,15 @@ export const listUsers = ({ message }: { message: Message }) =>
       channelId: z
         .string()
         .optional()
-        .describe('Optional channel ID scope (overrides guild scope when provided).'),
+        .describe(
+          'Optional channel ID scope (overrides guild scope when provided).'
+        ),
       query: z
         .string()
         .optional()
-        .describe('Optional case-insensitive substring match on username or nickname'),
+        .describe(
+          'Optional case-insensitive substring match on username or nickname'
+        ),
       limit: z
         .number()
         .int()
@@ -41,7 +44,12 @@ export const listUsers = ({ message }: { message: Message }) =>
           displayName: m.user?.displayName ?? m.displayName,
           nickname: m.nickname,
         }));
-        const { search } = createFuzzySearch(all, ['username', 'nickname', 'id', 'displayName']);
+        const { search } = createFuzzySearch(all, [
+          'username',
+          'nickname',
+          'id',
+          'displayName',
+        ]);
         return search(query, max);
       }
 
@@ -53,9 +61,14 @@ export const listUsers = ({ message }: { message: Message }) =>
           id: m.user?.id ?? m.id,
           username: m.user?.username ?? m.user?.tag,
           displayName: m.user?.displayName ?? m.displayName,
-          nickname: m.nickname
+          nickname: m.nickname,
         }));
-        const { search } = createFuzzySearch(all, ['username', 'nickname', 'id', 'displayName']);
+        const { search } = createFuzzySearch(all, [
+          'username',
+          'nickname',
+          'id',
+          'displayName',
+        ]);
         return search(query, max);
       }
 
@@ -63,5 +76,3 @@ export const listUsers = ({ message }: { message: Message }) =>
       return [];
     },
   });
-
-

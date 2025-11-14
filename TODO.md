@@ -88,9 +88,8 @@ Agents:
 - Implement Summaries + Additional context on queries
 - Implement observa
 - Repair ext For Relevance
-- 
-reduce token usage for memory agent.
-the agent calls 50 calls, and doesn't understand memory is keyword and sementic and not anai
+- reduce token usage for memory agent.
+  the agent calls 50 calls, and doesn't understand memory is keyword and sementic and not anai
 - use fuzzy search
 - exclude old memory
 - check how it would scale with longer date and time
@@ -98,6 +97,6 @@ the agent calls 50 calls, and doesn't understand memory is keyword and sementic 
 
 give more examples to the memory and search tool calls the model tries to search with Loop'd Server for the guidl search, and x doing y for search memories
 optimize memory format structure
+
 - scrap all query memory tools lik onlyTools bcs agent can autoimati9cally do it
 - update gork to properly know who is talking etc give it multi ppl convo examples and dont respond for msgs meant for other ppl
-    

@@ -13,14 +13,19 @@ export const listChannels = ({ message }: { message: Message }) =>
         .string()
         .optional()
         .describe('Optional channel name query (case-insensitive substring).'),
-      type: z.enum(['text', 'voice', 'forum', 'stage', 'category', 'news', 'thread']).optional().describe('Optional channel type to filter by.'),
+      type: z
+        .enum(['text', 'voice', 'forum', 'stage', 'category', 'news', 'thread'])
+        .optional()
+        .describe('Optional channel type to filter by.'),
       limit: z
         .number()
         .int()
         .positive()
         .max(50)
         .optional()
-        .describe('Optional max number of channels to return (default all up to 50).'),
+        .describe(
+          'Optional max number of channels to return (default all up to 50).'
+        ),
     }),
     execute: async ({ guildId, query, type, limit }) => {
       const guild = message.client.guilds.cache.get(guildId);
@@ -28,26 +33,26 @@ export const listChannels = ({ message }: { message: Message }) =>
         return [];
       }
 
-      let channels = guild.channels.cache.map((c) => ({ 
-        id: c.id, 
-        name: c.name, 
-        type: c.type 
+      let channels = guild.channels.cache.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
       }));
 
       if (type) {
         const typeMap = {
-          'text': 0,
-          'voice': 2,
-          'forum': 15,
-          'stage': 13,
-          'category': 4,
-          'news': 5,
-          'thread': 11
+          text: 0,
+          voice: 2,
+          forum: 15,
+          stage: 13,
+          category: 4,
+          news: 5,
+          thread: 11,
         };
-        
+
         const targetType = typeMap[type];
         if (targetType !== undefined) {
-          channels = channels.filter(c => c.type === targetType);
+          channels = channels.filter((c) => c.type === targetType);
         }
       }
 
@@ -55,5 +60,3 @@ export const listChannels = ({ message }: { message: Message }) =>
       return search(query, limit ?? 50);
     },
   });
-
-

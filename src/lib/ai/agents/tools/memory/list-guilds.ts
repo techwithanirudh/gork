@@ -13,7 +13,10 @@ export const listGuilds = ({ message }: { message: Message }) =>
         .describe('Optional name query to filter guilds'),
     }),
     execute: async ({ query }) => {
-      const all = message.client.guilds.cache.map((g) => ({ id: g.id, name: g.name }));
+      const all = message.client.guilds.cache.map((g) => ({
+        id: g.id,
+        name: g.name,
+      }));
       const { search } = createFuzzySearch(all, ['name', 'id']);
       return search(query, 50);
     },

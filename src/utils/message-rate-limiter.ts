@@ -9,11 +9,7 @@ async function getMessageCount(ctxId: string): Promise<number> {
 
 async function incrementMessageCount(ctxId: string): Promise<number> {
   const key = redisKeys.messageCount(ctxId);
-  const results = await redis
-    .multi()
-    .incr(key)
-    .expire(key, 3600)
-    .exec();
+  const results = await redis.multi().incr(key).expire(key, 3600).exec();
 
   const n = Number(results?.[0] ?? 1);
   return n || 1;

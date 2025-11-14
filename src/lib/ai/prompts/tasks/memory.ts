@@ -307,6 +307,7 @@ export const memoryPrompt = [
   toolUsageDetails,
   examples,
   outputFormat,
-].filter(Boolean)
+]
+  .filter(Boolean)
   .join('\n\n')
   .trim();
