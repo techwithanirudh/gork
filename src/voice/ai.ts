@@ -1,6 +1,6 @@
+import { provider } from '@/lib/ai/providers';
 import { createLogger } from '@/lib/logger';
 import { generateText, type LanguageModel } from 'ai';
-import { provider } from '@/lib/ai/providers';
 
 const logger = createLogger('voice:ai');
 
@@ -27,7 +27,10 @@ export class AIClient {
     this.model = provider.languageModel('chat-model');
   }
 
-  async chat(messages: OpenRouterMessage[], temperature = 0.7): Promise<string> {
+  async chat(
+    messages: OpenRouterMessage[],
+    temperature = 0.7
+  ): Promise<string> {
     const { text } = await generateText({
       model: this.model,
       messages,
@@ -37,11 +40,15 @@ export class AIClient {
     return text;
   }
 
-  async generateResponse(userInput: string, context?: string[]): Promise<string> {
+  async generateResponse(
+    userInput: string,
+    context?: string[]
+  ): Promise<string> {
     const messages: OpenRouterMessage[] = [
       {
         role: 'system',
-        content: 'You are a helpful voice assistant in a Discord voice channel. Keep responses concise and conversational, suitable for text-to-speech. Avoid using markdown or special formatting.',
+        content:
+          'You are a helpful voice assistant in a Discord voice channel. Keep responses concise and conversational, suitable for text-to-speech. Avoid using markdown or special formatting.',
       },
     ];
 

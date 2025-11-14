@@ -1,7 +1,7 @@
-import { VoiceConnection, EndBehaviorType } from '@discordjs/voice';
-import { Readable, Transform } from 'stream';
-import prism from 'prism-media';
 import { createLogger } from '@/lib/logger';
+import { EndBehaviorType, VoiceConnection } from '@discordjs/voice';
+import prism from 'prism-media';
+import { Readable, Transform } from 'stream';
 
 const logger = createLogger('voice:receiver');
 
@@ -24,7 +24,7 @@ export class VoiceReceiver {
   startReceivingUser(userId: string, callback: (audio: Buffer) => void): void {
     try {
       const receiver = this.connection.receiver;
-      
+
       // Subscribe to user's audio stream
       const opusStream = receiver.subscribe(userId, {
         end: {
@@ -43,13 +43,20 @@ export class VoiceReceiver {
       // Resample from 48kHz stereo to 16kHz mono for Deepgram
       const resampler = new prism.FFmpeg({
         args: [
-          '-f', 's16le',
-          '-ar', '48000',
-          '-ac', '2',
-          '-i', 'pipe:0',
-          '-f', 's16le',
-          '-ar', '16000',
-          '-ac', '1',
+          '-f',
+          's16le',
+          '-ar',
+          '48000',
+          '-ac',
+          '2',
+          '-i',
+          'pipe:0',
+          '-f',
+          's16le',
+          '-ar',
+          '16000',
+          '-ac',
+          '1',
           'pipe:1',
         ],
       });

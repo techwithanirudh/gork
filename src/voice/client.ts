@@ -1,7 +1,13 @@
-import '../config/env';
-import { Client, GatewayIntentBits, Partials, Message } from 'discord.js';
-import { joinVoiceChannel, VoiceConnection, VoiceConnectionStatus, entersState, getVoiceConnection } from '@discordjs/voice';
 import { createLogger } from '@/lib/logger';
+import {
+  entersState,
+  getVoiceConnection,
+  joinVoiceChannel,
+  VoiceConnection,
+  VoiceConnectionStatus,
+} from '@discordjs/voice';
+import { Client, GatewayIntentBits, Message, Partials } from 'discord.js';
+import '../config/env';
 
 const logger = createLogger('voice:client');
 
@@ -31,7 +37,9 @@ export class DiscordClient {
   async disconnect(): Promise<void> {
     const conn = this.connection || getVoiceConnection('');
     if (conn) {
-      try { conn.destroy(); } catch {}
+      try {
+        conn.destroy();
+      } catch {}
     }
     await this.client.destroy();
     logger.info('Discord client disconnected');
@@ -67,7 +75,9 @@ export class DiscordClient {
     // Caller should ensure bot has moderator perms on stage.
     // The unsuppress call requires fetching the GuildMember for the bot.
     // This is a placeholder; actual elevation must be done by a moderator or via permissions.
-    logger.info('Requesting speaker permission (ensure bot has Stage Moderator)');
+    logger.info(
+      'Requesting speaker permission (ensure bot has Stage Moderator)'
+    );
   }
 
   async leaveVoiceChannel(): Promise<void> {

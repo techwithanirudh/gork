@@ -1,5 +1,5 @@
-import WebSocket from 'ws';
 import { createLogger } from '@/lib/logger';
+import WebSocket from 'ws';
 
 const logger = createLogger('voice:deepgram-stt');
 
@@ -43,7 +43,8 @@ export class DeepgramSTT {
   private keepAliveInterval: NodeJS.Timeout | null = null;
 
   private verbose = false;
-  private connectionState: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
+  private connectionState: 'disconnected' | 'connecting' | 'connected' =
+    'disconnected';
   private audioBytesSent = 0;
   private transcriptsReceived = 0;
 
@@ -63,7 +64,10 @@ export class DeepgramSTT {
     };
 
     // Check for verbose mode
-    this.verbose = process.env.VERBOSE === 'true' || process.env.DEBUG?.includes('deepgram') || false;
+    this.verbose =
+      process.env.VERBOSE === 'true' ||
+      process.env.DEBUG?.includes('deepgram') ||
+      false;
     if (this.verbose) {
       logger.info('[VERBOSE] DeepgramSTT initialized in verbose mode');
     }
@@ -85,7 +89,7 @@ export class DeepgramSTT {
     return new Promise((resolve, reject) => {
       try {
         this.connectionState = 'connecting';
-        
+
         const params = new URLSearchParams({
           model: this.config.model!,
           language: this.config.language!,
@@ -101,7 +105,12 @@ export class DeepgramSTT {
         const url = `wss://api.deepgram.com/v1/listen?${params}`;
 
         if (this.verbose) {
-          logger.info(`[VERBOSE] Connecting to Deepgram WebSocket: ${url.replace(this.config.apiKey, 'REDACTED')}`);
+          logger.info(
+            `[VERBOSE] Connecting to Deepgram WebSocket: ${url.replace(
+              this.config.apiKey,
+              'REDACTED'
+            )}`
+          );
         }
 
         this.ws = new WebSocket(url, {
@@ -116,11 +125,11 @@ export class DeepgramSTT {
           this.connectionState = 'connected';
           this.reconnectAttempts = 0;
           this.startKeepAlive();
-          
+
           if (this.verbose) {
             logger.info('[VERBOSE] Deepgram WebSocket connection established');
           }
-          
+
           resolve();
         });
 
@@ -147,9 +156,15 @@ export class DeepgramSTT {
    * Send audio data to Deepgram
    */
   sendAudio(audioBuffer: Buffer): void {
-    if (!this.isConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+    if (
+      !this.isConnected ||
+      !this.ws ||
+      this.ws.readyState !== WebSocket.OPEN
+    ) {
       if (this.verbose) {
-        logger.warn(`[VERBOSE] Cannot send audio - WebSocket state: ${this.connectionState}, readyState: ${this.ws?.readyState}`);
+        logger.warn(
+          `[VERBOSE] Cannot send audio - WebSocket state: ${this.connectionState}, readyState: ${this.ws?.readyState}`
+        );
       } else {
         logger.warn('Cannot send audio - WebSocket not connected');
       }
@@ -159,9 +174,11 @@ export class DeepgramSTT {
     try {
       this.ws.send(audioBuffer);
       this.audioBytesSent += audioBuffer.length;
-      
+
       if (this.verbose) {
-        logger.debug(`[VERBOSE] Sent ${audioBuffer.length} bytes to Deepgram | Total sent: ${this.audioBytesSent} bytes`);
+        logger.debug(
+          `[VERBOSE] Sent ${audioBuffer.length} bytes to Deepgram | Total sent: ${this.audioBytesSent} bytes`
+        );
       }
     } catch (err) {
       logger.error(`Failed to send audio to Deepgram: ${err}`);
@@ -171,7 +188,9 @@ export class DeepgramSTT {
   /**
    * Listen for transcription results
    */
-  onTranscription(callback: (transcript: string, isFinal: boolean) => void): void {
+  onTranscription(
+    callback: (transcript: string, isFinal: boolean) => void
+  ): void {
     if (!this.ws) {
       logger.error('WebSocket not initialized');
       return;
@@ -189,17 +208,21 @@ export class DeepgramSTT {
         if (message.type === 'Results') {
           const result = message as { channel: TranscriptionResult['channel'] };
           const alternative = result.channel?.alternatives?.[0];
-          
+
           if (alternative && alternative.transcript) {
             this.transcriptsReceived++;
             if (this.verbose) {
-              logger.info(`[VERBOSE] Transcript #${this.transcriptsReceived}: "${alternative.transcript}" (final: ${message.is_final})`);
+              logger.info(
+                `[VERBOSE] Transcript #${this.transcriptsReceived}: "${alternative.transcript}" (final: ${message.is_final})`
+              );
             }
             callback(alternative.transcript, message.is_final || false);
           }
         } else if (message.type === 'Metadata') {
           if (this.verbose) {
-            logger.info(`[VERBOSE] Deepgram metadata: ${JSON.stringify(message)}`);
+            logger.info(
+              `[VERBOSE] Deepgram metadata: ${JSON.stringify(message)}`
+            );
           }
         } else if (message.type === 'SpeechStarted') {
           if (this.verbose) {
@@ -239,9 +262,11 @@ export class DeepgramSTT {
 
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
-    
-    logger.info(`Attempting to reconnect to Deepgram in ${delay}ms (attempt ${this.reconnectAttempts})`);
-    
+
+    logger.info(
+      `Attempting to reconnect to Deepgram in ${delay}ms (attempt ${this.reconnectAttempts})`
+    );
+
     setTimeout(async () => {
       try {
         await this.connect();
@@ -279,6 +304,10 @@ export class DeepgramSTT {
    * Check if connected
    */
   isReady(): boolean {
-    return this.isConnected && this.ws !== null && this.ws.readyState === WebSocket.OPEN;
+    return (
+      this.isConnected &&
+      this.ws !== null &&
+      this.ws.readyState === WebSocket.OPEN
+    );
   }
 }

@@ -1,12 +1,12 @@
 import { customProvider } from 'ai';
 
 import { env } from '@/env';
+import { cohere } from '@ai-sdk/cohere';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createFallback } from 'ai-fallback';
 import { createLogger } from '../logger';
-import { cohere } from '@ai-sdk/cohere';
-import { openai } from "@ai-sdk/openai";
 
 const logger = createLogger('ai:providers');
 

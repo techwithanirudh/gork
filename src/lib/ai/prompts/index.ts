@@ -61,10 +61,7 @@ export const systemPrompt = ({
       .join('\n\n')
       .trim();
   } else if (agent === 'memory') {
-    return [corePrompt, memoryPrompt]
-      .filter(Boolean)
-      .join('\n\n')
-      .trim();
+    return [corePrompt, memoryPrompt].filter(Boolean).join('\n\n').trim();
   } else if (agent === 'voice') {
     return [
       corePrompt,

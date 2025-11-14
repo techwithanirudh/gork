@@ -1,11 +1,11 @@
+import { VoiceHandler } from '@/voice';
+import { getVoiceHandler, setVoiceHandler } from '@/voice/state';
 import {
   entersState,
   getVoiceConnection,
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
-import { VoiceHandler } from '@/voice';
-import { getVoiceHandler, setVoiceHandler } from '@/voice/state';
 import type { ChatInputCommandInteraction } from 'discord.js';
 
 // export const data = new SlashCommandBuilder()

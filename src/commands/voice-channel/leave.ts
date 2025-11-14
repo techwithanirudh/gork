@@ -1,5 +1,5 @@
+import { deleteVoiceHandler, getVoiceHandler } from '@/voice/state';
 import { getVoiceConnection } from '@discordjs/voice';
-import { getVoiceHandler, deleteVoiceHandler } from '@/voice/state';
 import { MessageFlags, type ChatInputCommandInteraction } from 'discord.js';
 
 // export const data = new SlashCommandBuilder()

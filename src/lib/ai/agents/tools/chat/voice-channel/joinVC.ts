@@ -1,4 +1,6 @@
 import { createLogger } from '@/lib/logger';
+import { VoiceHandler } from '@/voice';
+import { getVoiceHandler, setVoiceHandler } from '@/voice/state';
 import {
   entersState,
   getVoiceConnection,
@@ -8,8 +10,6 @@ import {
 import { tool } from 'ai';
 import { ChannelType, type Message } from 'discord.js';
 import { z } from 'zod';
-import { VoiceHandler } from '@/voice';
-import { getVoiceHandler, setVoiceHandler } from '@/voice/state';
 
 const logger = createLogger('tools:joinVC');
 
@@ -63,9 +63,11 @@ export const joinVC = ({ message }: { message: Message }) =>
           await handler.attach(connection);
           await handler.startListening();
           await handler.startListeningToUser(message.author.id);
-          
-          logger.info(`Successfully joined voice channel ${channel.name} in guild ${guild.name}`);
-          
+
+          logger.info(
+            `Successfully joined voice channel ${channel.name} in guild ${guild.name}`
+          );
+
           return {
             success: true,
             message: `Successfully joined voice channel ${channel.name}`,

@@ -19,16 +19,18 @@ export class VoicePipeline {
     packetsProcessed: 0,
     lastPacketTime: 0,
     emptyPackets: 0,
-    silentPackets: 0
+    silentPackets: 0,
   };
 
   constructor() {
     this.ai = new AIClient();
     this.deepgramSTT = new DeepgramSTT();
-    
+
     // Check for verbose mode from environment
-    this.verbose = process.env.VERBOSE === 'true' || (process.env.DEBUG?.includes('pipeline') ?? false);
-    
+    this.verbose =
+      process.env.VERBOSE === 'true' ||
+      (process.env.DEBUG?.includes('pipeline') ?? false);
+
     if (this.verbose) {
       logger.info('[VERBOSE] VoicePipeline initialized in verbose mode');
     }
@@ -61,7 +63,7 @@ export class VoicePipeline {
     // Update stats
     this.audioStats.packetsProcessed++;
     this.audioStats.lastPacketTime = Date.now();
-    
+
     if (!audioBuffer || audioBuffer.length === 0) {
       this.audioStats.emptyPackets++;
       if (this.verbose) {
@@ -69,24 +71,29 @@ export class VoicePipeline {
       }
       return '';
     }
-    
+
     this.audioStats.totalBytes += audioBuffer.length;
-    
+
     // Check if buffer is silence (all zeros or very low values)
     const isSilent = this.detectSilence(audioBuffer);
     if (isSilent) {
       this.audioStats.silentPackets++;
     }
-    
+
     if (this.verbose) {
-      const avgPacketSize = this.audioStats.totalBytes / this.audioStats.packetsProcessed;
-      logger.debug(`[VERBOSE] Processing audio buffer: ${audioBuffer.length} bytes | ` +
-        `Total: ${this.audioStats.totalBytes} | Packets: ${this.audioStats.packetsProcessed} | ` +
-        `Avg: ${Math.round(avgPacketSize)} | Empty: ${this.audioStats.emptyPackets} | ` +
-        `Silent: ${this.audioStats.silentPackets} | ` +
-        `Is Silent: ${isSilent}`);
+      const avgPacketSize =
+        this.audioStats.totalBytes / this.audioStats.packetsProcessed;
+      logger.debug(
+        `[VERBOSE] Processing audio buffer: ${audioBuffer.length} bytes | ` +
+          `Total: ${this.audioStats.totalBytes} | Packets: ${this.audioStats.packetsProcessed} | ` +
+          `Avg: ${Math.round(avgPacketSize)} | Empty: ${
+            this.audioStats.emptyPackets
+          } | ` +
+          `Silent: ${this.audioStats.silentPackets} | ` +
+          `Is Silent: ${isSilent}`
+      );
     }
-    
+
     // Send audio to Deepgram STT
     this.deepgramSTT.sendAudio(audioBuffer);
     // Transcription results come via the onTranscription callback
@@ -95,7 +102,7 @@ export class VoicePipeline {
 
   detectSilence(buffer: Buffer): boolean {
     if (!buffer || buffer.length < 2) return true;
-    
+
     // Check if audio is silence (very low amplitude)
     // PCM 16-bit samples, so read as 16-bit integers
     let maxAmplitude = 0;
@@ -103,15 +110,15 @@ export class VoicePipeline {
       const sample = Math.abs(buffer.readInt16LE(i));
       maxAmplitude = Math.max(maxAmplitude, sample);
     }
-    
+
     // Threshold for silence (adjust as needed)
     const silenceThreshold = 500; // Very low amplitude
     const isSilent = maxAmplitude < silenceThreshold;
-    
+
     if (this.verbose && !isSilent) {
       logger.debug(`[VERBOSE] Audio detected! Max amplitude: ${maxAmplitude}`);
     }
-    
+
     return isSilent;
   }
 
@@ -137,18 +144,23 @@ export class VoicePipeline {
     try {
       // Add user input to context
       this.conversationContext.push(text);
-      
+
       // Generate response using OpenRouter
-      const response = await this.ai.generateResponse(text, this.conversationContext);
-      
+      const response = await this.ai.generateResponse(
+        text,
+        this.conversationContext
+      );
+
       // Add response to context
       this.conversationContext.push(response);
-      
+
       // Trim context if too long
       if (this.conversationContext.length > this.maxContextLength) {
-        this.conversationContext = this.conversationContext.slice(-this.maxContextLength);
+        this.conversationContext = this.conversationContext.slice(
+          -this.maxContextLength
+        );
       }
-      
+
       logger.info(`Generated response: ${response.substring(0, 100)}...`);
       return response;
     } catch (err) {
@@ -177,13 +189,17 @@ export class VoicePipeline {
 
     if (!resp.ok) {
       const errText = await resp.text().catch(() => '');
-      logger.error(`Deepgram Speak error: ${resp.status} ${resp.statusText} - ${errText}`);
+      logger.error(
+        `Deepgram Speak error: ${resp.status} ${resp.statusText} - ${errText}`
+      );
       throw new Error(`Deepgram Speak failed: ${resp.status}`);
     }
 
     const arrayBuf = await resp.arrayBuffer();
     const pcm = Buffer.from(new Uint8Array(arrayBuf));
-    logger.info(`synthesizeSpeech() received ${pcm.length} bytes PCM from Deepgram`);
+    logger.info(
+      `synthesizeSpeech() received ${pcm.length} bytes PCM from Deepgram`
+    );
     return pcm;
   }
 
