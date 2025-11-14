@@ -57,8 +57,7 @@ export function formatMemories(memories: MemoryWithMetadata[]): string {
             summary: structured.summary,
           });
         case 'entity': {
-          const entities =
-            (structured.entities ?? structured.participants) ?? [];
+          const entities = structured.entities ?? structured.participants ?? [];
           return formatEntityMemory({
             createdAt,
             summary: structured.summary,

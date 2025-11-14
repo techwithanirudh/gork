@@ -2,14 +2,14 @@ pre-commit:
   parallel: true
   commands:
     check:
-      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      glob: '*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}'
       exclude:
         - node_modules/**
         - dist/**
       run: bun eslint {staged_files} --fix --max-warnings 0
       stage_fixed: true
     format:
-      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      glob: '*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}'
       exclude:
         - node_modules/**
         - dist/**

@@ -174,7 +174,7 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
     guild,
     channel,
     participants,
-    context: transcript
+    context: transcript,
   };
 
   await trackSession(sessionId);
@@ -205,7 +205,7 @@ export async function saveToolMemory(
     channel,
     participants,
     name: toolName,
-    response: result
+    response: result,
   };
 
   await trackSession(sessionId);

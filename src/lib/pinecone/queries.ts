@@ -1,5 +1,8 @@
 import { createLogger } from '@/lib/logger';
-import { PineconeMetadataSchema, flattenMetadata } from '@/lib/validators/pinecone';
+import {
+  PineconeMetadataSchema,
+  flattenMetadata,
+} from '@/lib/validators/pinecone';
 import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { embed } from 'ai';

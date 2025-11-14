@@ -18,12 +18,17 @@ export const react = ({ message }: { message: Message }) =>
         ),
       emojis: z
         .array(z.string())
-        .describe('Array of emojis to react with (Unicode or custom emoji names).'),
+        .describe(
+          'Array of emojis to react with (Unicode or custom emoji names).'
+        ),
     }),
     execute: async ({ offset = 0, emojis }) => {
       try {
         const channel = message.channel;
-        if (!('messages' in channel) || typeof channel.messages.fetch !== 'function') {
+        if (
+          !('messages' in channel) ||
+          typeof channel.messages.fetch !== 'function'
+        ) {
           return { success: false, error: 'Channel is not text-based' };
         }
 
@@ -60,7 +65,9 @@ export const react = ({ message }: { message: Message }) =>
 
         return {
           success: true,
-          content: `Reacted with ${emojis.join(', ')} to message at offset ${offset}`,
+          content: `Reacted with ${emojis.join(
+            ', '
+          )} to message at offset ${offset}`,
         };
       } catch (error) {
         logger.error({ error, emojis, offset }, 'Failed to react to message');

@@ -10,7 +10,9 @@ export const leaveVC = ({ message }: { message: Message }) =>
   tool({
     description: 'Leave the current voice channel',
     inputSchema: z.object({
-      guildId: z.string().describe('The ID of the guild to leave the voice channel from'),
+      guildId: z
+        .string()
+        .describe('The ID of the guild to leave the voice channel from'),
     }),
     execute: async ({ guildId }) => {
       try {
@@ -24,9 +26,9 @@ export const leaveVC = ({ message }: { message: Message }) =>
         }
 
         connection.destroy();
-        
+
         logger.info(`Successfully left voice channel in guild ${guildId}`);
-        
+
         return {
           success: true,
           message: 'Successfully left the voice channel',

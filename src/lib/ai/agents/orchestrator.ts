@@ -10,7 +10,7 @@ import { searchWeb } from '../tools/search-web';
 import { successToolCall } from '../utils';
 import { memories, react, reply, skip, startDM } from './tools/chat';
 import { joinVC, leaveVC } from './tools/chat/voice-channel';
-import { listGuilds, listChannels, listDMs, listUsers } from './tools/memory';
+import { listChannels, listDMs, listGuilds, listUsers } from './tools/memory';
 
 export const orchestratorAgent = ({
   message,
@@ -57,8 +57,17 @@ export const orchestratorAgent = ({
         toolCalls.map(async (call, i) => {
           const result = toolResults[i];
           if (!call || !result) return;
-          if (call.toolName === 'memories' || call.toolName === 'searchMemories') return;
-          if (call.toolName === 'reply' || call.toolName === 'skip' || call.toolName === 'react') return;
+          if (
+            call.toolName === 'memories' ||
+            call.toolName === 'searchMemories'
+          )
+            return;
+          if (
+            call.toolName === 'reply' ||
+            call.toolName === 'skip' ||
+            call.toolName === 'react'
+          )
+            return;
 
           await saveToolMemory(message, call.toolName, result);
         })
@@ -75,4 +84,3 @@ export const orchestratorAgent = ({
       },
     },
   });
-

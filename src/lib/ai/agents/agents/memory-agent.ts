@@ -3,7 +3,13 @@ import { Experimental_Agent as Agent, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
 import { systemPrompt } from '../../prompts';
 import { provider } from '../../providers';
-import { listGuilds, searchMemories, listChannels, listDMs, listUsers } from '../tools/memory';
+import {
+  listChannels,
+  listDMs,
+  listGuilds,
+  listUsers,
+  searchMemories,
+} from '../tools/memory';
 
 export const memoryAgent = ({
   message,

@@ -7,24 +7,18 @@ import { provider } from '../../providers';
 import { getWeather } from '../../tools/get-weather';
 import { searchWeb } from '../../tools/search-web';
 
-export const voiceAgent = ({
-  hints,
-}: {
-  hints: RequestHints;
-}) =>
+export const voiceAgent = ({ hints }: { hints: RequestHints }) =>
   new Agent({
     model: provider.languageModel('chat-model'),
     system: systemPrompt({
       agent: 'voice',
       requestHints: hints,
     }),
-    stopWhen: [
-      stepCountIs(10)
-    ],
+    stopWhen: [stepCountIs(10)],
     toolChoice: 'required',
     tools: {
       getWeather,
-      searchWeb
+      searchWeb,
     },
     temperature: 0,
     onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {

@@ -61,8 +61,10 @@ export const joinVC = ({ message }: { message: Message }) =>
             await createListeningStream(receiver, player, user);
           });
 
-          logger.info(`Successfully joined voice channel ${channel.name} in guild ${guild.name}`);
-          
+          logger.info(
+            `Successfully joined voice channel ${channel.name} in guild ${guild.name}`
+          );
+
           return {
             success: true,
             message: `Successfully joined voice channel ${channel.name}`,

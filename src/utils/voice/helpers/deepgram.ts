@@ -20,11 +20,11 @@ export async function speak({ text, model }: SpeakProps) {
   );
 
   const webStream = await response.getStream();
-  
+
   if (!webStream) {
     throw new Error('Failed to get audio stream from Deepgram');
   }
-  
+
   const reader = webStream.getReader();
   const nodeStream = new Readable({
     async read() {
@@ -38,7 +38,7 @@ export async function speak({ text, model }: SpeakProps) {
       } catch (error) {
         this.destroy(error instanceof Error ? error : new Error(String(error)));
       }
-    }
+    },
   });
 
   return nodeStream;

@@ -60,7 +60,8 @@ export const searchMemories = () =>
               limit,
               options: options ?? null,
               filter: null,
-              message: 'No query provided. Please supply a semantic search phrase before calling this tool.',
+              message:
+                'No query provided. Please supply a semantic search phrase before calling this tool.',
             },
           };
         }
