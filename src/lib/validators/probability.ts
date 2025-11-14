@@ -1,17 +1,17 @@
 import { z } from 'zod';
 
 export const probabilitySchema = z.object({
-  probability: z
-    .number()
-    .describe(
-      'Likelihood that the message is relevant (greater than 0.5 means related, less than 0.5 means not related)'
-    ),
   reason: z
     .string()
+    .trim()
     .min(1)
-    .describe(
-      'Explanation for why the message is considered relevant / not relevant'
-    ),
+    .describe('Explanation for why the message is considered relevant / not relevant'),
+  probability: z
+    .number()
+    .min(0)
+    .max(1)
+    .describe('Likelihood that the message is relevant (between 0 and 1; > 0.5 indicates related)'),
 });
 
 export type Probability = z.infer<typeof probabilitySchema>;
+

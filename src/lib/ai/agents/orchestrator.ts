@@ -57,8 +57,8 @@ export const orchestratorAgent = ({
         toolCalls.map(async (call, i) => {
           const result = toolResults[i];
           if (!call || !result) return;
-          if (call.toolName === 'memories') return;
-          if (call.toolName === 'searchMemories') return;
+          if (call.toolName === 'memories' || call.toolName === 'searchMemories') return;
+          if (call.toolName === 'reply' || call.toolName === 'skip' || call.toolName === 'react') return;
 
           await saveToolMemory(message, call.toolName, result);
         })
@@ -75,3 +75,4 @@ export const orchestratorAgent = ({
       },
     },
   });
+
