@@ -13,6 +13,7 @@ export interface QueryMemoriesOptions {
   ageLimit?: number;
   ignoreRecent?: boolean;
   onlyTools?: boolean;
+  filter?: Record<string, unknown>;
 }
 
 export const queryMemories = async (
@@ -23,6 +24,7 @@ export const queryMemories = async (
     ageLimit,
     ignoreRecent = true,
     onlyTools = false,
+    filter: customFilter,
   }: QueryMemoriesOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   if (!query || query.trim().length === 0) {
@@ -30,20 +32,31 @@ export const queryMemories = async (
   }
 
   const now = Date.now();
-  const filter: Record<string, unknown> = {};
+  const filter: Record<string, unknown> = { ...(customFilter ?? {}) };
+
+  if (!('version' in filter)) {
+    filter.version = { $eq: 2 };
+  }
 
   if (ignoreRecent) {
-    filter.createdAt = { $lt: now - 60_000 };
+    const existingCreatedAt =
+      (filter.createdAt as Record<string, unknown> | undefined) ?? {};
+    filter.createdAt = {
+      ...existingCreatedAt,
+      $lt: now - 60_000,
+    };
   }
 
   if (ageLimit != null) {
+    const existingCreatedAt =
+      (filter.createdAt as Record<string, unknown> | undefined) ?? {};
     filter.createdAt = {
-      ...(filter.createdAt || {}),
+      ...existingCreatedAt,
       $gt: now - ageLimit,
     };
   }
 
-  if (onlyTools) {
+  if (onlyTools && filter.type == null) {
     filter.type = { $eq: 'tool' };
   }
 

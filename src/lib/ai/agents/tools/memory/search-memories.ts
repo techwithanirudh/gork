@@ -1,14 +1,17 @@
-import { formatMemories } from '@/lib/ai/memory/text';
+import { formatMemories } from '@/lib/ai/memory/format';
 import { createLogger } from '@/lib/logger';
 import { queryMemories } from '@/lib/pinecone/operations';
+import { ALLOWED_MEMORY_FILTERS } from '@/lib/validators/pinecone';
 import { tool } from 'ai';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const logger = createLogger('tools:search-memories');
 
 export const searchMemories = () =>
   tool({
-    description: 'Search through stored memories using a text query.',
+    description:
+      'Search through stored memories using a text query. Valid filter keys: ' +
+      ALLOWED_MEMORY_FILTERS.join(', '),
     inputSchema: z.object({
       query: z.string().describe('The text query to search for in memories'),
       limit: z
@@ -39,16 +42,31 @@ export const searchMemories = () =>
             .describe('Whether to only return tool memories'),
         })
         .optional(),
+      filter: z
+        .record(z.string(), z.unknown())
+        .optional()
+        .describe(
+          'Metadata filters to apply (e.g. { guildId: "123", type: { $in: ["summary"] } })'
+        ),
     }),
-    execute: async ({ query, limit, options }) => {
+    execute: async ({ query, limit, options, filter }) => {
       try {
         if (!query || query.trim().length === 0) {
           return {
             success: true,
-            data: 'No query provided. Please provide a search term.',
+            data: {
+              memories: '',
+              query: '',
+              limit,
+              options: options ?? null,
+              filter: null,
+              message:
+                'No query provided. Please supply a semantic search phrase before calling this tool.',
+            },
           };
         }
 
+        const sanitizedFilter = sanitizeFilter(filter);
         const results = await queryMemories(query, {
           limit,
           ageLimit: options?.ageLimitDays
@@ -56,15 +74,24 @@ export const searchMemories = () =>
             : undefined,
           ignoreRecent: options?.ignoreRecent,
           onlyTools: options?.onlyTools,
+          filter: sanitizedFilter,
         });
 
-        logger.info({ results }, 'Memory search results');
-
-        const data = formatMemories(results);
+        const memories = formatMemories(results);
+        const trimmedQuery = query.trim();
 
         return {
           success: true,
-          data,
+          data: {
+            memories,
+            query: trimmedQuery,
+            limit,
+            options: options ?? null,
+            filter: sanitizedFilter ?? null,
+            message: memories
+              ? 'Memory search completed.'
+              : 'No matching memories found for this scope.',
+          },
         };
       } catch (error) {
         logger.error({ error }, 'Error in searchMemories tool');
@@ -75,3 +102,19 @@ export const searchMemories = () =>
       }
     },
   });
+
+const ALLOWED_FILTER_KEYS = new Set<string>(ALLOWED_MEMORY_FILTERS);
+
+function sanitizeFilter(
+  filter?: Record<string, unknown>
+): Record<string, unknown> | undefined {
+  if (!filter) return undefined;
+
+  const cleaned: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(filter)) {
+    if (!ALLOWED_FILTER_KEYS.has(key)) continue;
+    cleaned[key] = value;
+  }
+
+  return Object.keys(cleaned).length ? cleaned : undefined;
+}

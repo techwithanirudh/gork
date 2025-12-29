@@ -2,11 +2,21 @@ import { commands } from '@/commands';
 import { deployCommands } from '@/deploy-commands';
 import { env } from '@/env';
 import { events } from '@/events';
+import { redis } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
+import { LangfuseExporter } from 'langfuse-vercel';
 
 const logger = createLogger('core');
+
+export const langfuse = new NodeSDK({
+  traceExporter: new LangfuseExporter(),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
 export const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -24,11 +34,22 @@ export const client = new Client({
   partials: [Partials.Channel, Partials.Message],
 });
 
-client.once(Events.ClientReady, (client) => {
+client.once(Events.ClientReady, async (client) => {
   if (!client.user) return;
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info('Bot is ready!');
 
+  try {
+    if (!redis.isOpen) {
+      await redis.connect();
+    }
+    const pong = await redis.ping();
+    logger.info({ ping: pong }, 'Redis connected');
+  } catch (error) {
+    logger.warn({ error }, 'Redis connection failed; continuing without cache');
+  }
+
+  langfuse.start();
   beginStatusUpdates(client);
 });
 
@@ -62,6 +83,31 @@ Object.keys(events).forEach(function (key) {
   }
 });
 
-client.login(env.DISCORD_TOKEN).catch((err) => {
+const gracefulShutdown = async (signal: string) => {
+  logger.info(`Received ${signal}, shutting down...`);
+
+  if (redis.isOpen) {
+    await redis.quit();
+    logger.info('Redis connection closed');
+  }
+  await langfuse.shutdown();
+
+  process.exit(0);
+};
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('beforeExit', () => {
+  if (redis.isOpen) {
+    redis.quit();
+  }
+});
+
+client.login(env.DISCORD_TOKEN).catch(async (err) => {
   logger.error('Login failed:', err);
+  await langfuse.shutdown();
+
+  if (redis.isOpen) {
+    await redis.quit();
+  }
 });

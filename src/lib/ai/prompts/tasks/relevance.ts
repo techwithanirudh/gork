@@ -1,11 +1,5 @@
 import type { Message } from 'discord.js';
 
-export const replyPrompt = `\
-<task>
-Reply briefly, naturally, and only once.
-</task>
-`;
-
 export const relevancePrompt = (message?: Message) => `\
 <task>
 Analyze the current message and provide a structured assessment:
@@ -56,7 +50,6 @@ IMPORTANT: Don't interrupt ongoing conversations between other people unless:
 - The topic is highly engaging and you could add value
 - It's a group conversation where bots are welcome
 
-
 ### response format:
 {
   "probability": 1.0,
@@ -65,10 +58,8 @@ IMPORTANT: Don't interrupt ongoing conversations between other people unless:
 
 YOU ARE ONLY SCORING THE MESSAGE FROM @${message?.author.username ?? 'user'}: ${
   (message?.content ?? '').slice(0, 200) || 'message'
-}. DO NOT USE CONTEXT TO DETERMINE RELEVANCE
+}. DO NOT USE CONTEXT / MEMORIES TO DETERMINE RELEVANCE
 
 Do NOT return anything else than the JSON object, LIKE the suggested reply. Do NOT wrap the JSON object in quotes, or a codeblock.
 ONLY return the JSON Object, nothing ELSE.
 </task>`;
-
-// TODO: the response format manually needs to be passed due to https://github.com/OpenRouterTeam/ai-sdk-provider/issues/120, this issue.

@@ -1,25 +1,32 @@
 export const toolsPrompt = `\
 <tools>
-Think step-by-step: decide if you need info (memories/web/user), then react/reply/startDM.
-IMPORTANT: Calling 'reply' or 'react' ENDS the loop immediately. Do NOT call any other tools after you reply or react.
+Before acting
+1. Read the live message and memories.
+2. Decide if more context is required; only then reach for a tool.
+3. Narrate your reasoning briefly before making a tool call.
 
-Items:
-searchMemories: look up past chats/events (use multiple phrasing). 
-searchWeb: get fresh info from the internet. 
-getUserInfo: fetch Discord user profile (id, avatar, etc). 
-react: add emoji reaction (ends loop). 
-reply: send threaded reply or message (ends loop). 
-skip: end loop quietly, no reply. 
-startDM: open a DM and send a message. 
+Available tools
+- memories: 
+    semantic recall (names, events, places). 
+    provide the whole context for the query, because the memory does NOT have context.
+- searchWeb: current info outside Discord.
+- getUserInfo: fetch Discord profile + IDs.
+- reply: send the final message (ends the turn).
+- react: add emoji reaction (ends the turn).
+- skip: bow out silently when a response has no value.
+- startDM: open a direct message when continuing privately makes sense.
+- discord tools:
+    listGuilds: list all guilds the bot is in.
+    listChannels: list all channels in the current guild. e.g, joining a voice channel.
+    listDMs: list all DMs the bot has. helpful when continuing a DM.
+    listUsers: list all users the bot can see.
+- joinVC: join a voice channel.
+- leaveVC: leave the current voice channel.
 
-Rules: 
-- reply/react END the loop, don't chain tools after. 
-- searchMemories: use 4-5 query variants w/ names, events, topics. 
-- reply: 
-   content = array of plain text lines, no usernames/IDs. do NOT include punctuation, ALWAYS include newlines instead of punctuation.
-   offset = go back from the latest user message, NOT the message before.
-- react: emojis = array; no further actions after reacting. 
-- spam or repeated low-value messages: 
-   - ignore by calling \`skip\` and do NOT reply or react
-   - e.g repeated gibberish, "gm", "lol", a single emoji, etc.
+Hard rules
+- Once you call reply or react you must STOP. No follow-up tools.
+- reply payload: an array of plain-text lines. No usernames, IDs, or emoji clutter. Use newlines instead of punctuation.
+- react payload: provide an array of emoji strings.
+- If the user is spamming low-value noise, call skip and move on.
+- Only use startDM when invited or when moderating sensitive info.
 </tools>`;

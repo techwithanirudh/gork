@@ -1,11 +1,13 @@
 import { createLogger } from '@/lib/logger';
-
-import { PineconeMetadataSchema } from '@/lib/validators/pinecone';
+import {
+  PineconeMetadataSchema,
+  flattenMetadata,
+} from '@/lib/validators/pinecone';
 import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
-import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { embed } from 'ai';
 import { MD5 } from 'bun';
-import { myProvider } from '../ai/providers';
+import { provider } from '../ai/providers';
 import { getIndex } from './index';
 
 const logger = createLogger('pinecone:queries');
@@ -22,7 +24,7 @@ export const searchMemories = async (
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   try {
     const { embedding } = await embed({
-      model: myProvider.textEmbeddingModel('small-model'),
+      model: provider.textEmbeddingModel('small-model'),
       value: query,
     });
 
@@ -59,14 +61,16 @@ export const searchMemories = async (
 
 export const addMemory = async (
   text: string,
-  metadata: Omit<PineconeMetadataInput, 'hash'>,
+  metadata: PineconeMetadataInput,
   namespace = 'default'
 ): Promise<string> => {
   try {
-    const id = new MD5().update(text).digest('hex');
+    const basis = `${metadata.sessionId ?? 'global'}:${metadata.type}:${text}`;
+    const id = new MD5().update(basis).digest('hex');
 
+    const flattened = flattenMetadata(metadata);
     const parsed = PineconeMetadataSchema.safeParse({
-      ...metadata,
+      ...flattened,
       hash: id,
     });
     if (!parsed.success) {
@@ -78,7 +82,7 @@ export const addMemory = async (
     }
 
     const { embedding } = await embed({
-      model: myProvider.textEmbeddingModel('small-model'),
+      model: provider.textEmbeddingModel('small-model'),
       value: text,
     });
 
@@ -91,7 +95,10 @@ export const addMemory = async (
       },
     ]);
 
-    logger.debug({ id, metadata }, 'Added memory');
+    logger.debug(
+      { id, type: metadata.type, sessionId: metadata.sessionId },
+      'Added memory'
+    );
     return id;
   } catch (error) {
     logger.error({ error }, 'Error adding memory');

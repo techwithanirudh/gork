@@ -1,6 +1,6 @@
-import { createListeningStream } from '@/utils/voice/stream';
+import { VoiceHandler } from '@/voice';
+import { getVoiceHandler, setVoiceHandler } from '@/voice/state';
 import {
-  createAudioPlayer,
   entersState,
   getVoiceConnection,
   joinVoiceChannel,
@@ -20,7 +20,8 @@ export async function execute(
   let connection = getVoiceConnection(interaction.guildId);
 
   if (!connection) {
-    if (!interaction.member?.voice.channel) {
+    const memberChannel = interaction.member?.voice.channel;
+    if (!memberChannel) {
       await interaction.followUp("okay, but you're not in vc");
 
       return;
@@ -28,7 +29,7 @@ export async function execute(
 
     connection = joinVoiceChannel({
       adapterCreator: interaction.guild.voiceAdapterCreator,
-      channelId: interaction.member.voice.channel.id,
+      channelId: memberChannel.id,
       guildId: interaction.guild.id,
       selfDeaf: false,
       selfMute: true,
@@ -37,15 +38,18 @@ export async function execute(
 
   try {
     await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
-    const receiver = connection.receiver;
 
-    const player = createAudioPlayer();
-    connection.subscribe(player);
+    let handler = getVoiceHandler(interaction.guildId);
+    if (!handler) {
+      handler = new VoiceHandler();
+      setVoiceHandler(interaction.guildId, handler);
+    } else {
+      await handler.stopListening();
+    }
 
-    receiver.speaking.on('start', async (userId) => {
-      const user = await interaction.client.users.fetch(userId);
-      await createListeningStream(receiver, player, user);
-    });
+    await handler.attach(connection);
+    await handler.startListening();
+    handler.startListeningToUser(interaction.user.id);
   } catch (error) {
     console.warn(error);
 

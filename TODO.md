@@ -79,6 +79,24 @@ Now the problem is the relevance agent can also reply to messages fix that
 Gork should verify in relevance engine if it mentions gork the ping it unknowingly relevances
 the spam detector is borked
 the pings should be replaced
+agentic improvement by storing SKIPS and passing the summary / few to relevance engine to optimize
+give a computer use agent
+call a cooldown on spam
 
-      "responseBody": "{\n  \"error\": {\n    \"message\": \"'$.input' is invalid. Please check the API reference: https://platform.openai.com/docs/api-reference.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": null,\n    \"code\": null\n  }\n}\n",
-      I found the culprit of the issue here. The API accepts an empty string, and a list of strings, however, it returns the above-mentioned error when receiving a list with a single empty string. The documentation states that the input cannot be an empty string which is very confusion. The documentation should probably be updated, and meanwhile, to fix the issue, you should make sure to not send a list with a single empty string.
+Agents:
+
+- Implement Summaries + Additional context on queries
+- Implement observa
+- Repair ext For Relevance
+- reduce token usage for memory agent.
+  the agent calls 50 calls, and doesn't understand memory is keyword and sementic and not anai
+- use fuzzy search
+- exclude old memory
+- check how it would scale with longer date and time
+- the agent has an issue trying to provide the answer by calling searchMemroies, instead of replying and hitting rate limits calling it 30 times
+
+give more examples to the memory and search tool calls the model tries to search with Loop'd Server for the guidl search, and x doing y for search memories
+optimize memory format structure
+
+- scrap all query memory tools lik onlyTools bcs agent can autoimati9cally do it
+- update gork to properly know who is talking etc give it multi ppl convo examples and dont respond for msgs meant for other ppl

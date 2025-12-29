@@ -44,6 +44,8 @@
     "unrs",
     "qwen",
     "jsonrepair",
-    "Jsonify"
+    "Jsonify",
+    "agentic",
+    "cooldown"
   ]
 }

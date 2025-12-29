@@ -1,25 +1,20 @@
 import { customProvider } from 'ai';
 
 import { env } from '@/env';
+import { cohere } from '@ai-sdk/cohere';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createFallback } from 'ai-fallback';
 import { createLogger } from '../logger';
-// import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-// import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { cohere } from '@ai-sdk/cohere';
 
 const logger = createLogger('ai:providers');
 
-// const hackclub = createOpenAICompatible({
-//   name: 'hackclub',
-//   apiKey: env.HACKCLUB_API_KEY,
-//   baseURL: 'https://ai.hackclub.com',
-// });
-
-// const openrouter = createOpenRouter({
-//   apiKey: env.OPENROUTER_API_KEY!,
-// });
+const hackclub = createOpenAICompatible({
+  name: 'hackclub',
+  apiKey: env.HACKCLUB_API_KEY,
+  baseURL: 'https://ai.hackclub.com/proxy/v1',
+});
 
 const google = createGoogleGenerativeAI({
   apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
@@ -27,10 +22,10 @@ const google = createGoogleGenerativeAI({
 
 const chatModel = createFallback({
   models: [
+    hackclub('google/gemini-2.5-flash'),
     google('gemini-2.5-flash'),
     google('gemini-2.0-flash'),
     cohere('command-a-03-2025'),
-    // hackclub('qwen/qwen3-32b')
     // openai('gpt-4.1'),
   ],
   onError: (error, modelId) => {
@@ -40,27 +35,29 @@ const chatModel = createFallback({
 });
 
 const relevanceModel = createFallback({
-  models: [google('gemini-2.5-flash-lite'), google('gemini-2.0-flash-lite')],
+  models: [
+    hackclub('openai/gpt-5-mini'),
+    hackclub('google/gemini-2.5-flash'),
+    google('gemini-2.5-flash-lite'),
+    google('gemini-2.0-flash-lite'),
+  ],
   onError: (error, modelId) => {
     logger.error(`error with model ${modelId}, switching to next model`);
   },
   modelResetInterval: 60000,
 });
 
-export const myProvider = customProvider({
+export const provider = customProvider({
   languageModels: {
-    // "chat-model": hackclub("llama-3.3-70b-versatile"),
-    // 'chat-model': openai.responses('gpt-4.1-mini'),
     'chat-model': chatModel,
-    'reasoning-model': google('gemini-2.5-flash'),
-    // 'relevance-model': openai.responses('gpt-4.1-nano'),
     'relevance-model': relevanceModel,
+    'agent-model': hackclub('moonshotai/kimi-k2-thinking'),
   },
   imageModels: {
     // 'small-model': openai.imageModel('dall-e-2'),
   },
   textEmbeddingModels: {
     'small-model': openai.embedding('text-embedding-3-small'),
-    'large-model': openai.embedding('text-embedding-3-large'),
+    'large-model': hackclub.textEmbeddingModel('openai/text-embedding-3-large'),
   },
 });
