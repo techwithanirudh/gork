@@ -36,13 +36,21 @@ else
     usermod -aG docker "$USERNAME"
 fi
 
+# ---- Python shim ----
+PYTHON_ROOT="${USER_HOME}/.python"
+PYTHON_PATH="${PYTHON_ROOT}/current"
+mkdir -p "$PYTHON_ROOT"
+ln -snf /usr/local/python/current "$PYTHON_PATH"
+ln -snf /usr/local/python /opt/python
+chown -R "${USERNAME}:${USERNAME}" "$PYTHON_ROOT" || true
+
 # Setup Coder Path
 ln -snf /var/tmp/coder/coder-cli/coder /usr/local/bin/coder
 ln -snf /var/tmp/coder/code-server/bin/code-server /usr/local/bin/code-server
 
 # Clean secure_path to only include real paths
 cat <<EOF >> "/etc/sudoers.d/${USERNAME}"
-Defaults secure_path="${NODE_PATH}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/${USERNAME}/.local/bin"
+Defaults secure_path="${NODE_PATH}/bin:${PYTHON_PATH}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/${USERNAME}/.local/bin"
 EOF
 
 echo "alias cc=\"IS_SANDBOX=1 claude --dangerously-skip-permissions\"" >> "${USER_HOME}/.bashrc"

@@ -15,6 +15,10 @@ RUN apt-get update \
         curl \
         unzip \
         zip \
+        make \
+        build-essential \
+        python3 \
+        python3-pip \
         jq \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get autoremove -y \
