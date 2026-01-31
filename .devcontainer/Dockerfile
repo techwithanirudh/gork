@@ -15,7 +15,6 @@ RUN apt-get update \
         curl \
         unzip \
         zip \
-        make \
         build-essential \
         python3 \
         python3-pip \
