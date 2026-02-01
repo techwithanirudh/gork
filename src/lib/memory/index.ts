@@ -4,7 +4,6 @@ export {
   getMemoryProvider,
   getWorkingMemory,
   updateWorkingMemory,
-  formatWorkingMemoryContent,
   parseWorkingMemory,
   addToWorkingMemory,
   removeFromWorkingMemory,

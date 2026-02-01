@@ -72,15 +72,6 @@ export async function updateWorkingMemory(params: {
   }
 }
 
-export function formatWorkingMemoryContent(
-  memory: WorkingMemory | null,
-): string {
-  if (!memory?.content) {
-    return WORKING_MEMORY_TEMPLATE;
-  }
-  return memory.content;
-}
-
 export function parseWorkingMemory(content: string): {
   facts: string[];
   preferences: string[];
@@ -97,98 +88,144 @@ export function parseWorkingMemory(content: string): {
 
     if (trimmed.toLowerCase().includes('## facts')) {
       currentSection = 'facts';
-      continue;
     } else if (trimmed.toLowerCase().includes('## preferences')) {
       currentSection = 'preferences';
-      continue;
     } else if (trimmed.toLowerCase().includes('## notes')) {
       currentSection = 'notes';
-      continue;
     } else if (trimmed.startsWith('## ') || trimmed.startsWith('# ')) {
       currentSection = null;
-      continue;
-    }
-
-    if (trimmed.startsWith('- ') && currentSection) {
+    } else if (trimmed.startsWith('- ') && currentSection) {
       const item = trimmed.slice(2).trim();
       if (item.startsWith('(') && item.endsWith(')')) continue;
       if (!item) continue;
 
-      switch (currentSection) {
-        case 'facts':
-          facts.push(item);
-          break;
-        case 'preferences':
-          preferences.push(item);
-          break;
-        case 'notes':
-          notes.push(item);
-          break;
-      }
+      if (currentSection === 'facts') facts.push(item);
+      else if (currentSection === 'preferences') preferences.push(item);
+      else if (currentSection === 'notes') notes.push(item);
     }
   }
 
   return { facts, preferences, notes };
 }
 
-export function addToWorkingMemory(
-  currentContent: string,
-  section: 'facts' | 'preferences' | 'notes',
-  item: string,
-): string {
-  const lines = currentContent.split('\n');
-  const sectionHeader = `## ${section.charAt(0).toUpperCase() + section.slice(1)}`;
+function buildWorkingMemory(parsed: {
+  facts: string[];
+  preferences: string[];
+  notes: string[];
+}): string {
+  const lines = ['# User Memory', ''];
 
-  let inSection = false;
-  let insertIndex = -1;
-  let lastItemIndex = -1;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line) continue;
-    const trimmed = line.trim();
-
-    if (trimmed.toLowerCase() === sectionHeader.toLowerCase()) {
-      inSection = true;
-      insertIndex = i + 1;
-      continue;
-    }
-
-    if (inSection) {
-      if (trimmed.startsWith('## ') || trimmed.startsWith('# ')) {
-        break;
-      }
-      if (trimmed.startsWith('- ')) {
-        lastItemIndex = i;
-        if (trimmed.includes('(No ') && trimmed.includes(' recorded yet)')) {
-          lines[i] = `- ${item}`;
-          return lines.join('\n');
-        }
-      }
+  lines.push('## Facts');
+  if (parsed.facts.length === 0) {
+    lines.push('- (No facts recorded yet)');
+  } else {
+    for (const fact of parsed.facts) {
+      lines.push(`- ${fact}`);
     }
   }
 
-  const insertAt = lastItemIndex !== -1 ? lastItemIndex + 1 : insertIndex;
-  if (insertAt !== -1 && insertAt < lines.length) {
-    lines.splice(insertAt, 0, `- ${item}`);
-  } else if (insertAt !== -1) {
-    lines.push(`- ${item}`);
+  lines.push('');
+  lines.push('## Preferences');
+  if (parsed.preferences.length === 0) {
+    lines.push('- (No preferences recorded yet)');
+  } else {
+    for (const pref of parsed.preferences) {
+      lines.push(`- ${pref}`);
+    }
+  }
+
+  lines.push('');
+  lines.push('## Notes');
+  if (parsed.notes.length === 0) {
+    lines.push('- (No notes recorded yet)');
+  } else {
+    for (const note of parsed.notes) {
+      lines.push(`- ${note}`);
+    }
   }
 
   return lines.join('\n');
 }
 
-export function removeFromWorkingMemory(
-  currentContent: string,
-  itemToRemove: string,
-): string {
-  const lines = currentContent.split('\n');
-  const filteredLines = lines.filter((line) => {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith('- ')) return true;
-    const item = trimmed.slice(2).trim().toLowerCase();
-    return !item.includes(itemToRemove.toLowerCase());
+function isDuplicate(existing: string[], newItem: string): boolean {
+  const newLower = newItem.toLowerCase();
+  return existing.some((item) => {
+    const itemLower = item.toLowerCase();
+    return (
+      itemLower === newLower ||
+      itemLower.includes(newLower) ||
+      newLower.includes(itemLower)
+    );
+  });
+}
+
+export async function addToWorkingMemory(params: {
+  guildId: string;
+  userId: string;
+  section: 'facts' | 'preferences' | 'notes';
+  item: string;
+}): Promise<{ added: boolean; reason?: string }> {
+  const existing = await getWorkingMemory({
+    guildId: params.guildId,
+    userId: params.userId,
   });
 
-  return filteredLines.join('\n');
+  const content = existing?.content ?? WORKING_MEMORY_TEMPLATE;
+  const parsed = parseWorkingMemory(content);
+  const targetArray = parsed[params.section];
+
+  if (isDuplicate(targetArray, params.item)) {
+    return { added: false, reason: 'Similar item already exists' };
+  }
+
+  targetArray.push(params.item);
+  const newContent = buildWorkingMemory(parsed);
+
+  await updateWorkingMemory({
+    guildId: params.guildId,
+    userId: params.userId,
+    content: newContent,
+  });
+
+  return { added: true };
+}
+
+export async function removeFromWorkingMemory(params: {
+  guildId: string;
+  userId: string;
+  item: string;
+}): Promise<{ removed: boolean; reason?: string }> {
+  const existing = await getWorkingMemory({
+    guildId: params.guildId,
+    userId: params.userId,
+  });
+
+  if (!existing?.content) {
+    return { removed: false, reason: 'No memory exists for this user' };
+  }
+
+  const parsed = parseWorkingMemory(existing.content);
+  const itemLower = params.item.toLowerCase();
+  let found = false;
+
+  for (const section of ['facts', 'preferences', 'notes'] as const) {
+    const original = parsed[section].length;
+    parsed[section] = parsed[section].filter(
+      (i) => !i.toLowerCase().includes(itemLower),
+    );
+    if (parsed[section].length < original) found = true;
+  }
+
+  if (!found) {
+    return { removed: false, reason: 'Item not found in memory' };
+  }
+
+  const newContent = buildWorkingMemory(parsed);
+  await updateWorkingMemory({
+    guildId: params.guildId,
+    userId: params.userId,
+    content: newContent,
+  });
+
+  return { removed: true };
 }

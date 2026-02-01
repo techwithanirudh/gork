@@ -7,6 +7,7 @@ import { provider } from '../../providers';
 import {
   getMemory,
   rememberFact,
+  forgetFact,
   listChannels,
   listDMs,
   listGuilds,
@@ -39,6 +40,7 @@ export const memoryAgent = ({
       listUsers: listUsers({ message }),
       getMemory: getMemory({ message }),
       rememberFact: rememberFact({ message }),
+      forgetFact: forgetFact({ message }),
     },
     temperature: 0,
     stopWhen: [stepCountIs(5)],

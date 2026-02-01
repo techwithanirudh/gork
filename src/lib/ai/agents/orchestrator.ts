@@ -39,6 +39,7 @@ const EPHEMERAL_TOOLS = new Set([
   'skip',
   'react',
   'rememberFact',
+  'forgetFact',
 ]);
 
 export const orchestratorAgent = ({

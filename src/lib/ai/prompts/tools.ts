@@ -11,8 +11,10 @@ Available tools
     provide the whole context for the query, because the memory does NOT have context.
 - rememberFact:
     store important facts about users for long-term memory.
-    use when you learn something valuable: preferences, nicknames, roles, relationships.
-    types: "fact", "preference", "note"
+    duplicates are automatically detected and skipped.
+    types: "fact" (learned info), "preference" (likes/dislikes), "note" (context)
+- forgetFact:
+    remove outdated or incorrect information from memory.
 - searchWeb: current info outside Discord.
 - getUserInfo: fetch Discord profile + IDs.
 - reply: send the final message (ends the turn).
@@ -36,6 +38,7 @@ Hard rules
 
 Memory best practices
 - When a user tells you something important about themselves, use rememberFact to remember it.
-- Examples of things to remember: "my name is X", "I prefer Y", "I work on Z", "call me W"
+- Examples: "my name is X", "I prefer Y", "I work on Z", "call me W", "I'm in timezone T"
+- When information changes or is corrected, use forgetFact to remove the old info first.
 - This helps you provide personalized responses in future conversations.
 </tools>`;
