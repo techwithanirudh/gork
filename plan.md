@@ -522,7 +522,83 @@ For 100,000 `add()` calls/month: **~$6/month** in extraction costs.
 
 ### TL;DR
 
-**Recommended: mem0ai for semantic memory only (Option C partial)**
+**Recommended: Full mem0ai migration (replace BOTH working memory AND semantic memory)**
+
+### Why Full Migration?
+
+The key insight is that mem0's auto fact extraction **eliminates the need for separate working memory**:
+
+**Current (Two Systems):**
+
+```
+┌─────────────────┐     ┌─────────────────┐
+│ Working Memory  │     │ Semantic Memory │
+│    (Redis)      │     │   (Pinecone)    │
+│                 │     │                 │
+│ - Manual facts  │     │ - Transcripts   │
+│ - Markdown fmt  │     │ - Tool results  │
+│ - rememberFact  │     │ - Manual embed  │
+│   tool needed   │     │                 │
+└─────────────────┘     └─────────────────┘
+     232 lines              ~620 lines
+```
+
+**mem0 (Single System):**
+
+```
+┌─────────────────────────────────────────┐
+│           mem0ai (Pinecone)             │
+│                                         │
+│  - Auto fact extraction from convos     │
+│  - Auto deduplication                   │
+│  - Conflict resolution                  │
+│  - Custom metadata filters              │
+│  - Memory history/audit                 │
+│  - No rememberFact tool needed!         │
+│  - No markdown parsing!                 │
+│  - No Redis dependency for memory!      │
+└─────────────────────────────────────────┘
+          ~150 lines wrapper
+```
+
+### The Flow Changes
+
+**Current flow (requires AI to decide to remember):**
+
+```
+User: "My name is Alex and I love sci-fi"
+  ↓
+AI processes message
+  ↓
+AI decides: "I should remember this"
+  ↓
+AI calls rememberFact("User's name is Alex")
+AI calls rememberFact("User loves sci-fi")
+  ↓
+Our code: parseWorkingMemory() → isDuplicate() → buildWorkingMemory()
+  ↓
+Stored in Redis as markdown
+```
+
+**mem0 flow (automatic extraction):**
+
+```
+User: "My name is Alex and I love sci-fi"
+  ↓
+AI processes message, responds
+  ↓
+At end of turn: memory.add(messages, { userId, metadata })
+  ↓
+mem0 automatically:
+  - Extracts: "User's name is Alex"
+  - Extracts: "User loves sci-fi"
+  - Checks for duplicates
+  - Resolves conflicts with existing memories
+  ↓
+Stored in Pinecone with full metadata
+```
+
+**Bonus:** If user later says "Actually my name is Alexander", mem0 automatically updates the fact instead of storing a duplicate!
 
 ### Reasoning
 
@@ -530,16 +606,84 @@ For 100,000 `add()` calls/month: **~$6/month** in extraction costs.
 
 2. **Mastra RAG is underwhelming** - It only replaces the Pinecone client (~80 lines). Not worth adding a dependency for such minimal gain.
 
-3. **mem0ai provides real value:**
-   - Auto fact extraction eliminates need for explicit `rememberFact` tool calls
-   - Auto deduplication replaces our basic `isDuplicate()` with LLM-powered conflict resolution
-   - Custom metadata filters work perfectly for Discord scoping
-   - Memory history provides audit trail for debugging
-   - ~300 lines of code reduction
+3. **mem0ai provides massive value:**
+   - Auto fact extraction = **no more `rememberFact` tool**
+   - Auto deduplication = **no more `isDuplicate()` function**
+   - Conflict resolution = **no more stale/contradictory facts**
+   - Single system = **no Redis + Pinecone split**
+   - Custom metadata filters = **Discord multi-tenant works perfectly**
+   - Memory history = **audit trail for debugging**
+   - **~800 lines of code eliminated**
 
-4. **Keep working memory separate** - Our Redis-based working memory with markdown templates works fine. mem0 doesn't have an equivalent, and mixing would add complexity.
+4. **Simpler mental model** - One memory system instead of two. Everything goes through `memory.add()` and `memory.search()`.
 
 ### Recommended Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 Gork Memory System (mem0)                    │
+│                                                              │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │                    mem0ai/oss                            ││
+│  │                                                          ││
+│  │  memory.add(messages, {                                  ││
+│  │    userId: `${guildId}:${userId}`,                       ││
+│  │    metadata: { guildId, channelId, type, ... }           ││
+│  │  })                                                      ││
+│  │                                                          ││
+│  │  → Auto extracts facts, preferences, context             ││
+│  │  → Auto deduplicates against existing                    ││
+│  │  → Auto resolves conflicts ("moved from NYC to LA")      ││
+│  │                                                          ││
+│  │  memory.search(query, {                                  ││
+│  │    userId: `${guildId}:${userId}`,                       ││
+│  │    filters: { guildId: {eq: "..."}, type: {in: [...]} }  ││
+│  │  })                                                      ││
+│  │                                                          ││
+│  │  → Returns relevant memories for context                 ││
+│  │  → Full filter support for Discord scoping               ││
+│  └─────────────────────────────────────────────────────────┘│
+│                                                              │
+│  Storage: Pinecone (same index, new namespace)               │
+│  Embeddings: OpenAI text-embedding-3-small                   │
+│  Extraction: gpt-4.1-nano (cheap, fast)                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### What Gets Deleted (🎉)
+
+| File                                               | Lines    | Why it's gone                           |
+| -------------------------------------------------- | -------- | --------------------------------------- |
+| `src/lib/memory/provider.ts`                       | 232      | mem0 handles facts/prefs automatically  |
+| `src/lib/memory/semantic/search.ts`                | 140      | mem0 `memory.add()` / `memory.search()` |
+| `src/lib/memory/semantic/ingest.ts`                | 203      | mem0 `memory.add()` with metadata       |
+| `src/lib/memory/semantic/query.ts`                 | 72       | mem0 `memory.search()` with filters     |
+| `src/lib/memory/semantic/format.ts`                | ~200     | mem0 returns structured data            |
+| `src/lib/ai/agents/tools/memory/working-memory.ts` | ~100     | No more manual rememberFact tool!       |
+| **Total**                                          | **~850** |                                         |
+
+### What Gets Added
+
+| File                           | Lines    | Purpose                               |
+| ------------------------------ | -------- | ------------------------------------- |
+| `src/lib/memory/mem0.ts`       | ~80      | mem0 client config + initialization   |
+| `src/lib/memory/operations.ts` | ~70      | Thin wrappers for Gork-specific usage |
+| **Total**                      | **~150** |                                       |
+
+### Net Result: **~700 lines removed**
+
+### Tools Impact
+
+| Tool               | Current                        | After Migration                        |
+| ------------------ | ------------------------------ | -------------------------------------- |
+| `rememberFact`     | Required for AI to store facts | **DELETE** - automatic                 |
+| `forgetFact`       | Manual deletion                | Keep - maps to `memory.delete()`       |
+| `searchMemories`   | Query semantic memory          | Keep - maps to `memory.search()`       |
+| `getWorkingMemory` | Get user facts                 | **CHANGE** - becomes `memory.getAll()` |
+
+### Alternative: Partial Migration
+
+If you want to be more conservative:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -551,31 +695,21 @@ For 100,000 `add()` calls/month: **~$6/month** in extraction costs.
 │  │                     │    │                             │ │
 │  │  @ai-sdk-tools/     │    │  mem0ai/oss                 │ │
 │  │  memory + Redis     │    │  + Pinecone                 │ │
-│  │                     │    │                             │ │
-│  │  - Facts            │    │  - Auto fact extraction     │ │
-│  │  - Preferences      │    │  - Auto deduplication       │ │
-│  │  - Notes            │    │  - Conflict resolution      │ │
-│  │  - Markdown format  │    │  - Custom filters           │ │
-│  │                     │    │  - Memory history           │ │
 │  └─────────────────────┘    └─────────────────────────────┘ │
-│                                                              │
-│  Scoped by: guildId + userId    Scoped by: guildId +        │
-│                                  channelId + userId +        │
-│                                  type + participantIds       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### What stays the same:
+But this misses the main benefit: **automatic fact extraction eliminates the need for working memory as a separate concept.**
 
-- `src/lib/memory/provider.ts` - Working memory (Redis)
-- `src/lib/validators/pinecone.ts` - Metadata schema (adapt for mem0)
+### Cost Comparison
 
-### What gets replaced:
+| Approach                | Code Lines | Dependencies                            | Monthly Cost             |
+| ----------------------- | ---------- | --------------------------------------- | ------------------------ |
+| Current                 | ~940       | Redis + Pinecone + @ai-sdk-tools/memory | ~$0 (just infra)         |
+| Partial (semantic only) | ~500       | Redis + Pinecone + mem0                 | ~$6 (LLM extraction)     |
+| **Full mem0**           | **~150**   | **Pinecone + mem0**                     | **~$6 (LLM extraction)** |
 
-- `src/lib/memory/semantic/search.ts` → mem0 `memory.add()` / `memory.search()`
-- `src/lib/memory/semantic/ingest.ts` → mem0 `memory.add()` with metadata
-- `src/lib/memory/semantic/query.ts` → mem0 `memory.search()` with filters
-- `src/lib/memory/semantic/format.ts` → Simplify (mem0 returns structured data)
+The full migration removes a dependency (Redis for working memory) while reducing code by ~700 lines for the same LLM cost.
 
 ---
 
