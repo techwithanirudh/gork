@@ -21,12 +21,12 @@ const chatModel = createRetryable({
     hackclub('google/gemini-2.5-flash'),
     hackclub('openai/gpt-5-mini'),
     google('gemini-2.5-flash'),
-    google('gemini-2.0-flash')
+    google('gemini-2.0-flash'),
   ],
   onError: (context) => {
     const { model } = context.current;
     logger.error(
-      `error with model ${model.provider}/${model.modelId}, switching to next model`
+      `error with model ${model.provider}/${model.modelId}, switching to next model`,
     );
   },
 });
@@ -35,12 +35,12 @@ const relevanceModel = createRetryable({
   model: hackclub('openai/gpt-5-mini'),
   retries: [
     hackclub('google/gemini-2.5-flash'),
-    google('gemini-2.5-flash-lite')
+    google('gemini-2.5-flash-lite'),
   ],
   onError: (context) => {
     const { model } = context.current;
     logger.error(
-      `error with model ${model.provider}/${model.modelId}, switching to next model`
+      `error with model ${model.provider}/${model.modelId}, switching to next model`,
     );
   },
 });
@@ -56,6 +56,6 @@ export const provider = customProvider({
   },
   embeddingModels: {
     'small-model': openai.embedding('text-embedding-3-small'),
-    'large-model': hackclub.embeddingModel('openai/text-embedding-3-large'),
+    'large-model': hackclub.embedding('openai/text-embedding-3-large'),
   },
 });
