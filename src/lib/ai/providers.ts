@@ -1,17 +1,12 @@
-import { customProvider } from 'ai';
-
-import { env } from '@/env';
-import { cohere } from '@ai-sdk/cohere';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { customProvider, wrapLanguageModel } from 'ai';
+import { createRetryable } from 'ai-retry';
+import { env } from '@/env';
+import logger from '@/lib/logger';
 import { openai } from '@ai-sdk/openai';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { createFallback } from 'ai-fallback';
-import { createLogger } from '../logger';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
-const logger = createLogger('ai:providers');
-
-const hackclub = createOpenAICompatible({
-  name: 'hackclub',
+const hackclub = createOpenRouter({
   apiKey: env.HACKCLUB_API_KEY,
   baseURL: 'https://ai.hackclub.com/proxy/v1',
 });
@@ -20,31 +15,34 @@ const google = createGoogleGenerativeAI({
   apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
 });
 
-const chatModel = createFallback({
-  models: [
+const chatModel = createRetryable({
+  model: hackclub('google/gemini-3-flash-preview'),
+  retries: [
     hackclub('google/gemini-2.5-flash'),
+    hackclub('openai/gpt-5-mini'),
     google('gemini-2.5-flash'),
-    google('gemini-2.0-flash'),
-    cohere('command-a-03-2025'),
-    // openai('gpt-4.1'),
+    google('gemini-2.0-flash')
   ],
-  onError: (error, modelId) => {
-    logger.error(`error with model ${modelId}, switching to next model`);
+  onError: (context) => {
+    const { model } = context.current;
+    logger.error(
+      `error with model ${model.provider}/${model.modelId}, switching to next model`
+    );
   },
-  modelResetInterval: 60000,
 });
 
-const relevanceModel = createFallback({
-  models: [
-    hackclub('openai/gpt-5-mini'),
+const relevanceModel = createRetryable({
+  model: hackclub('openai/gpt-5-mini'),
+  retries: [
     hackclub('google/gemini-2.5-flash'),
-    google('gemini-2.5-flash-lite'),
-    google('gemini-2.0-flash-lite'),
+    google('gemini-2.5-flash-lite')
   ],
-  onError: (error, modelId) => {
-    logger.error(`error with model ${modelId}, switching to next model`);
+  onError: (context) => {
+    const { model } = context.current;
+    logger.error(
+      `error with model ${model.provider}/${model.modelId}, switching to next model`
+    );
   },
-  modelResetInterval: 60000,
 });
 
 export const provider = customProvider({
@@ -56,8 +54,8 @@ export const provider = customProvider({
   imageModels: {
     // 'small-model': openai.imageModel('dall-e-2'),
   },
-  textEmbeddingModels: {
+  embeddingModels: {
     'small-model': openai.embedding('text-embedding-3-small'),
-    'large-model': hackclub.textEmbeddingModel('openai/text-embedding-3-large'),
+    'large-model': hackclub.embeddingModel('openai/text-embedding-3-large'),
   },
 });
