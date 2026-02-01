@@ -470,6 +470,17 @@ const history = await memory.history(memoryId);
 | **Migration of existing data**   | Medium   | New namespace or gradual migration    |
 | **Less control over extraction** | Low      | Custom prompts available              |
 
+### Current blockers (OSS in practice)
+
+The OSS package does not match our required stack:
+
+- **No Pinecone adapter in OSS**: `VectorStoreFactory` only supports memory/qdrant/redis/supabase/langchain/vectorize/azure-ai-search. Pinecone is not wired in, so it will never work without patching or upstream changes.
+- **No OpenRouter support**: Embedder/LLM factories only expose built-in providers; OpenRouter is not available, so routing all traffic through OpenRouter is not possible without a fork.
+- **Native binding friction**: `sqlite3` is eagerly required in the OSS bundle, causing Bun startup crashes without patches.
+- **Supabase schema strictness**: Supabase vector store hard-fails at init unless the SQL schema + `match_vectors` function exist. This makes local dev brittle and adds setup burden.
+
+**Net:** mem0 OSS is not drop-in compatible with our Pinecone + OpenRouter setup.
+
 ### Cost Estimate
 
 Assuming `gpt-4.1-nano-2025-04-14` at ~$0.10/1M tokens:

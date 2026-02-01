@@ -1,8 +1,23 @@
+diff --git a/node_modules/mem0ai/.bun-tag-40f46e0fa24dff6e b/.bun-tag-40f46e0fa24dff6e
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 diff --git a/dist/oss/index.js b/dist/oss/index.js
-index d23ec7c2b51b801586307e16ea3e4a7456c75cf0..d9091f83ebea3cb80eb4a7274893e655be9d67ea 100644
+index d23ec7c2b51b801586307e16ea3e4a7456c75cf0..5089433bcf1d9395fd3ad0e641d23b4d693ce3d8 100644
 --- a/dist/oss/index.js
 +++ b/dist/oss/index.js
-@@ -469,7 +469,6 @@ var MistralLLM = class {
+@@ -122,7 +122,10 @@ var MemoryConfigSchema = import_zod.z.object({
+ var import_openai = __toESM(require("openai"));
+ var OpenAIEmbedder = class {
+   constructor(config) {
+-    this.openai = new import_openai.default({ apiKey: config.apiKey });
++    this.openai = new import_openai.default({
++      apiKey: config.apiKey,
++      baseURL: config.baseURL || config.url
++    });
+     this.model = config.model || "text-embedding-3-small";
+     this.embeddingDims = config.embeddingDims || 1536;
+   }
+@@ -469,7 +472,6 @@ var MistralLLM = class {
  };
  
  // src/oss/src/vector_stores/memory.ts
@@ -10,7 +25,7 @@ index d23ec7c2b51b801586307e16ea3e4a7456c75cf0..d9091f83ebea3cb80eb4a7274893e655
  var import_path = __toESM(require("path"));
  var MemoryVectorStore = class {
    constructor(config) {
-@@ -478,7 +477,17 @@ var MemoryVectorStore = class {
+@@ -478,7 +480,17 @@ var MemoryVectorStore = class {
      if (config.dbPath) {
        this.dbPath = config.dbPath;
      }
@@ -29,7 +44,7 @@ index d23ec7c2b51b801586307e16ea3e4a7456c75cf0..d9091f83ebea3cb80eb4a7274893e655
      this.init().catch(console.error);
    }
    async init() {
-@@ -2071,10 +2080,19 @@ See the SQL migration instructions in the code comments.`
+@@ -2071,10 +2083,19 @@ See the SQL migration instructions in the code comments.`
  };
  
  // src/oss/src/storage/SQLiteManager.ts
@@ -52,7 +67,7 @@ index d23ec7c2b51b801586307e16ea3e4a7456c75cf0..d9091f83ebea3cb80eb4a7274893e655
    }
    async init() {
 diff --git a/dist/oss/index.mjs b/dist/oss/index.mjs
-index 5b7f57a851f56eca4aaa6a468f84a912a6f73f88..687cf42de1de4400b8d2ebf88a51c2c4df43dde3 100644
+index 5b7f57a851f56eca4aaa6a468f84a912a6f73f88..03167d846c86c126574f5d509b13772269433980 100644
 --- a/dist/oss/index.mjs
 +++ b/dist/oss/index.mjs
 @@ -1,6 +1,9 @@
@@ -65,7 +80,19 @@ index 5b7f57a851f56eca4aaa6a468f84a912a6f73f88..687cf42de1de4400b8d2ebf88a51c2c4
  
  // src/oss/src/types/index.ts
  import { z } from "zod";
-@@ -408,7 +411,6 @@ var MistralLLM = class {
+@@ -61,7 +64,10 @@ var MemoryConfigSchema = z.object({
+ import OpenAI from "openai";
+ var OpenAIEmbedder = class {
+   constructor(config) {
+-    this.openai = new OpenAI({ apiKey: config.apiKey });
++    this.openai = new OpenAI({
++      apiKey: config.apiKey,
++      baseURL: config.baseURL || config.url
++    });
+     this.model = config.model || "text-embedding-3-small";
+     this.embeddingDims = config.embeddingDims || 1536;
+   }
+@@ -408,7 +414,6 @@ var MistralLLM = class {
  };
  
  // src/oss/src/vector_stores/memory.ts
@@ -73,7 +100,7 @@ index 5b7f57a851f56eca4aaa6a468f84a912a6f73f88..687cf42de1de4400b8d2ebf88a51c2c4
  import path from "path";
  var MemoryVectorStore = class {
    constructor(config) {
-@@ -417,6 +419,16 @@ var MemoryVectorStore = class {
+@@ -417,6 +422,16 @@ var MemoryVectorStore = class {
      if (config.dbPath) {
        this.dbPath = config.dbPath;
      }
@@ -90,7 +117,7 @@ index 5b7f57a851f56eca4aaa6a468f84a912a6f73f88..687cf42de1de4400b8d2ebf88a51c2c4
      this.db = new sqlite3.Database(this.dbPath);
      this.init().catch(console.error);
    }
-@@ -2010,10 +2022,19 @@ See the SQL migration instructions in the code comments.`
+@@ -2010,10 +2025,19 @@ See the SQL migration instructions in the code comments.`
  };
  
  // src/oss/src/storage/SQLiteManager.ts
