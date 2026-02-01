@@ -1,13 +1,11 @@
 import { createLogger } from '@/lib/logger';
-
 import type { PineconeMetadataOutput } from '@/types';
-import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import { getIndex } from './index';
-import { searchMemories } from './queries';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import { searchMemories } from './search';
 
-const logger = createLogger('pinecone:operations');
+const logger = createLogger('memory:semantic:query');
 
-export interface QueryMemoriesOptions {
+export interface QueryOptions {
   namespace?: string;
   limit?: number;
   ageLimit?: number;
@@ -16,7 +14,7 @@ export interface QueryMemoriesOptions {
   filter?: Record<string, unknown>;
 }
 
-export const queryMemories = async (
+export async function queryMemories(
   query: string,
   {
     namespace = 'default',
@@ -25,9 +23,9 @@ export const queryMemories = async (
     ignoreRecent = true,
     onlyTools = false,
     filter: customFilter,
-  }: QueryMemoriesOptions = {}
-): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
-  if (!query || query.trim().length === 0) {
+  }: QueryOptions = {},
+): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> {
+  if (!query?.trim()) {
     return [];
   }
 
@@ -40,7 +38,7 @@ export const queryMemories = async (
 
   if (ignoreRecent) {
     const existingCreatedAt =
-      (filter.createdAt as Record<string, unknown> | undefined) ?? {};
+      (filter.createdAt as Record<string, unknown>) ?? {};
     filter.createdAt = {
       ...existingCreatedAt,
       $lt: now - 60_000,
@@ -49,7 +47,7 @@ export const queryMemories = async (
 
   if (ageLimit != null) {
     const existingCreatedAt =
-      (filter.createdAt as Record<string, unknown> | undefined) ?? {};
+      (filter.createdAt as Record<string, unknown>) ?? {};
     filter.createdAt = {
       ...existingCreatedAt,
       $gt: now - ageLimit,
@@ -61,22 +59,13 @@ export const queryMemories = async (
   }
 
   try {
-    const results = await searchMemories(query, {
+    return await searchMemories(query, {
       namespace,
       topK: limit,
       filter: Object.keys(filter).length ? filter : undefined,
     });
-
-    const index = (await getIndex()).namespace(namespace);
-    await Promise.all(
-      results.map(({ id }: { id: string }) =>
-        index.update({ id, metadata: { lastRetrievalTime: Date.now() } })
-      )
-    );
-
-    return results;
   } catch (error) {
-    logger.error({ error, query }, 'Error querying long term memory');
+    logger.error({ error, query }, 'Error querying memories');
     return [];
   }
-};
+}

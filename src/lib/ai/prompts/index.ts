@@ -1,15 +1,20 @@
+import type { WorkingMemory } from '@ai-sdk-tools/memory';
+import { formatWorkingMemory } from '@ai-sdk-tools/memory';
 import type { RequestHints } from '@/types';
 import type { Message } from 'discord.js';
+import type { MemoryContext } from '../agents/tools/chat/memories';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
 import {
-  memoryPrompt,
+  memoryPromptParts,
   relevancePrompt,
   replyPrompt,
   voicePrompt,
 } from './tasks';
 import { toolsPrompt } from './tools';
+
+export type { WorkingMemory };
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 <context>
@@ -24,18 +29,55 @@ Your current status is ${requestHints.status} and your activity is ${
 }.
 </context>`;
 
+export const getMemoryContextPrompt = (context?: MemoryContext) => {
+  if (!context) return '';
+
+  const lines = ['<current_scope>'];
+  lines.push(
+    'CRITICAL: Read this block BEFORE every search. These are the IDs you need for filters.',
+  );
+  lines.push('');
+
+  if (context.guildId) {
+    lines.push(`Guild: ${context.guildName ?? 'Unknown'}`);
+    lines.push(`  guildId: "${context.guildId}"`);
+  }
+  lines.push(`Channel: ${context.channelName ?? 'Unknown'}`);
+  lines.push(`  channelId: "${context.channelId}"`);
+
+  if (context.participants.length > 0) {
+    lines.push('');
+    lines.push('Participants (use these IDs for participantIds filter):');
+    for (const p of context.participants) {
+      const displayInfo = p.displayName
+        ? ` (display name: "${p.displayName}")`
+        : '';
+      lines.push(`  - "${p.username}" → ID: "${p.id}"${displayInfo}`);
+    }
+  }
+
+  lines.push('</current_scope>');
+
+  return lines.join('\n');
+};
+
 export const systemPrompt = ({
   agent,
   requestHints,
   message,
   speakerName,
+  memoryContext,
+  workingMemory,
 }: {
   agent: string;
   requestHints: RequestHints;
   message?: Message;
   speakerName?: string;
+  memoryContext?: MemoryContext;
+  workingMemory?: WorkingMemory | null;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const workingMemoryPrompt = formatWorkingMemory(workingMemory ?? null);
 
   if (agent === 'chat') {
     return [
@@ -43,6 +85,7 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
+      workingMemoryPrompt,
       toolsPrompt,
       replyPrompt,
     ]
@@ -61,7 +104,22 @@ export const systemPrompt = ({
       .join('\n\n')
       .trim();
   } else if (agent === 'memory') {
-    return [corePrompt, memoryPrompt].filter(Boolean).join('\n\n').trim();
+    const memoryContextPrompt = getMemoryContextPrompt(memoryContext);
+    // Inject <current_scope> between criticalRules and workflow for optimal positioning
+    return [
+      corePrompt,
+      memoryPromptParts.identity,
+      memoryPromptParts.criticalRules,
+      memoryContextPrompt, // <current_scope> appears right after critical rules
+      memoryPromptParts.workflow,
+      memoryPromptParts.filters,
+      memoryPromptParts.searchStrategy,
+      memoryPromptParts.examples,
+      memoryPromptParts.outputFormat,
+    ]
+      .filter(Boolean)
+      .join('\n\n')
+      .trim();
   } else if (agent === 'voice') {
     return [
       corePrompt,

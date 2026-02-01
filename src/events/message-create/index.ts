@@ -1,5 +1,5 @@
 import { keywords, messageThreshold } from '@/config';
-import { saveChatMemory } from '@/lib/ai/memory/ingest';
+import { saveChatMemory } from '@/lib/memory';
 import { ratelimit, redisKeys } from '@/lib/kv';
 import { buildChatContext } from '@/utils/context';
 import {
@@ -44,16 +44,16 @@ async function canReply(message: Message): Promise<boolean> {
     if (!channel.isDMBased() && 'guild' in channel) {
       const permissions = botMember.permissionsIn(channel);
       const hasReadPermission = permissions.has(
-        PermissionsBitField.Flags.ViewChannel
+        PermissionsBitField.Flags.ViewChannel,
       );
       const hasSendPermission = permissions.has(
-        PermissionsBitField.Flags.SendMessages
+        PermissionsBitField.Flags.SendMessages,
       );
 
       if (!hasReadPermission || !hasSendPermission) {
         logger.debug(
           { read: hasReadPermission, send: hasSendPermission },
-          `[${guild.id}] Missing permissions in channel ${channel.id}`
+          `[${guild.id}] Missing permissions in channel ${channel.id}`,
         );
         return false;
       }
@@ -92,7 +92,7 @@ export async function execute(message: Message) {
       {
         message: `${author.username}: ${content}`,
       },
-      `[${ctxId}] Triggered by ${trigger.type}`
+      `[${ctxId}] Triggered by ${trigger.type}`,
     );
 
     const result = await generateResponse(message, messages, hints);
@@ -107,7 +107,7 @@ export async function execute(message: Message) {
 
   if (!hasQuota) {
     logger.debug(
-      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`
+      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`,
     );
     return;
   }
@@ -115,11 +115,11 @@ export async function execute(message: Message) {
   const { probability, reason } = await assessRelevance(
     message,
     messages,
-    hints
+    hints,
   );
   logger.info(
     { reason, probability, message: `${author.username}: ${content}` },
-    `[${ctxId}] Relevance check`
+    `[${ctxId}] Relevance check`,
   );
 
   const willReply = probability > 0.5;

@@ -9,6 +9,10 @@ Available tools
 - memories: 
     semantic recall (names, events, places). 
     provide the whole context for the query, because the memory does NOT have context.
+- rememberFact:
+    store important facts about users for long-term memory.
+    use when you learn something valuable: preferences, nicknames, roles, relationships.
+    types: "fact", "preference", "note"
 - searchWeb: current info outside Discord.
 - getUserInfo: fetch Discord profile + IDs.
 - reply: send the final message (ends the turn).
@@ -29,4 +33,9 @@ Hard rules
 - react payload: provide an array of emoji strings.
 - If the user is spamming low-value noise, call skip and move on.
 - Only use startDM when invited or when moderating sensitive info.
+
+Memory best practices
+- When a user tells you something important about themselves, use rememberFact to remember it.
+- Examples of things to remember: "my name is X", "I prefer Y", "I work on Z", "call me W"
+- This helps you provide personalized responses in future conversations.
 </tools>`;

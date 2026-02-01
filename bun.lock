@@ -6,6 +6,7 @@
       "name": "discord-ai-bot",
       "dependencies": {
         "@ai-sdk-tool/parser": "^3.3.1",
+        "@ai-sdk-tools/memory": "^1.2.0",
         "@ai-sdk/cohere": "^3.0.17",
         "@ai-sdk/google": "^3.0.19",
         "@ai-sdk/openai": "^3.0.24",
@@ -85,6 +86,8 @@
   ],
   "packages": {
     "@ai-sdk-tool/parser": ["@ai-sdk-tool/parser@3.3.1", "", { "dependencies": { "@ai-sdk/provider": "3.0.4", "@ai-sdk/provider-utils": "4.0.8", "dedent": "^1.7.1", "yaml": "^2.8.2" } }, "sha512-PxbyiXZypfnEnd+m0bFFhiQK9seqSezNJuiIhBBJpuiuZQ3ZE0EBgwLx1P4ul/uPnLRJJP5T5JLp05I59MAXdA=="],
+
+    "@ai-sdk-tools/memory": ["@ai-sdk-tools/memory@1.2.0", "", { "dependencies": { "zod": "^4.1.12" }, "peerDependencies": { "@upstash/redis": "^1.34.3", "ai": "^5.0.0", "drizzle-orm": "^0.36.0", "ioredis": "^5.0.0", "redis": "^4.0.0" }, "optionalPeers": ["@upstash/redis", "ai", "drizzle-orm", "ioredis", "redis"] }, "sha512-ET8CQMyHsdEMVSYnBjopHWwR6j6W6tmB+djMybFiloPLF9NfsFr9bXt2hb7+/oFyE9zKAGWQXqUY+Z+kUueR2w=="],
 
     "@ai-sdk/cohere": ["@ai-sdk/cohere@3.0.17", "", { "dependencies": { "@ai-sdk/provider": "3.0.6", "@ai-sdk/provider-utils": "4.0.12" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-VoVk5y9FbEbGyTEGab8UCaych4xvHNAfkxM8hDC4Jz2ft6MlvziOvRmv5OYh8lLpN2Z1t4G9XIJbGDoo9WDClQ=="],
 

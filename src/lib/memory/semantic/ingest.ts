@@ -1,6 +1,5 @@
 import { redis, redisKeys } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
-import { addMemory } from '@/lib/pinecone/queries';
 import { getMessagesByChannel } from '@/lib/queries';
 import type { PineconeMetadataInput } from '@/types';
 import {
@@ -10,6 +9,9 @@ import {
   type Message,
   type User,
 } from 'discord.js';
+import { addMemory } from './search';
+
+const logger = createLogger('memory:semantic:ingest');
 
 interface GuildInfo {
   id: string | null;
@@ -30,14 +32,8 @@ interface EntityRef {
   platform: 'discord';
 }
 
-const logger = createLogger('memory:ingest');
-
 type ChatMetadataPayload = Extract<PineconeMetadataInput, { type: 'chat' }>;
-
 type ToolMetadataPayload = Extract<PineconeMetadataInput, { type: 'tool' }>;
-
-const IMPORTANT_KEYWORDS =
-  /\b(decide|decision|deadline|todo|plan|commit|ship|deploy|invite|token|schedule|meeting)\b/i;
 
 export function sessionIdFromMessage(message: Message): string {
   if (!message.guild) {
@@ -45,7 +41,6 @@ export function sessionIdFromMessage(message: Message): string {
     const [a, b] = [message.author.id, botId].sort();
     return `dm:${a}:${b}`;
   }
-
   return `guild:${message.guild.id}:${message.channel.id}`;
 }
 
@@ -60,26 +55,22 @@ export function channelInfoFromMessage(message: Message): ChannelInfo {
     message.channel.type === ChannelType.DM
       ? 'dm'
       : message.channel.type === ChannelType.GuildText
-      ? 'text'
-      : message.channel.type === ChannelType.GuildVoice
-      ? 'voice'
-      : message.channel.type === ChannelType.PublicThread ||
-        message.channel.type === ChannelType.PrivateThread
-      ? 'thread'
-      : 'unknown';
+        ? 'text'
+        : message.channel.type === ChannelType.GuildVoice
+          ? 'voice'
+          : message.channel.type === ChannelType.PublicThread ||
+              message.channel.type === ChannelType.PrivateThread
+            ? 'thread'
+            : 'unknown';
 
   const name =
     message.channel.type === ChannelType.DM
       ? dmDisplayName(message.channel as DMChannel, message.author)
       : 'name' in message.channel
-      ? (message.channel as GuildTextBasedChannel).name ?? ''
-      : '';
+        ? ((message.channel as GuildTextBasedChannel).name ?? '')
+        : '';
 
-  return {
-    id: message.channel.id,
-    name,
-    type,
-  };
+  return { id: message.channel.id, name, type };
 }
 
 function dmDisplayName(dm: DMChannel, author: User): string {
@@ -89,7 +80,7 @@ function dmDisplayName(dm: DMChannel, author: User): string {
 
 function participantsFromMessage(
   message: Message,
-  channel: ChannelInfo
+  channel: ChannelInfo,
 ): EntityRef[] {
   const participants: EntityRef[] = [
     {
@@ -135,11 +126,10 @@ async function trackSession(sessionId: string) {
   try {
     await redis.sAdd(redisKeys.memorySessions(), sessionId);
   } catch (error) {
-    logger.warn({ sessionId, error }, 'Failed to track session for memory');
+    logger.warn({ sessionId, error }, 'Failed to track session');
   }
 }
 
-// TODO: why not use the discord message formatter?
 function formatTranscript(messages: Message[]): string {
   return messages
     .map((msg) => `${msg.author.username}: ${msg.content ?? ''}`.trim())
@@ -161,7 +151,6 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
   const now = Date.now();
   const guild = guildInfoFromMessage(message);
   const channel = channelInfoFromMessage(message);
-
   const participants = participantsFromMessage(message, channel);
 
   const metadata: ChatMetadataPayload = {
@@ -184,7 +173,7 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
 export async function saveToolMemory(
   message: Message,
   toolName: string,
-  result: unknown
+  result: unknown,
 ) {
   const now = Date.now();
   const sessionId = sessionIdFromMessage(message);

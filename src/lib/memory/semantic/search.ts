@@ -1,27 +1,59 @@
 import { createLogger } from '@/lib/logger';
+import { env } from '@/env';
+import {
+  Pinecone,
+  type ScoredPineconeRecord,
+} from '@pinecone-database/pinecone';
+import { embed } from 'ai';
+import { MD5 } from 'bun';
+import { provider } from '@/lib/ai/providers';
 import {
   PineconeMetadataSchema,
   flattenMetadata,
 } from '@/lib/validators/pinecone';
 import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import { embed } from 'ai';
-import { MD5 } from 'bun';
-import { provider } from '../ai/providers';
-import { getIndex } from './index';
 
-const logger = createLogger('pinecone:queries');
+const logger = createLogger('memory:semantic:search');
+const pinecone = new Pinecone({ apiKey: env.PINECONE_API_KEY });
 
-export interface MemorySearchOptions {
+let indexInitialized = false;
+
+async function getIndex() {
+  const name = env.PINECONE_INDEX;
+
+  if (!indexInitialized) {
+    const indexes = (await pinecone.listIndexes())?.indexes;
+    if (!indexes || !indexes.some((i) => i.name === name)) {
+      logger.warn(`Index ${name} does not exist, creating...`);
+      await pinecone.createIndex({
+        name,
+        dimension: 1536,
+        metric: 'dotproduct',
+        waitUntilReady: true,
+        spec: {
+          serverless: {
+            cloud: 'aws',
+            region: 'us-east-1',
+          },
+        },
+      });
+    }
+    indexInitialized = true;
+  }
+
+  return pinecone.Index(name);
+}
+
+export interface SearchOptions {
   namespace?: string;
   topK?: number;
   filter?: Record<string, unknown>;
 }
 
-export const searchMemories = async (
+export async function searchMemories(
   query: string,
-  { namespace = 'default', topK = 5, filter }: MemorySearchOptions = {},
-): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
+  { namespace = 'default', topK = 5, filter }: SearchOptions = {},
+): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> {
   try {
     const { embedding } = await embed({
       model: provider.embeddingModel('small-model'),
@@ -39,7 +71,6 @@ export const searchMemories = async (
     const matches = result.matches || [];
     return matches.flatMap((match) => {
       const parsed = PineconeMetadataSchema.safeParse(match.metadata);
-
       if (!parsed.success) {
         logger.warn(
           { id: match.id, issues: parsed.error.issues },
@@ -47,37 +78,27 @@ export const searchMemories = async (
         );
         return [];
       }
-
-      return {
-        ...match,
-        metadata: parsed.data,
-      };
+      return { ...match, metadata: parsed.data };
     });
   } catch (error) {
     logger.error({ error }, 'Error searching memories');
     throw error;
   }
-};
+}
 
-export const addMemory = async (
+export async function addMemory(
   text: string,
   metadata: PineconeMetadataInput,
   namespace = 'default',
-): Promise<string> => {
+): Promise<string> {
   try {
     const basis = `${metadata.sessionId ?? 'global'}:${metadata.type}:${text}`;
     const id = new MD5().update(basis).digest('hex');
 
     const flattened = flattenMetadata(metadata);
-    const parsed = PineconeMetadataSchema.safeParse({
-      ...flattened,
-      hash: id,
-    });
+    const parsed = PineconeMetadataSchema.safeParse({ ...flattened, hash: id });
     if (!parsed.success) {
-      logger.warn(
-        { id, issues: parsed.error.issues },
-        'Invalid metadata provided, skipping add',
-      );
+      logger.warn({ id, issues: parsed.error.issues }, 'Invalid metadata');
       throw new Error('Invalid metadata schema');
     }
 
@@ -86,36 +107,27 @@ export const addMemory = async (
       value: text,
     });
 
-    if (!embedding || embedding.length === 0) {
-      throw new Error('Embedding is empty or undefined');
+    if (!embedding?.length) {
+      throw new Error('Embedding is empty');
     }
 
     const index = (await getIndex()).namespace(namespace);
     await index.upsert({
-      records: [
-        {
-          id,
-          values: embedding,
-          metadata: parsed.data,
-        },
-      ],
+      records: [{ id, values: embedding, metadata: parsed.data }],
     });
 
-    logger.debug(
-      { id, type: metadata.type, sessionId: metadata.sessionId },
-      'Added memory',
-    );
+    logger.debug({ id, type: metadata.type }, 'Added memory');
     return id;
   } catch (error) {
     logger.error({ error }, 'Error adding memory');
     throw error;
   }
-};
+}
 
-export const deleteMemory = async (
+export async function deleteMemory(
   id: string,
   namespace = 'default',
-): Promise<void> => {
+): Promise<void> {
   try {
     const index = (await getIndex()).namespace(namespace);
     await index.deleteOne({ id });
@@ -124,4 +136,4 @@ export const deleteMemory = async (
     logger.error({ error }, 'Error deleting memory');
     throw error;
   }
-};
+}
