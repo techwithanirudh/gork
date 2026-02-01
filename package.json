@@ -112,5 +112,8 @@
     "lefthook",
     "node-crc",
     "unrs-resolver"
-  ]
+  ],
+  "patchedDependencies": {
+    "mem0ai@2.2.1": "patches/mem0ai@2.2.1.patch"
+  }
 }

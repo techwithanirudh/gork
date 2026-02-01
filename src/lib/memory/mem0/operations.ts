@@ -119,6 +119,8 @@ export async function addTurnMemory(
   assistantContent: string,
 ): Promise<void> {
   try {
+    const memory = await getMemory();
+    if (!memory) return;
     const userText = userContent?.trim();
     const assistantText = assistantContent?.trim();
     if (!userText || !assistantText) return;
@@ -127,7 +129,7 @@ export async function addTurnMemory(
     const metadata = buildMetadata(message, 'chat', participants);
     const userId = scopedUserId(message.guild?.id ?? null, message.author.id);
 
-    await getMemory().add(
+    await memory.add(
       [
         { role: 'user', content: userText },
         { role: 'assistant', content: assistantText },
@@ -149,8 +151,10 @@ export async function searchMemories(
   const { limit = 5, filters } = options;
 
   try {
+    const memory = await getMemory();
+    if (!memory) return [];
     const payload = filters ? { userId, limit, filters } : { userId, limit };
-    const results = await getMemory().search(query, payload);
+    const results = await memory.search(query, payload);
 
     return (results.results ?? []).map((result) => ({
       id: result.id,
@@ -167,7 +171,9 @@ export async function searchMemories(
 
 export async function deleteMemory(memoryId: string): Promise<boolean> {
   try {
-    await getMemory().delete(memoryId);
+    const memory = await getMemory();
+    if (!memory) return false;
+    await memory.delete(memoryId);
     return true;
   } catch (error) {
     logger.error({ error, memoryId }, 'Failed to delete memory');

@@ -1,0 +1,114 @@
+diff --git a/dist/oss/index.js b/dist/oss/index.js
+index d23ec7c2b51b801586307e16ea3e4a7456c75cf0..d9091f83ebea3cb80eb4a7274893e655be9d67ea 100644
+--- a/dist/oss/index.js
++++ b/dist/oss/index.js
+@@ -469,7 +469,6 @@ var MistralLLM = class {
+ };
+ 
+ // src/oss/src/vector_stores/memory.ts
+-var import_sqlite3 = __toESM(require("sqlite3"));
+ var import_path = __toESM(require("path"));
+ var MemoryVectorStore = class {
+   constructor(config) {
+@@ -478,7 +477,17 @@ var MemoryVectorStore = class {
+     if (config.dbPath) {
+       this.dbPath = config.dbPath;
+     }
+-    this.db = new import_sqlite3.default.Database(this.dbPath);
++    let sqlite3;
++    try {
++      sqlite3 = __toESM(require("sqlite3"));
++    } catch (error) {
++      const message = error instanceof Error ? error.message : String(error);
++      throw new Error(
++        `Failed to load sqlite3: ${message}\n` +
++          "Make sure sqlite3 is installed"
++      );
++    }
++    this.db = new sqlite3.default.Database(this.dbPath);
+     this.init().catch(console.error);
+   }
+   async init() {
+@@ -2071,10 +2080,19 @@ See the SQL migration instructions in the code comments.`
+ };
+ 
+ // src/oss/src/storage/SQLiteManager.ts
+-var import_sqlite32 = __toESM(require("sqlite3"));
+ var SQLiteManager = class {
+   constructor(dbPath) {
+-    this.db = new import_sqlite32.default.Database(dbPath);
++    let sqlite3;
++    try {
++      sqlite3 = __toESM(require("sqlite3"));
++    } catch (error) {
++      const message = error instanceof Error ? error.message : String(error);
++      throw new Error(
++        `Failed to load sqlite3: ${message}\n` +
++          "Make sure sqlite3 is installed"
++      );
++    }
++    this.db = new sqlite3.default.Database(dbPath);
+     this.init().catch(console.error);
+   }
+   async init() {
+diff --git a/dist/oss/index.mjs b/dist/oss/index.mjs
+index 5b7f57a851f56eca4aaa6a468f84a912a6f73f88..687cf42de1de4400b8d2ebf88a51c2c4df43dde3 100644
+--- a/dist/oss/index.mjs
++++ b/dist/oss/index.mjs
+@@ -1,6 +1,9 @@
+ // src/oss/src/memory/index.ts
+ import { v4 as uuidv43 } from "uuid";
+ import { createHash } from "crypto";
++import { createRequire } from "module";
++
++const require = createRequire(import.meta.url);
+ 
+ // src/oss/src/types/index.ts
+ import { z } from "zod";
+@@ -408,7 +411,6 @@ var MistralLLM = class {
+ };
+ 
+ // src/oss/src/vector_stores/memory.ts
+-import sqlite3 from "sqlite3";
+ import path from "path";
+ var MemoryVectorStore = class {
+   constructor(config) {
+@@ -417,6 +419,16 @@ var MemoryVectorStore = class {
+     if (config.dbPath) {
+       this.dbPath = config.dbPath;
+     }
++    let sqlite3;
++    try {
++      sqlite3 = require("sqlite3");
++    } catch (error) {
++      const message = error instanceof Error ? error.message : String(error);
++      throw new Error(
++        `Failed to load sqlite3: ${message}\n` +
++          "Make sure sqlite3 is installed"
++      );
++    }
+     this.db = new sqlite3.Database(this.dbPath);
+     this.init().catch(console.error);
+   }
+@@ -2010,10 +2022,19 @@ See the SQL migration instructions in the code comments.`
+ };
+ 
+ // src/oss/src/storage/SQLiteManager.ts
+-import sqlite32 from "sqlite3";
+ var SQLiteManager = class {
+   constructor(dbPath) {
+-    this.db = new sqlite32.Database(dbPath);
++    let sqlite3;
++    try {
++      sqlite3 = require("sqlite3");
++    } catch (error) {
++      const message = error instanceof Error ? error.message : String(error);
++      throw new Error(
++        `Failed to load sqlite3: ${message}\n` +
++          "Make sure sqlite3 is installed"
++      );
++    }
++    this.db = new sqlite3.Database(dbPath);
+     this.init().catch(console.error);
+   }
+   async init() {
