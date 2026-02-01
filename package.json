@@ -63,6 +63,7 @@
     "langfuse-vercel": "^3.38.6",
     "libsodium-wrappers": "^0.8.2",
     "lint-staged": "^16.2.7",
+    "mem0ai": "^2.2.1",
     "node-crc": "^4.0.0",
     "opusscript": "^0.1.1",
     "pino": "^10.3.0",

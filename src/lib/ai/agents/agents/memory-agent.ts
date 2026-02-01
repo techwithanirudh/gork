@@ -6,7 +6,6 @@ import { systemPrompt } from '../../prompts';
 import { provider } from '../../providers';
 import {
   getMemory,
-  rememberFact,
   forgetFact,
   listChannels,
   listDMs,
@@ -39,7 +38,6 @@ export const memoryAgent = ({
       listDMs: listDMs({ message }),
       listUsers: listUsers({ message }),
       getMemory: getMemory({ message }),
-      rememberFact: rememberFact({ message }),
       forgetFact: forgetFact({ message }),
     },
     temperature: 0,

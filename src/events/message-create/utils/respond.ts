@@ -1,6 +1,6 @@
 import { orchestratorAgent } from '@/lib/ai/agents/orchestrator';
 import type { MemoryContext } from '@/lib/ai/agents/tools/chat';
-import { getWorkingMemory } from '@/lib/memory/provider';
+import { getAllMemories, scopedUserId } from '@/lib/memory';
 import type { RequestHints } from '@/types';
 import type { ModelMessage } from 'ai';
 import type { Message } from 'discord.js';
@@ -70,11 +70,11 @@ export async function generateResponse(
   try {
     const memoryContext = buildMemoryContext(msg, messages);
 
-    // Load working memory for the message author
+    // Load working memory for the message author using mem0
     const workingMemory = msg.guild?.id
-      ? await getWorkingMemory({
+      ? await getAllMemories(scopedUserId(msg.guild.id, msg.author.id), {
+          limit: 20,
           guildId: msg.guild.id,
-          userId: msg.author.id,
         })
       : null;
 

@@ -1,8 +1,8 @@
-import type { WorkingMemory } from '@ai-sdk-tools/memory';
-import { formatWorkingMemory } from '@ai-sdk-tools/memory';
 import type { RequestHints } from '@/types';
 import type { Message } from 'discord.js';
 import type { MemoryContext } from '../agents/tools/chat/memories';
+import type { MemoryResult } from '@/lib/memory';
+import { formatWorkingMemory } from '@/lib/memory';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
@@ -14,7 +14,10 @@ import {
 } from './tasks';
 import { toolsPrompt } from './tools';
 
-export type { WorkingMemory };
+/**
+ * WorkingMemory type - now uses mem0's MemoryResult array
+ */
+export type WorkingMemory = MemoryResult[] | null;
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 <context>

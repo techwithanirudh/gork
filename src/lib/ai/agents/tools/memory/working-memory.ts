@@ -3,89 +3,67 @@ import type { Message } from 'discord.js';
 import { z } from 'zod';
 import { createLogger } from '@/lib/logger';
 import {
-  getWorkingMemory,
-  addToWorkingMemory,
-  removeFromWorkingMemory,
-  WORKING_MEMORY_TEMPLATE,
-} from '@/lib/memory/provider';
+  scopedUserId,
+  getAllMemories,
+  searchMemories,
+  deleteMemory,
+  formatAllMemories,
+} from '@/lib/memory/mem0';
 
 const logger = createLogger('tools:working-memory');
 
-export const rememberFact = ({ message }: { message: Message }) =>
+/**
+ * forgetFact - Remove a memory by searching for matching content
+ * Since mem0 auto-extracts facts, we search for memories matching the content
+ * and delete them.
+ */
+export const forgetFact = ({ message }: { message: Message }) =>
   tool({
     description:
-      'Store a fact, preference, or note about a user. ' +
-      'Duplicates are automatically detected and skipped. ' +
-      'Use "fact" for things you learned, "preference" for likes/dislikes, "note" for context.',
+      "Remove outdated or incorrect information from a user's memory. " +
+      'Searches for memories matching the content and deletes them.',
     inputSchema: z.object({
       userId: z.string().describe('The Discord user ID'),
       content: z
         .string()
-        .describe('What to remember. Be specific and concise.'),
-      type: z
-        .enum(['fact', 'preference', 'note'])
-        .describe('Category: fact, preference, or note'),
-    }),
-    execute: async ({ userId, content, type }) => {
-      const guildId = message.guild?.id;
-      if (!guildId) {
-        return { success: false, error: 'Cannot store memory in DMs' };
-      }
-
-      try {
-        const section =
-          type === 'fact'
-            ? 'facts'
-            : type === 'preference'
-              ? 'preferences'
-              : 'notes';
-
-        const result = await addToWorkingMemory({
-          guildId,
-          userId,
-          section,
-          item: content,
-        });
-
-        if (result.added) {
-          logger.info({ guildId, userId, type, content }, 'Stored memory item');
-          return { success: true, message: `Remembered: "${content}"` };
-        } else {
-          return { success: true, message: result.reason ?? 'Already known' };
-        }
-      } catch (error) {
-        logger.error({ error, userId, guildId }, 'Failed to store memory');
-        return { success: false, error: 'Failed to store memory' };
-      }
-    },
-  });
-
-export const forgetFact = ({ message }: { message: Message }) =>
-  tool({
-    description:
-      "Remove outdated or incorrect information from a user's memory.",
-    inputSchema: z.object({
-      userId: z.string().describe('The Discord user ID'),
-      content: z.string().describe('The item to forget (will match partially)'),
+        .describe(
+          'The item to forget (will search and delete matching memories)',
+        ),
     }),
     execute: async ({ userId, content }) => {
-      const guildId = message.guild?.id;
-      if (!guildId) {
-        return { success: false, error: 'Cannot modify memory in DMs' };
-      }
+      const guildId = message.guild?.id ?? null;
 
       try {
-        const result = await removeFromWorkingMemory({
-          guildId,
-          userId,
-          item: content,
+        const scopedId = scopedUserId(guildId, userId);
+
+        // Search for memories matching the content
+        const matchingMemories = await searchMemories(content, scopedId, {
+          limit: 5,
+          guildId: guildId ?? undefined,
         });
 
-        if (result.removed) {
-          logger.info({ guildId, userId, content }, 'Removed memory item');
-          return { success: true, message: `Forgot: "${content}"` };
+        if (matchingMemories.length === 0) {
+          return {
+            success: false,
+            error: 'No matching memories found to delete',
+          };
+        }
+
+        // Delete the most relevant match
+        const topMatch = matchingMemories[0]!;
+        const deleted = await deleteMemory(topMatch.id);
+
+        if (deleted) {
+          logger.info(
+            { guildId, userId, content, memoryId: topMatch.id },
+            'Removed memory item',
+          );
+          return {
+            success: true,
+            message: `Forgot: "${topMatch.content}"`,
+          };
         } else {
-          return { success: false, error: result.reason ?? 'Not found' };
+          return { success: false, error: 'Failed to delete memory' };
         }
       } catch (error) {
         logger.error({ error, userId, guildId }, 'Failed to remove memory');
@@ -94,26 +72,35 @@ export const forgetFact = ({ message }: { message: Message }) =>
     },
   });
 
+/**
+ * getMemory - Retrieve all stored memories for a user
+ */
 export const getMemory = ({ message }: { message: Message }) =>
   tool({
     description:
-      'Retrieve stored information about a user. ' +
-      'Use this to check what you know before adding new facts.',
+      'Retrieve all stored information about a user. ' +
+      'Use this to check what facts/preferences have been automatically learned.',
     inputSchema: z.object({
       userId: z.string().describe('The Discord user ID to get memory for'),
     }),
     execute: async ({ userId }) => {
-      const guildId = message.guild?.id;
-      if (!guildId) {
-        return { success: false, error: 'Cannot retrieve memory in DMs' };
-      }
+      const guildId = message.guild?.id ?? null;
 
       try {
-        const memory = await getWorkingMemory({ guildId, userId });
+        const scopedId = scopedUserId(guildId, userId);
+        const memories = await getAllMemories(scopedId, {
+          limit: 50,
+          guildId: guildId ?? undefined,
+        });
+
+        const formattedContent = formatAllMemories(memories);
+
+        const firstMemory = memories[0];
         return {
           success: true,
-          content: memory?.content ?? WORKING_MEMORY_TEMPLATE,
-          lastUpdated: memory?.updatedAt?.toISOString() ?? null,
+          content: formattedContent,
+          memoryCount: memories.length,
+          lastUpdated: firstMemory?.createdAt ?? null,
         };
       } catch (error) {
         logger.error(

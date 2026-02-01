@@ -1,4 +1,3 @@
-import { saveToolMemory } from '@/lib/memory';
 import type { RequestHints } from '@/types/request';
 import { Experimental_Agent as Agent, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
@@ -17,30 +16,7 @@ import {
   type MemoryContext,
 } from './tools/chat';
 import { joinVC, leaveVC } from './tools/chat/voice-channel';
-import {
-  rememberFact,
-  listChannels,
-  listDMs,
-  listGuilds,
-  listUsers,
-} from './tools/memory';
-
-const EPHEMERAL_TOOLS = new Set([
-  'memories',
-  'searchMemories',
-  'listGuilds',
-  'listChannels',
-  'listDMs',
-  'listUsers',
-  'getUserInfo',
-  'getMemory',
-  'getWeather',
-  'reply',
-  'skip',
-  'react',
-  'rememberFact',
-  'forgetFact',
-]);
+import { listChannels, listDMs, listGuilds, listUsers } from './tools/memory';
 
 export const orchestratorAgent = ({
   message,
@@ -83,21 +59,8 @@ export const orchestratorAgent = ({
       listUsers: listUsers({ message }),
       joinVC: joinVC({ message }),
       leaveVC: leaveVC({ message }),
-      rememberFact: rememberFact({ message }),
     },
     temperature: 0,
-    onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
-      if (!toolCalls.length) return;
-
-      await Promise.all(
-        toolCalls.map(async (call, i) => {
-          const result = toolResults[i];
-          if (!call || !result) return;
-          if (EPHEMERAL_TOOLS.has(call.toolName)) return;
-          await saveToolMemory(message, call.toolName, result);
-        }),
-      );
-    },
     experimental_telemetry: {
       isEnabled: true,
       functionId: 'orchestrator',
