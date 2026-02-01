@@ -28,8 +28,8 @@ export const env = createEnv({
     // Exa
     EXA_API_KEY: z.string().min(1),
     // Pinecone
-    PINECONE_API_KEY: z.string().min(1),
-    PINECONE_INDEX: z.string().min(1),
+    SUPABASE_URL: z.url().min(1),
+    SUPABASE_SECRET: z.string().min(1).startsWith('sb_secret_'),
   },
 
   /**

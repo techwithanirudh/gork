@@ -11,26 +11,29 @@ export function getMemory(): Memory {
     instance = new Memory({
       version: 'v1.1',
       vectorStore: {
-        provider: 'pinecone',
+        provider: 'supabase',
         config: {
-          apiKey: env.PINECONE_API_KEY,
-          indexName: env.PINECONE_INDEX,
-          namespace: 'mem0',
-          embeddingModelDims: 1536,
+          supabaseUrl: env.SUPABASE_URL,
+          supabaseKey: env.SUPABASE_SECRET,
+          collectionName: 'mem0',
+          tableName: "memories",
+          embeddingModelDims: 1536
         },
       },
       embedder: {
         provider: 'openai',
         config: {
-          apiKey: env.OPENAI_API_KEY,
-          model: 'text-embedding-3-small',
+          apiKey: env.HACKCLUB_API_KEY,
+          model: 'openai/text-embedding-3-small',
+          url: 'https://ai.hackclub.com/proxy/v1',
         },
       },
       llm: {
         provider: 'openai',
         config: {
-          apiKey: env.OPENAI_API_KEY,
-          model: 'gpt-4.1-nano-2025-04-14',
+          apiKey: env.HACKCLUB_API_KEY,
+          model: 'openai/gpt-5-mini',
+          baseURL: 'https://ai.hackclub.com/proxy/v1'
         },
       },
       disableHistory: true,

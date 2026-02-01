@@ -151,7 +151,7 @@ export async function searchMemories(
   const { limit = 5, filters } = options;
 
   try {
-    const memory = await getMemory();
+    const memory = getMemory();
     if (!memory) return [];
     const payload = filters ? { userId, limit, filters } : { userId, limit };
     const results = await memory.search(query, payload);
@@ -164,6 +164,7 @@ export async function searchMemories(
       createdAt: result.createdAt,
     }));
   } catch (error) {
+    console.log(error)
     logger.error({ error, query }, 'Failed to search memories');
     return [];
   }
@@ -171,7 +172,7 @@ export async function searchMemories(
 
 export async function deleteMemory(memoryId: string): Promise<boolean> {
   try {
-    const memory = await getMemory();
+    const memory = getMemory();
     if (!memory) return false;
     await memory.delete(memoryId);
     return true;

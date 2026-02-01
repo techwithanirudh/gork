@@ -3,7 +3,6 @@ import { customProvider, wrapLanguageModel } from 'ai';
 import { createRetryable } from 'ai-retry';
 import { env } from '@/env';
 import logger from '@/lib/logger';
-import { openai } from '@ai-sdk/openai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
 const hackclub = createOpenRouter({
@@ -51,11 +50,8 @@ export const provider = customProvider({
     'relevance-model': relevanceModel,
     'agent-model': hackclub('moonshotai/kimi-k2.5'),
   },
-  imageModels: {
-    // 'small-model': openai.imageModel('dall-e-2'),
-  },
   embeddingModels: {
-    'small-model': openai.embedding('text-embedding-3-small'),
+    'small-model': hackclub.textEmbeddingModel('openai/text-embedding-3-small'),
     'large-model': hackclub.textEmbeddingModel('openai/text-embedding-3-large'),
   },
 });
