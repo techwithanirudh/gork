@@ -1,33 +1,29 @@
 import type { RequestHints } from '@/types/request';
 import { Experimental_Agent as Agent, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
-import { systemPrompt, type WorkingMemory } from '../prompts';
+import { systemPrompt } from '../prompts';
 import { provider } from '../providers';
 import { getUserInfo } from '../tools/get-user-info';
 import { getWeather } from '../tools/get-weather';
 import { searchWeb } from '../tools/search-web';
 import { successToolCall } from '../utils';
-import {
-  memories,
-  react,
-  reply,
-  skip,
-  startDM,
-  type MemoryContext,
-} from './tools/chat';
+import { react, reply, skip, startDM } from './tools/chat';
 import { joinVC, leaveVC } from './tools/chat/voice-channel';
-import { listChannels, listDMs, listGuilds, listUsers } from './tools/memory';
+import {
+  deleteMemory,
+  listChannels,
+  listDMs,
+  listGuilds,
+  listUsers,
+  searchMemory,
+} from './tools/memory';
 
 export const orchestratorAgent = ({
   message,
   hints,
-  memoryContext,
-  workingMemory,
 }: {
   message: Message;
   hints: RequestHints;
-  memoryContext?: MemoryContext;
-  workingMemory?: WorkingMemory | null;
 }) =>
   new Agent({
     model: provider.languageModel('chat-model'),
@@ -35,7 +31,6 @@ export const orchestratorAgent = ({
       agent: 'chat',
       message,
       requestHints: hints,
-      workingMemory,
     }),
     stopWhen: [
       stepCountIs(10),
@@ -52,7 +47,8 @@ export const orchestratorAgent = ({
       react: react({ message }),
       reply: reply({ message }),
       skip: skip({ message }),
-      memories: memories({ message, hints, context: memoryContext }),
+      searchMemory: searchMemory({ message }),
+      deleteMemory: deleteMemory(),
       listGuilds: listGuilds({ message }),
       listChannels: listChannels({ message }),
       listDMs: listDMs({ message }),

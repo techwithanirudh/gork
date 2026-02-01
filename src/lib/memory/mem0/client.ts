@@ -43,7 +43,3 @@ export function getMemory(): Memory {
 export function scopedUserId(guildId: string | null, userId: string): string {
   return guildId ? `guild:${guildId}:${userId}` : `dm:${userId}`;
 }
-
-export function sessionId(guildId: string | null, channelId: string): string {
-  return guildId ? `guild:${guildId}:${channelId}` : `dm:${channelId}`;
-}

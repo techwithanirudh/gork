@@ -1,17 +1,11 @@
-export { getMemory, scopedUserId, sessionId } from './client';
+export { getMemory, scopedUserId } from './client';
 export {
-  saveChatMemory,
-  saveToolMemory,
+  addTurnMemory,
   searchMemories,
-  getAllMemories,
   deleteMemory,
-  deleteAllMemories,
   type SearchOptions,
+  type MemoryFilter,
   type MemoryMetadata,
   type MemoryResult,
 } from './operations';
-export {
-  formatMemories,
-  formatAllMemories,
-  formatWorkingMemory,
-} from './format';
+export { formatMemories } from './format';

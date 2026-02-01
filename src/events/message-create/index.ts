@@ -1,5 +1,4 @@
 import { keywords, messageThreshold } from '@/config';
-import { saveChatMemory } from '@/lib/memory';
 import { ratelimit, redisKeys } from '@/lib/kv';
 import { buildChatContext } from '@/utils/context';
 import {
@@ -63,10 +62,6 @@ async function canReply(message: Message): Promise<boolean> {
   return true;
 }
 
-async function onSuccess(message: Message) {
-  await saveChatMemory(message, 5);
-}
-
 export async function execute(message: Message) {
   if (message.author.bot) return;
   if (message.author.id === message.client.user?.id) return;
@@ -97,9 +92,6 @@ export async function execute(message: Message) {
 
     const result = await generateResponse(message, messages, hints);
     logReply(ctxId, author.username, result, 'trigger');
-    if (result.success && result.toolCalls) {
-      await onSuccess(message);
-    }
     return;
   }
 
@@ -136,7 +128,4 @@ export async function execute(message: Message) {
   logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
   const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'relevance');
-  if (result.success && result.toolCalls) {
-    await onSuccess(message);
-  }
 }

@@ -1,13 +1,14 @@
 import type { Message as DiscordMessage } from 'discord.js';
 import { ChannelType } from 'discord.js';
 import { createLogger } from '@/lib/logger';
-import { getMemory, scopedUserId, sessionId } from './client';
-import { getMessagesByChannel } from '@/lib/queries';
+import { getMemory, scopedUserId } from './client';
 
 const logger = createLogger('memory:mem0');
 
 export interface MemoryMetadata {
+  version: number;
   type: 'chat' | 'tool';
+  lastRetrievalTime?: number;
   sessionId: string;
   sessionType: 'dm' | 'guild';
   guildId: string | null;
@@ -16,6 +17,7 @@ export interface MemoryMetadata {
   channelName: string;
   channelType: string;
   participantIds: string[];
+  entityIds?: string[];
   createdAt: number;
   toolName?: string;
 }
@@ -30,13 +32,10 @@ export interface MemoryResult {
 
 export interface SearchOptions {
   limit?: number;
-  guildId?: string;
-  channelId?: string;
-  sessionId?: string;
-  sessionType?: 'dm' | 'guild';
-  type?: 'chat' | 'tool';
-  participantId?: string;
+  filters?: MemoryFilter;
 }
+
+export type MemoryFilter = Record<string, unknown>;
 
 function getChannelType(type: ChannelType): string {
   switch (type) {
@@ -62,22 +61,30 @@ function getChannelName(channel: DiscordMessage['channel']): string {
   return 'name' in channel && channel.name ? channel.name : 'direct-message';
 }
 
-function collectParticipantIds(messages: DiscordMessage[], botId?: string) {
+function sessionIdFromMessage(message: DiscordMessage): string {
+  if (!message.guild) {
+    const botId = message.client.user?.id;
+    if (botId) {
+      const [a, b] = [message.author.id, botId].sort();
+      return `dm:${a}:${b}`;
+    }
+    return `dm:${message.channel.id}`;
+  }
+
+  return `guild:${message.guild.id}:${message.channel.id}`;
+}
+
+function collectParticipantIds(message: DiscordMessage) {
   const ids = new Set<string>();
-  for (const msg of messages) {
-    if (!msg.author.bot && msg.author.id !== botId) {
-      ids.add(msg.author.id);
+  if (!message.author.bot) {
+    ids.add(message.author.id);
+  }
+  for (const [userId, user] of message.mentions.users) {
+    if (!user.bot) {
+      ids.add(userId);
     }
   }
   return Array.from(ids);
-}
-
-function formatTranscript(messages: DiscordMessage[]): string {
-  return messages
-    .filter((msg) => msg.content?.trim())
-    .map((msg) => `${msg.author.username}: ${msg.content?.trim() ?? ''}`.trim())
-    .join('\n')
-    .trim();
 }
 
 function buildMetadata(
@@ -87,9 +94,12 @@ function buildMetadata(
   toolName?: string,
 ): MemoryMetadata {
   const guildId = message.guild?.id ?? null;
+  const now = message.createdTimestamp || Date.now();
   return {
+    version: 2,
     type,
-    sessionId: sessionId(guildId, message.channel.id),
+    lastRetrievalTime: now,
+    sessionId: sessionIdFromMessage(message),
     sessionType: guildId ? 'guild' : 'dm',
     guildId,
     guildName: message.guild?.name ?? null,
@@ -97,69 +107,37 @@ function buildMetadata(
     channelName: getChannelName(message.channel),
     channelType: getChannelType(message.channel.type),
     participantIds,
-    createdAt: Date.now(),
+    entityIds: participantIds,
+    createdAt: now,
     toolName,
   };
 }
 
-async function ingest(messages: DiscordMessage[], message: DiscordMessage) {
-  const transcript = formatTranscript(messages);
-  if (!transcript) return null;
-
-  const botId = message.client.user?.id;
-  const participants = collectParticipantIds(messages, botId);
-  const metadata = buildMetadata(message, 'chat', participants);
-  const scopedId = scopedUserId(message.guild?.id ?? null, message.author.id);
-
-  await getMemory().add([{ role: 'user', content: transcript }], {
-    userId: scopedId,
-    metadata,
-  });
-
-  logger.debug(
-    { userId: scopedId, participantCount: participants.length },
-    'Saved chat memory',
-  );
-}
-
-export async function saveChatMemory(
+export async function addTurnMemory(
   message: DiscordMessage,
-  contextLimit = 5,
+  userContent: string,
+  assistantContent: string,
 ): Promise<void> {
   try {
-    const recent = await getMessagesByChannel({
-      channel: message.channel,
-      limit: contextLimit,
-    });
+    const userText = userContent?.trim();
+    const assistantText = assistantContent?.trim();
+    if (!userText || !assistantText) return;
 
-    const messages = Array.from(recent.values());
-    if (!messages.length) return;
+    const participants = collectParticipantIds(message);
+    const metadata = buildMetadata(message, 'chat', participants);
+    const userId = scopedUserId(message.guild?.id ?? null, message.author.id);
 
-    await ingest(messages, message);
+    await getMemory().add(
+      [
+        { role: 'user', content: userText },
+        { role: 'assistant', content: assistantText },
+      ],
+      { userId, metadata },
+    );
+
+    logger.debug({ userId }, 'Saved mem0 chat memory');
   } catch (error) {
     logger.error({ error }, 'Failed to save chat memory');
-  }
-}
-
-export async function saveToolMemory(
-  message: DiscordMessage,
-  toolName: string,
-  result: unknown,
-): Promise<void> {
-  try {
-    const scopedId = scopedUserId(message.guild?.id ?? null, message.author.id);
-    const participants = collectParticipantIds([message]);
-    const metadata = buildMetadata(message, 'tool', participants, toolName);
-    const payload = `Tool "${toolName}" result: ${JSON.stringify(result)}`;
-
-    await getMemory().add([{ role: 'assistant', content: payload }], {
-      userId: scopedId,
-      metadata,
-    });
-
-    logger.debug({ userId: scopedId, toolName }, 'Saved tool memory');
-  } catch (error) {
-    logger.error({ error, toolName }, 'Failed to save tool memory');
   }
 }
 
@@ -168,60 +146,21 @@ export async function searchMemories(
   userId: string,
   options: SearchOptions = {},
 ): Promise<MemoryResult[]> {
-  const {
-    limit = 5,
-    guildId,
-    channelId,
-    sessionId: session,
-    sessionType,
-    type,
-    participantId,
-  } = options;
-
-  const filters: Record<string, unknown> = {};
-  if (guildId) filters.guildId = guildId;
-  if (channelId) filters.channelId = channelId;
-  if (session) filters.sessionId = session;
-  if (sessionType) filters.sessionType = sessionType;
-  if (type) filters.type = type;
-  if (participantId) filters.participantIds = { in: [participantId] };
+  const { limit = 5, filters } = options;
 
   try {
-    const results = await getMemory().search(query, {
-      userId,
-      limit,
-      filters: Object.keys(filters).length ? filters : undefined,
-    });
+    const payload = filters ? { userId, limit, filters } : { userId, limit };
+    const results = await getMemory().search(query, payload);
 
-    return (results.results ?? []).map((r) => ({
-      id: r.id,
-      content: r.memory,
-      score: r.score ?? 0,
-      metadata: r.metadata ?? {},
-      createdAt: r.createdAt,
+    return (results.results ?? []).map((result) => ({
+      id: result.id,
+      content: result.memory,
+      score: result.score ?? 0,
+      metadata: result.metadata ?? {},
+      createdAt: result.createdAt,
     }));
   } catch (error) {
     logger.error({ error, query }, 'Failed to search memories');
-    return [];
-  }
-}
-
-export async function getAllMemories(
-  userId: string,
-  limit = 50,
-): Promise<MemoryResult[]> {
-  try {
-    const results = await getMemory().getAll({ userId, limit });
-
-    return (results.results ?? []).map((r) => ({
-      id: r.id,
-      content: r.memory,
-      score: r.score ?? 1,
-      metadata: r.metadata ?? {},
-      createdAt: r.createdAt,
-    }));
-  } catch (error) {
-    logger.error({ error, userId }, 'Failed to get memories');
     return [];
   }
 }
@@ -232,16 +171,6 @@ export async function deleteMemory(memoryId: string): Promise<boolean> {
     return true;
   } catch (error) {
     logger.error({ error, memoryId }, 'Failed to delete memory');
-    return false;
-  }
-}
-
-export async function deleteAllMemories(userId: string): Promise<boolean> {
-  try {
-    await getMemory().deleteAll({ userId });
-    return true;
-  } catch (error) {
-    logger.error({ error, userId }, 'Failed to delete memories');
     return false;
   }
 }

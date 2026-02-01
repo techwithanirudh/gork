@@ -1,19 +1,12 @@
 export {
   getMemory,
   scopedUserId,
-  sessionId,
-  saveChatMemory,
-  saveToolMemory,
+  addTurnMemory,
   searchMemories,
-  getAllMemories,
   deleteMemory,
-  deleteAllMemories,
   formatMemories,
-  formatAllMemories,
-  formatWorkingMemory,
   type SearchOptions,
+  type MemoryFilter,
   type MemoryMetadata,
   type MemoryResult,
 } from './mem0';
-
-export * from './types';

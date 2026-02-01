@@ -1,3 +1,4 @@
+import { addTurnMemory } from '@/lib/memory';
 import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
@@ -14,12 +15,12 @@ export const reply = ({ message }: { message: Message }) =>
         .number()
         .optional()
         .describe(
-          'Number of messages to go back from the latest user message. 0 or omitted means reply to the latest user message.'
+          'Number of messages to go back from the latest user message. 0 or omitted means reply to the latest user message.',
         ),
       content: z
         .array(z.string())
         .describe(
-          'Lines of text to send. Do NOT include punctuation, ALWAYS include newlines when ending a sentence.'
+          'Lines of text to send. Do NOT include punctuation, ALWAYS include newlines when ending a sentence.',
         ),
       type: z
         .enum(['reply', 'message'])
@@ -35,7 +36,7 @@ export const reply = ({ message }: { message: Message }) =>
         let target: Message;
         logger.info(
           { offset, message: message.content },
-          'Replying to message'
+          'Replying to message',
         );
         if (offset > 0) {
           const messages = await channel.messages.fetch({
@@ -43,7 +44,7 @@ export const reply = ({ message }: { message: Message }) =>
             before: message.id,
           });
           const sorted = [...messages.values()].sort(
-            (a, b) => b.createdTimestamp - a.createdTimestamp
+            (a, b) => b.createdTimestamp - a.createdTimestamp,
           );
           target = sorted[offset - 1] ?? message;
         } else {
@@ -63,9 +64,15 @@ export const reply = ({ message }: { message: Message }) =>
           }
         }
 
+        try {
+          await addTurnMemory(message, message.content, content.join('\n'));
+        } catch (error) {
+          logger.warn({ error }, 'Failed to save chat memory');
+        }
+
         logger.info(
           { id: target.id, content, type, offset },
-          'Successfully replied to message'
+          'Successfully replied to message',
         );
 
         return {
