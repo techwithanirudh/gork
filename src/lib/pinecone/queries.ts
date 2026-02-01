@@ -20,7 +20,7 @@ export interface MemorySearchOptions {
 
 export const searchMemories = async (
   query: string,
-  { namespace = 'default', topK = 5, filter }: MemorySearchOptions = {}
+  { namespace = 'default', topK = 5, filter }: MemorySearchOptions = {},
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   try {
     const { embedding } = await embed({
@@ -43,7 +43,7 @@ export const searchMemories = async (
       if (!parsed.success) {
         logger.warn(
           { id: match.id, issues: parsed.error.issues },
-          'Invalid metadata schema'
+          'Invalid metadata schema',
         );
         return [];
       }
@@ -62,7 +62,7 @@ export const searchMemories = async (
 export const addMemory = async (
   text: string,
   metadata: PineconeMetadataInput,
-  namespace = 'default'
+  namespace = 'default',
 ): Promise<string> => {
   try {
     const basis = `${metadata.sessionId ?? 'global'}:${metadata.type}:${text}`;
@@ -76,7 +76,7 @@ export const addMemory = async (
     if (!parsed.success) {
       logger.warn(
         { id, issues: parsed.error.issues },
-        'Invalid metadata provided, skipping add'
+        'Invalid metadata provided, skipping add',
       );
       throw new Error('Invalid metadata schema');
     }
@@ -86,18 +86,24 @@ export const addMemory = async (
       value: text,
     });
 
+    if (!embedding || embedding.length === 0) {
+      throw new Error('Embedding is empty or undefined');
+    }
+
     const index = (await getIndex()).namespace(namespace);
-    await index.upsert([
-      {
-        id,
-        values: embedding,
-        metadata: parsed.data,
-      },
-    ]);
+    await index.upsert({
+      records: [
+        {
+          id,
+          values: embedding,
+          metadata: parsed.data,
+        },
+      ],
+    });
 
     logger.debug(
       { id, type: metadata.type, sessionId: metadata.sessionId },
-      'Added memory'
+      'Added memory',
     );
     return id;
   } catch (error) {
@@ -108,11 +114,11 @@ export const addMemory = async (
 
 export const deleteMemory = async (
   id: string,
-  namespace = 'default'
+  namespace = 'default',
 ): Promise<void> => {
   try {
     const index = (await getIndex()).namespace(namespace);
-    await index.deleteOne(id);
+    await index.deleteOne({ id });
     logger.debug({ id }, 'Deleted memory');
   } catch (error) {
     logger.error({ error }, 'Error deleting memory');

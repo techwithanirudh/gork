@@ -17,7 +17,7 @@ export const voiceAgent = ({
 }) =>
   new Agent({
     model: provider.languageModel('chat-model'),
-    system: systemPrompt({
+    instructions: systemPrompt({
       agent: 'voice',
       requestHints: hints,
       speakerName: speaker.name,

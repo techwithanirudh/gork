@@ -20,7 +20,7 @@ export const memoryAgent = ({
 }) =>
   new Agent({
     model: provider.languageModel('agent-model'),
-    system: systemPrompt({
+    instructions: systemPrompt({
       agent: 'memory',
       message,
       requestHints: hints,
