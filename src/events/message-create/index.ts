@@ -1,20 +1,18 @@
 import { keywords, messageThreshold } from '@/config';
-import { saveChatMemory } from '@/lib/memory';
 import { ratelimit, redisKeys } from '@/lib/kv';
+import { createLogger } from '@/lib/logger';
+import { ingestExchange, buildMessageContext } from '@/lib/memory/honcho';
 import { buildChatContext } from '@/utils/context';
+import { logReply } from '@/utils/log';
 import {
   checkMessageQuota,
   handleMessageCount,
   resetMessageCount,
 } from '@/utils/message-rate-limiter';
+import { getTrigger } from '@/utils/triggers';
 import { Message, PermissionsBitField } from 'discord.js';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
-
-import { createLogger } from '@/lib/logger';
-
-import { logReply } from '@/utils/log';
-import { getTrigger } from '@/utils/triggers';
 
 const logger = createLogger('events:message');
 
@@ -63,8 +61,29 @@ async function canReply(message: Message): Promise<boolean> {
   return true;
 }
 
-async function onSuccess(message: Message) {
-  await saveChatMemory(message, 5);
+interface ToolCallResult {
+  toolName: string;
+  input?: Record<string, unknown>;
+}
+
+async function onSuccess(message: Message, toolCalls?: ToolCallResult[]) {
+  // Extract the bot's response content from the reply tool call
+  let botResponse = '';
+  if (toolCalls) {
+    const replyCall = toolCalls.find((tc) => tc.toolName === 'reply');
+    if (replyCall?.input?.content) {
+      const content = replyCall.input.content;
+      botResponse = Array.isArray(content) ? content.join('\n') : String(content);
+    }
+  }
+
+  // Ingest the exchange to Honcho
+  const ctx = buildMessageContext(message);
+  try {
+    await ingestExchange(ctx, message.content, botResponse);
+  } catch (error) {
+    logger.error({ error }, 'Failed to ingest exchange to Honcho');
+  }
 }
 
 export async function execute(message: Message) {
@@ -98,7 +117,7 @@ export async function execute(message: Message) {
     const result = await generateResponse(message, messages, hints);
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
-      await onSuccess(message);
+      await onSuccess(message, result.toolCalls as ToolCallResult[]);
     }
     return;
   }
@@ -137,6 +156,6 @@ export async function execute(message: Message) {
   const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
-    await onSuccess(message);
+    await onSuccess(message, result.toolCalls as ToolCallResult[]);
   }
 }

@@ -27,9 +27,10 @@ export const env = createEnv({
     DEEPGRAM_API_KEY: z.string().min(1),
     // Exa
     EXA_API_KEY: z.string().min(1),
-    // Pinecone
-    PINECONE_API_KEY: z.string().min(1),
-    PINECONE_INDEX: z.string().min(1),
+    // Honcho
+    HONCHO_API_KEY: z.string().min(1),
+    HONCHO_BASE_URL: z.string().url(),
+    HONCHO_WORKSPACE_ID: z.string().default('gork'),
   },
 
   /**

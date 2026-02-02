@@ -1,57 +1,25 @@
-import { saveToolMemory } from '@/lib/memory';
+import type { ContextResult } from '@/lib/memory/honcho';
 import type { RequestHints } from '@/types/request';
 import { Experimental_Agent as Agent, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
-import { systemPrompt, type WorkingMemory } from '../prompts';
+import { systemPrompt } from '../prompts';
 import { provider } from '../providers';
 import { getUserInfo } from '../tools/get-user-info';
 import { getWeather } from '../tools/get-weather';
 import { searchWeb } from '../tools/search-web';
 import { successToolCall } from '../utils';
-import {
-  memories,
-  react,
-  reply,
-  skip,
-  startDM,
-  type MemoryContext,
-} from './tools/chat';
+import { memories, react, reply, skip, startDM } from './tools/chat';
 import { joinVC, leaveVC } from './tools/chat/voice-channel';
-import {
-  rememberFact,
-  listChannels,
-  listDMs,
-  listGuilds,
-  listUsers,
-} from './tools/memory';
-
-const EPHEMERAL_TOOLS = new Set([
-  'memories',
-  'searchMemories',
-  'listGuilds',
-  'listChannels',
-  'listDMs',
-  'listUsers',
-  'getUserInfo',
-  'getMemory',
-  'getWeather',
-  'reply',
-  'skip',
-  'react',
-  'rememberFact',
-  'forgetFact',
-]);
+import { listChannels, listDMs, listGuilds, listUsers } from './tools/memory';
 
 export const orchestratorAgent = ({
   message,
   hints,
-  memoryContext,
-  workingMemory,
+  honchoContext,
 }: {
   message: Message;
   hints: RequestHints;
-  memoryContext?: MemoryContext;
-  workingMemory?: WorkingMemory | null;
+  honchoContext?: ContextResult | null;
 }) =>
   new Agent({
     model: provider.languageModel('chat-model'),
@@ -59,7 +27,7 @@ export const orchestratorAgent = ({
       agent: 'chat',
       message,
       requestHints: hints,
-      workingMemory,
+      honchoContext,
     }),
     stopWhen: [
       stepCountIs(10),
@@ -76,28 +44,15 @@ export const orchestratorAgent = ({
       react: react({ message }),
       reply: reply({ message }),
       skip: skip({ message }),
-      memories: memories({ message, hints, context: memoryContext }),
+      memories: memories({ message }),
       listGuilds: listGuilds({ message }),
       listChannels: listChannels({ message }),
       listDMs: listDMs({ message }),
       listUsers: listUsers({ message }),
       joinVC: joinVC({ message }),
       leaveVC: leaveVC({ message }),
-      rememberFact: rememberFact({ message }),
     },
     temperature: 0,
-    onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
-      if (!toolCalls.length) return;
-
-      await Promise.all(
-        toolCalls.map(async (call, i) => {
-          const result = toolResults[i];
-          if (!call || !result) return;
-          if (EPHEMERAL_TOOLS.has(call.toolName)) return;
-          await saveToolMemory(message, call.toolName, result);
-        }),
-      );
-    },
     experimental_telemetry: {
       isEnabled: true,
       functionId: 'orchestrator',

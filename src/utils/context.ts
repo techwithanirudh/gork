@@ -1,9 +1,8 @@
 import { city, country, timezone } from '@/config';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
-import type { PineconeMetadataOutput, RequestHints } from '@/types';
+import type { RequestHints } from '@/types';
 import { convertToModelMessages } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
 import { Message } from 'discord.js';
 import { buildUserMap, type UserMapEntry } from './users';
@@ -13,7 +12,6 @@ export async function buildChatContext(
   opts?: {
     messages?: ModelMessage[];
     hints?: RequestHints;
-    memories?: ScoredPineconeRecord<PineconeMetadataOutput>[];
   }
 ) {
   let messages = opts?.messages;

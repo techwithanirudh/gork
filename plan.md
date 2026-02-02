@@ -1,46 +1,6 @@
-LLMS: https://docs.honcho.dev/llms.txt
+# Gork Honcho Integration Plan
 
-I want to start building with Honcho - an open source memory library for building stateful agents.
-
-## Honcho Resources
-
-**Documentation:**
-- Main docs: https://docs.honcho.dev
-- API Reference: https://docs.honcho.dev/v3/api-reference/introduction
-- Quickstart: https://docs.honcho.dev/v3/documentation/introduction/quickstart
-- Architecture: https://docs.honcho.dev/v3/documentation/core-concepts/architecture
-
-**Code & Examples:**
-- Core repo: https://github.com/plastic-labs/honcho
-- Python SDK: https://github.com/plastic-labs/honcho-python
-- TypeScript SDK: https://github.com/plastic-labs/honcho-node
-- Discord bot starter: https://github.com/plastic-labs/discord-python-starter
-- Telegram bot example: https://github.com/plastic-labs/telegram-python-starter
-
-**What Honcho Does:**
-Honcho is an open source memory library with a managed service for building stateful agents. It enables agents to build and maintain state about any entity--users, agents, groups, ideas, and more. Because it's a continual learning system, it understands entities that change over time.
-
-When you write messages to Honcho, they're stored and processed in the background. Custom reasoning models perform formal logical reasoning to generate conclusions about each peer. These conclusions are stored as representations that you can query to provide rich context for your agents.
-
-**Architecture Overview:**
-- Core primitives: Workspaces contain Peers (any entity that persists but changes) and Sessions (interaction threads between peers)
-- Peers can observe other peers in sessions (configurable with observe_me and observe_others)
-- Background reasoning processes messages to extract premises, draw conclusions, and build representations
-- Representations enable continuous improvement as new messages refine existing conclusions and scaffold new ones over time
-- Chat endpoint provides personalized responses based on learned context
-- Supports any LLM (OpenAI, Anthropic, open source)
-- Can use managed service or self-host
-
-Please assess the resources above and ask me relevant questions to help build a well-structured application using Honcho. Consider asking about:
-- What I'm trying to build
-- My technical preferences and stack
-- Whether I want to use the managed service or self-host
-- My experience level with the technologies involved
-- Specific features I need (multi-peer sessions, perspective-taking, streaming, etc.)
-
-Once you understand my needs, help me create a working implementation with proper memory and statefulness.
-
-## What you are building
+## Overview
 
 Gork needs to remember three kinds of things:
 
@@ -48,259 +8,275 @@ Gork needs to remember three kinds of things:
 2. **What happens in a channel** (ongoing context, decisions, lore)
 3. **What happens across channels in a guild** (cross-channel recall when asked)
 
-Honcho is a good fit because it is built around **workspaces, peers, sessions**, and provides a **context endpoint** that returns a curated pack of messages, summaries, conclusions up to a token limit, so conversations can continue indefinitely. ([GitHub][1])
-It also has SDKs for TypeScript/JavaScript. ([docs.honcho.dev][2])
-And it has session summaries endpoints you can use to avoid transcript dumping. ([docs.honcho.dev][3])
+We're replacing the current dual-memory system (Redis working memory + Pinecone semantic) with Honcho.
 
 ---
 
-## 1) Two-workspace strategy (this solves your DM + guild needs)
+## Architecture Decision: Single Workspace
 
-### Workspace A: Global
+After analysis, we chose **one workspace** over multiple workspaces.
 
-* Purpose: user identity that works in DMs
-* Stores: DM sessions and global peer representations
-* ID: `ws:global`
+### Why Single Workspace
 
-### Workspace B: Per guild
+| Concern | Two Workspaces | Single Workspace |
+|---------|----------------|------------------|
+| User identity | Fragmented across workspaces | Unified - one peer learns from all interactions |
+| DM + guild knowledge | Requires cross-workspace queries | Natural - peer representation includes all context |
+| Privacy | Isolation by design | Controlled at query time |
+| Complexity | Multiple clients/connections | Simple - one client |
 
-* Purpose: “home” context and social dynamics inside that server
-* ID: `ws:guild:<guildId>`
+### Data Model
 
-This matters because otherwise you end up mixing memory between servers, which becomes a privacy nightmare and also makes the bot act “creepy”.
+```
+Workspace: gork
 
-Honcho is designed for isolation via workspaces and for modeling multiple entities via peers/sessions. ([GitHub][1])
+Peers:
+├── discord:<userId>        # Human users (observe_me: true)
+└── gork                    # The bot itself (observe_me: false)
 
----
+Sessions:
+├── dm:<oderedUserIds>                     # DM conversations
+└── guild:<guildId>:chan:<parentChannelId> # Guild channels (threads merged)
+```
 
-## 2) Your Discord mapping with merged threads
+### Privacy Model
 
-You said: “threads are related to the original channel so it should be merged”.
-
-So treat **thread messages as part of the parent channel session**.
-
-### IDs
-
-**Peer ID**
-
-* `peer:discord:<userId>`
-
-**Session ID in guild workspace**
-
-* `sess:chan:<parentChannelId>`
-* For threads, use `thread.parentId` as the session key
-
-**Session ID in global workspace (DM)**
-
-* `sess:dm:<dmChannelId>`
-
-### Why this is clean
-
-* One channel has one evolving memory stream.
-* Thread chatter reinforces channel context instead of fragmenting it.
+Privacy is handled at **query time**, not storage time:
+- In guild channels: pull session context + user peer context
+- In DMs: pull user peer context (unified from all interactions)
+- Cross-channel recall: only when triggered, use summaries not raw transcripts
+- Never expose channel-specific details in DMs without explicit ask
 
 ---
 
-## 3) The 3 “context packs” you will use
+## Reference: Official Discord Bot Pattern
 
-When building a reply, you will pull context from different scopes depending on where the message arrived.
+From [plastic-labs/discord-python-starter](https://github.com/plastic-labs/discord-python-starter):
 
-### A) User DM to bot
+```python
+# Initialize client with workspace
+honcho_client = Honcho(workspace_id=os.getenv("HONCHO_WORKSPACE_ID", "default"))
 
-Use:
+# Create bot peer (not observed)
+assistant = honcho_client.peer(id="assistant", config={"observe_me": False})
 
-* Global user context from `ws:global`
-* Optionally, a small “guild behavior snapshot” if the user asks about a guild or history
+# Per-message: create user peer and session
+peer = honcho_client.peer(id=f"discord_{message.author.id}")
+session = honcho_client.session(id=str(message.channel.id))
 
-### B) User speaks in guild channel
+# Get context for LLM (converts to OpenAI format)
+messages = session.get_context(tokens=1024, peer_target=peer.id).to_openai(assistant=assistant)
 
-Use:
+# After response: store both messages
+session.add_messages([
+    peer.message(user_input),
+    assistant.message(response)
+])
 
-* Channel session context from `ws:guild:<guildId>` and `sess:chan:<channelId>`
-* User peer context inside that guild workspace
-* Optionally, global user context if it’s a preference question
-
-### C) Cross-channel recall in same guild
-
-Use:
-
-* A search step across sessions inside `ws:guild:<guildId>`
-* Then inject 1 to 3 findings, ideally summaries, not raw chat
-
-Honcho supports session summaries and a context endpoint that packs information into a token budget. ([docs.honcho.dev][3])
-
----
-
-## 4) The “when to recall cross-channel” rule
-
-You’re unsure if you should recall only when asked. You’re right to be cautious. Unprompted cross-channel recall can feel wrong.
-
-### Best rule: “ask-driven recall” + “soft triggers”
-
-Use cross-channel recall when either:
-
-**Explicit ask triggers**
-
-* “what did we decide”
-* “earlier we said”
-* “last time”
-* “in another channel”
-* “didn’t we discuss”
-* “what’s the status”
-* “remind me”
-
-**Soft triggers (rare)**
-
-* The user asks a question that is obviously decision-history, like:
-
-  * “Are we using X or Y for memory?”
-  * “What’s our policy on Z?”
-    In this case, you do a quick cross-channel search only if current channel context is insufficient.
-
-This keeps the bot feeling smart without randomly dredging up old stuff.
+# Dialectic: query about a user
+response = peer.chat(query="What does this user care about?", session_id=session.id)
+```
 
 ---
 
-## 5) Clean module API (this is what keeps code clean)
+## Implementation Spec
 
-Your bot code should not know Honcho details. It should only call a memory service with a small surface area.
+### 1. ID Resolution Functions
 
-### `memoryService.ts`
+```typescript
+// Peer ID: one per Discord user
+function resolvePeerId(userId: string): string {
+  return `discord:${userId}`;
+}
 
-Expose these functions:
+// Session ID: DM or guild channel (threads merged to parent)
+function resolveSessionId(message: Message): string {
+  if (!message.guild) {
+    // DM: sort user IDs for consistency
+    const botId = message.client.user?.id ?? 'gork';
+    const [a, b] = [message.author.id, botId].sort();
+    return `dm:${a}:${b}`;
+  }
 
-1. `ingestDiscordMessage(ctx)`
-2. `getReplyContext(ctx, userPrompt)`
-3. `maybeCrossChannelRecall(ctx, userPrompt)`
+  // Guild: use parent channel for threads
+  const channelId = message.channel.isThread()
+    ? message.channel.parentId
+    : message.channel.id;
+  return `guild:${message.guild.id}:chan:${channelId}`;
+}
+```
 
-Where `ctx` includes:
+### 2. Honcho Service Interface
 
-* `isDM`
-* `guildId` (optional)
-* `channelId`
-* `parentChannelId` (for threads)
-* `userId`
-* `participantIds` (mentions + recent speakers if you want)
+```typescript
+// src/lib/memory/honcho/service.ts
 
-Your Discord handler then becomes:
+export interface HonchoService {
+  // Store a message exchange
+  ingestMessage(ctx: MessageContext, content: string, role: 'user' | 'assistant'): Promise<void>;
 
-* normalize ids
-* call `ingestDiscordMessage`
-* call `getReplyContext`
-* call model
-* ingest assistant reply
+  // Get context for LLM generation
+  getContext(ctx: MessageContext, options?: { tokens?: number }): Promise<ContextResult>;
 
-That is the cleanest possible architecture.
+  // Query user representation (dialectic)
+  queryUser(userId: string, query: string, sessionId?: string): Promise<string>;
 
----
+  // Cross-channel search within a guild (ask-driven)
+  searchGuild(guildId: string, query: string): Promise<SearchResult[]>;
+}
 
-## 6) What you actually call in Honcho
+export interface MessageContext {
+  userId: string;
+  channelId: string;
+  guildId?: string;
+  parentChannelId?: string; // For threads
+  isDM: boolean;
+}
+```
 
-### Ingestion
+### 3. File Structure
 
-* Ensure workspace exists
-* Ensure peer exists
-* Ensure session exists
-* Add message to session
+```
+src/lib/memory/
+├── index.ts                 # Re-exports (update to include honcho)
+├── types.ts                 # Shared types
+├── honcho/
+│   ├── index.ts             # Exports
+│   ├── client.ts            # Honcho client initialization
+│   ├── service.ts           # Main service implementation
+│   ├── ids.ts               # ID resolution functions
+│   └── triggers.ts          # Cross-channel recall trigger detection
+└── provider.ts              # REMOVE or keep for migration
+└── semantic/                # REMOVE entirely
+```
 
-### Retrieval for generation
+### 4. Integration Points
 
-* `session.get_context(tokens=...)` with `peer_target=<userPeerId>`
-  The Honcho example you showed uses `get_context(tokens=1024, peer_target=peer.id)` for personalized context assembly. The repo describes this as the solution to long-running conversations. ([GitHub][1])
+**Message handler** (`src/events/message-create/index.ts`):
+```typescript
+// Before: calls saveChatMemory() with Pinecone
+// After: calls honchoService.ingestMessage()
 
-### Summaries
+// Before: working memory from Redis
+// After: honchoService.getContext() includes user representation
+```
 
-* Use `Get Session Summaries` endpoint when you want a stable summary that you can safely inject without dumping transcripts. ([docs.honcho.dev][3])
+**Agent orchestrator** (`src/lib/ai/agents/orchestrator.ts`):
+```typescript
+// Before: memories tool queries Pinecone
+// After: memories tool calls honchoService.queryUser() or .searchGuild()
+```
 
-### Config knobs
-
-Honcho supports configuration controls (hierarchical message/session/workspace/global) so you can reduce reasoning in spammy channels. ([docs.honcho.dev][2])
-
----
-
-## 7) Quality and cost controls you should enable immediately
-
-### Channel classes
-
-You should define a simple channel policy list in your DB:
-
-* `MEMORY_FULL`: dev, moderation, project channels
-* `MEMORY_LIGHT`: general chat
-* `MEMORY_OFF`: memes, bot-commands, spam
-
-Then you either:
-
-* still ingest messages but disable heavy reasoning, or
-* skip ingestion entirely for OFF channels
-
-Honcho’s repo and docs emphasize curated context and background reasoning, and configuration is how you keep this from becoming a money furnace. ([GitHub][1])
-
----
-
-## 8) How DMs can reflect “how they act in guilds” safely
-
-This is the privacy trap. You want:
-
-* In DM: “I remember what you’re like and what you do”
-  But you must not:
-* Leak that they said something in guild X to someone who is not in guild X
-
-### Safe method
-
-Maintain your own mapping table:
-
-* `user_guild_memberships(userId, guildId, lastSeenAt, messageCount)`
-
-Then in DM, if user asks “how do I act in servers?” you:
-
-* Pull global peer context from `ws:global`
-* For guild behavior, only consider guilds where:
-
-  * bot is present
-  * user is present (from your table)
-* Pull at most 1 to 2 “guild behavior summaries” and keep them generic:
-
-  * “You usually ask about infra and memory systems.”
-    Not:
-  * “In <GuildName> you argued with <User> in <Channel>”
-
-This gives the vibe without leaking specifics.
+**Tools** (`src/lib/ai/agents/tools/`):
+```typescript
+// Before: rememberFact/forgetFact modify Redis working memory
+// After: REMOVE these tools - Honcho infers facts automatically from conversations
+```
 
 ---
 
-## 9) Libraries and packages you will use
+## Cross-Channel Recall Rules
 
-For TS/JS, Honcho provides SDKs. ([docs.honcho.dev][2])
-Practically, you’ll likely touch:
+### When to trigger cross-channel search
 
-* `@honcho-ai/sdk` for the higher-level SDK ([npm][4])
-* `@honcho-ai/core` if you need lower-level access or want to wire custom clients ([GitHub][5])
+**Explicit triggers** (always search):
+- "what did we decide"
+- "earlier we said"
+- "last time"
+- "in another channel"
+- "didn't we discuss"
+- "what's the status"
+- "remind me"
+
+**Soft triggers** (search if current context insufficient):
+- Decision-history questions: "Are we using X or Y?"
+- Policy questions: "What's our approach to Z?"
+
+### Implementation
+
+```typescript
+// src/lib/memory/honcho/triggers.ts
+
+const EXPLICIT_TRIGGERS = [
+  /what did we decide/i,
+  /earlier we said/i,
+  /last time/i,
+  /in another channel/i,
+  /didn't we discuss/i,
+  /what's the status/i,
+  /remind me/i,
+];
+
+export function shouldSearchCrossChannel(prompt: string): boolean {
+  return EXPLICIT_TRIGGERS.some(pattern => pattern.test(prompt));
+}
+```
 
 ---
 
-## The decision you already made, turned into a crisp implementation spec
+## Migration Steps
 
-### Defaults
+### Phase 1: Setup
+1. Install `@honcho-ai/sdk`
+2. Add `HONCHO_API_KEY` and `HONCHO_BASE_URL` to env
+3. Create `src/lib/memory/honcho/` structure
 
-* Workspaces: `ws:global` and `ws:guild:<guildId>`
-* Threads: merged into parent channel session
-* Cross-channel recall: only when asked, plus soft triggers
-* Context budget: 1024 tokens from Honcho, you tune later
-* DMs: global context always, guild behavior only when asked and only generic
+### Phase 2: Implement
+4. Create Honcho client initialization
+5. Implement service with ingest/getContext/queryUser
+6. Wire into message handler (parallel to existing)
 
-### Minimal required functions
+### Phase 3: Switch
+7. Remove Pinecone semantic memory calls
+8. Remove Redis working memory (or keep for non-memory state)
+9. Remove `rememberFact`/`forgetFact` tools
+10. Update `memories` tool to use Honcho
 
-* `resolveWorkspace(message)`
-* `resolveSessionId(message)`
-* `resolvePeerId(userId)`
-* `ingestMessage(workspace, session, peer, content, metadata)`
-* `getContext(workspace, session, peerTarget, tokens)`
-* `crossChannelSearch(workspaceGuild, query)` only when triggered
+### Phase 4: Cleanup
+11. Delete `src/lib/memory/semantic/` directory
+12. Remove Pinecone dependency
+13. Update exports in `src/lib/memory/index.ts`
 
 ---
 
-[1]: https://github.com/plastic-labs/honcho?utm_source=chatgpt.com "plastic-labs/honcho: Memory library for building stateful ..."
-[2]: https://docs.honcho.dev/v2/documentation/reference/sdk?utm_source=chatgpt.com "SDK Reference - Honcho"
-[3]: https://docs.honcho.dev/v2/api-reference/endpoint/sessions/get-session-summaries?utm_source=chatgpt.com "Get Session Summaries - Honcho"
-[4]: https://www.npmjs.com/package/%40honcho-ai/sdk?utm_source=chatgpt.com "honcho-ai/sdk"
-[5]: https://github.com/plastic-labs/honcho-node-core?utm_source=chatgpt.com "plastic-labs/honcho-node-core: NodeJS SDK for Honcho"
+## Environment Variables
+
+```bash
+# Honcho (self-hosted)
+HONCHO_API_KEY=your-api-key
+HONCHO_BASE_URL=http://localhost:8000  # or your self-hosted URL
+HONCHO_WORKSPACE_ID=gork
+```
+
+---
+
+## Context Budget
+
+Start with these defaults (tune based on usage):
+- `tokens: 1024` for standard replies
+- `tokens: 2048` for complex queries or cross-channel recall
+- Include `peer_target` to get user-specific representation
+
+---
+
+## What Gets Removed
+
+| Component | Current Location | Action |
+|-----------|------------------|--------|
+| Pinecone client | `src/lib/memory/semantic/` | Delete entire directory |
+| Redis working memory | `src/lib/memory/provider.ts` | Delete or repurpose for rate limiting only |
+| `saveChatMemory()` | `src/lib/memory/semantic/ingest.ts` | Replace with Honcho ingest |
+| `saveToolMemory()` | `src/lib/memory/semantic/ingest.ts` | Replace with Honcho ingest |
+| `searchMemories()` | `src/lib/memory/semantic/search.ts` | Replace with Honcho context/query |
+| `rememberFact` tool | `src/lib/ai/agents/tools/` | Remove - Honcho infers facts |
+| `forgetFact` tool | `src/lib/ai/agents/tools/` | Remove - or implement via Honcho API |
+| `PINECONE_*` env vars | `.env` | Remove |
+
+---
+
+## Resources
+
+- Honcho Docs: https://docs.honcho.dev
+- TypeScript SDK: https://github.com/plastic-labs/honcho-node
+- Discord Starter: https://github.com/plastic-labs/discord-python-starter
+- Architecture: https://docs.honcho.dev/v3/documentation/core-concepts/architecture
