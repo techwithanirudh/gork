@@ -8,7 +8,7 @@ import { getUserInfo } from '../tools/get-user-info';
 import { getWeather } from '../tools/get-weather';
 import { searchWeb } from '../tools/search-web';
 import { successToolCall } from '../utils';
-import { memories, react, reply, skip, startDM } from './tools/chat';
+import { memories, peerCard, react, reply, skip, startDM } from './tools/chat';
 import { joinVC, leaveVC } from './tools/chat/voice-channel';
 import { listChannels, listDMs, listGuilds, listUsers } from './tools/memory';
 
@@ -45,6 +45,7 @@ export const orchestratorAgent = ({
       reply: reply({ message }),
       skip: skip({ message }),
       memories: memories({ message }),
+      peerCard: peerCard({ message }),
       listGuilds: listGuilds({ message }),
       listChannels: listChannels({ message }),
       listDMs: listDMs({ message }),

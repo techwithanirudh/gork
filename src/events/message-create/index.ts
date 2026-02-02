@@ -1,7 +1,7 @@
 import { keywords, messageThreshold } from '@/config';
 import { ratelimit, redisKeys } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
-import { ingestExchange, buildMessageContext } from '@/lib/memory/honcho';
+import { addTurn, buildMessageContext } from '@/lib/memory/honcho';
 import { buildChatContext } from '@/utils/context';
 import { logReply } from '@/utils/log';
 import {
@@ -77,12 +77,11 @@ async function onSuccess(message: Message, toolCalls?: ToolCallResult[]) {
     }
   }
 
-  // Ingest the exchange to Honcho
   const ctx = buildMessageContext(message);
   try {
-    await ingestExchange(ctx, message.content, botResponse);
+    await addTurn(ctx, message.content, botResponse);
   } catch (error) {
-    logger.error({ error }, 'Failed to ingest exchange to Honcho');
+    logger.error({ error }, 'Failed to add turn to Honcho');
   }
 }
 

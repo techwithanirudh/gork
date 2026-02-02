@@ -24,7 +24,7 @@ async function getBotPeer(): Promise<Peer> {
     configuration: { observeMe: false },
   });
   cachedBotPeer = peer;
-  logger.debug({ peerId: BOT_PEER_ID }, 'Bot peer initialized');
+
   return peer;
 }
 
@@ -48,18 +48,18 @@ export async function ingestMessage(
   role: MessageRole,
 ): Promise<void> {
   if (!content.trim()) {
-    logger.debug({ ctx, role }, 'Skipping empty message');
     return;
   }
 
   try {
     const session = await getOrCreateSession(ctx);
-    const peer = role === 'user' ? await getOrCreatePeer(ctx.userId) : await getBotPeer();
+    const peer =
+      role === 'user' ? await getOrCreatePeer(ctx.userId) : await getBotPeer();
 
     const messageInput = peer.message(content);
     await session.addMessages([messageInput]);
 
-    logger.debug(
+    logger.info(
       {
         sessionId: session.id,
         peerId: peer.id,
@@ -74,15 +74,12 @@ export async function ingestMessage(
   }
 }
 
-export async function ingestExchange(
+export async function addTurn(
   ctx: MessageContext,
   userContent: string,
   assistantContent: string,
 ): Promise<void> {
-  if (!userContent.trim() && !assistantContent.trim()) {
-    logger.debug({ ctx }, 'Skipping empty exchange');
-    return;
-  }
+  if (!userContent.trim() && !assistantContent.trim()) return;
 
   try {
     const session = await getOrCreateSession(ctx);
@@ -90,26 +87,28 @@ export async function ingestExchange(
     const botPeer = await getBotPeer();
 
     const messages = [];
-    if (userContent.trim()) {
-      messages.push(userPeer.message(userContent));
-    }
-    if (assistantContent.trim()) {
-      messages.push(botPeer.message(assistantContent));
-    }
+    if (userContent.trim()) messages.push(userPeer.message(userContent));
+    if (assistantContent.trim()) messages.push(botPeer.message(assistantContent));
 
     if (messages.length > 0) {
       await session.addMessages(messages);
-      logger.debug(
-        {
-          sessionId: session.id,
-          messageCount: messages.length,
-        },
-        'Exchange ingested',
-      );
+      logger.debug({ sessionId: session.id, messageCount: messages.length }, 'Turn added');
     }
   } catch (error) {
-    logger.error({ error, ctx }, 'Failed to ingest exchange');
+    logger.error({ error, ctx }, 'Failed to add turn');
     throw error;
+  }
+}
+
+export async function getPeerCard(userId: string): Promise<string[] | null> {
+  try {
+    const peer = await getOrCreatePeer(userId);
+    const card = await peer.card();
+    logger.debug({ userId, hasCard: !!card }, 'Peer card retrieved');
+    return card;
+  } catch (error) {
+    logger.error({ error, userId }, 'Failed to get peer card');
+    return null;
   }
 }
 
@@ -132,7 +131,7 @@ export async function getContext(
 
     const messages = sessionContext.toOpenAI(botPeer.id);
 
-    logger.debug(
+    logger.info(
       {
         sessionId: session.id,
         messageCount: messages.length,
@@ -161,12 +160,16 @@ export async function queryUser(
 ): Promise<string | null> {
   try {
     const peer = await getOrCreatePeer(userId);
+    if (sessionId) {
+      const client = getHonchoClient();
+      await client.session(sessionId);
+    }
 
     const response = await peer.chat(query, {
       session: sessionId,
     });
 
-    logger.debug(
+    logger.info(
       {
         userId,
         query,
@@ -202,7 +205,7 @@ export async function searchGuild(
       relevance: 1.0,
     }));
 
-    logger.debug(
+    logger.info(
       {
         guildId,
         query,

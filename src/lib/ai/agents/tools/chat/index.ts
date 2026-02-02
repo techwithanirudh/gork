@@ -1,4 +1,9 @@
-export { memories, type MemoryContext, type ChatParticipant } from './memories';
+export {
+  memories,
+  peerCard,
+  type ChatParticipant,
+  type MemoryContext,
+} from './memories';
 export { react } from './react';
 export { reply } from './reply';
 export { skip } from './skip';

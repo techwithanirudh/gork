@@ -2,10 +2,11 @@ export { getHonchoClient } from './client';
 export { resolvePeerId, resolveSessionId, buildMessageContext } from './ids';
 export {
   ingestMessage,
-  ingestExchange,
+  addTurn,
   getContext,
   queryUser,
   searchGuild,
+  getPeerCard,
 } from './service';
 export type {
   MessageContext,

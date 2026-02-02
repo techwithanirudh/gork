@@ -2,17 +2,17 @@ import { ChannelType, type Message } from 'discord.js';
 import type { MessageContext } from './types';
 
 export function resolvePeerId(userId: string): string {
-  return `discord:${userId}`;
+  return `discord-${userId}`;
 }
 
 export function resolveSessionId(ctx: MessageContext): string {
   if (ctx.isDM) {
     const [a, b] = [ctx.userId, ctx.botId].sort();
-    return `dm:${a}:${b}`;
+    return `dm_${a}_${b}`;
   }
 
   const channelId = ctx.parentChannelId ?? ctx.channelId;
-  return `guild:${ctx.guildId}:chan:${channelId}`;
+  return `g_${ctx.guildId}_c_${channelId}`;
 }
 
 export function buildMessageContext(message: Message): MessageContext {
