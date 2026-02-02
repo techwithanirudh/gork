@@ -1,5 +1,10 @@
 export { getHonchoClient } from './client';
-export { resolvePeerId, resolveSessionId, buildMessageContext } from './ids';
+export {
+  buildMessageContext,
+  isSnowflake,
+  resolvePeerId,
+  resolveSessionId,
+} from './ids';
 export {
   ingestMessage,
   addTurn,

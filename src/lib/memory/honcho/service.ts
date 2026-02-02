@@ -74,12 +74,16 @@ export async function ingestMessage(
   }
 }
 
-export async function addTurn(
-  ctx: MessageContext,
-  userContent: string,
-  assistantContent: string,
-): Promise<void> {
-  if (!userContent.trim() && !assistantContent.trim()) return;
+export async function addTurn({
+  ctx,
+  user,
+  assistant,
+}: {
+  ctx: MessageContext;
+  user: string;
+  assistant: string;
+}): Promise<void> {
+  if (!user.trim() && !assistant.trim()) return;
 
   try {
     const session = await getOrCreateSession(ctx);
@@ -87,8 +91,8 @@ export async function addTurn(
     const botPeer = await getBotPeer();
 
     const messages = [];
-    if (userContent.trim()) messages.push(userPeer.message(userContent));
-    if (assistantContent.trim()) messages.push(botPeer.message(assistantContent));
+    if (user.trim()) messages.push(userPeer.message(user));
+    if (assistant.trim()) messages.push(botPeer.message(assistant));
 
     if (messages.length > 0) {
       await session.addMessages(messages);

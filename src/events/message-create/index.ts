@@ -79,7 +79,7 @@ async function onSuccess(message: Message, toolCalls?: ToolCallResult[]) {
 
   const ctx = buildMessageContext(message);
   try {
-    await addTurn(ctx, message.content, botResponse);
+    await addTurn({ ctx, user: message.content, assistant: botResponse });
   } catch (error) {
     logger.error({ error }, 'Failed to add turn to Honcho');
   }

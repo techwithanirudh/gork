@@ -1,5 +1,14 @@
-import { ChannelType, type Message } from 'discord.js';
+import { ChannelType, SnowflakeUtil, type Message } from 'discord.js';
 import type { MessageContext } from './types';
+
+export function isSnowflake(id: string): boolean {
+  try {
+    SnowflakeUtil.deconstruct(id);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export function resolvePeerId(userId: string): string {
   return `discord-${userId}`;
