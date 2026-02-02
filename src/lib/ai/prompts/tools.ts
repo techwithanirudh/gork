@@ -5,6 +5,9 @@ Before acting
 2. Decide if more context is required; only then reach for a tool.
 
 Available tools:
+memories: Honcho reasoning over user or session memory.
+peerCard: user profile summary from Honcho.
+vectorSearch: retrieval-only search over stored messages.
 searchWeb: current info outside Discord.
 getUserInfo: fetch Discord profile + IDs.
 reply: send the final message (ends the turn).

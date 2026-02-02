@@ -6,9 +6,9 @@ or the wider server. Pick the smallest scope that can answer the question.
 </overview>
 
 <decision-flow>
-<step>Is the question about a specific person or their preferences? Use memories type="user".</step>
-<step>Is the question about the current channel/thread? Use memories type="session".</step>
-<step>Is the question about who said something anywhere in the server? Use memories type="guild".</step>
+<step>Is the question about a specific person or their preferences? Use memories scope="user".</step>
+<step>Is the question about the current channel/thread? Use memories scope="session".</step>
+<step>Is the question about who said something anywhere in the server? Use vectorSearch scope="guild".</step>
 <step>Need a quick profile overview? Use peerCard.</step>
 </decision-flow>
 
@@ -17,7 +17,7 @@ or the wider server. Pick the smallest scope that can answer the question.
 
 <inputs>
 <field name="query">Natural language question to answer from memory.</field>
-<field name="type">One of user | session | guild.</field>
+<field name="scope">One of user | session.</field>
 <field name="userId">Optional user identifier (ID, username, tag, display name).</field>
 </inputs>
 
@@ -30,31 +30,52 @@ Spans multiple channels/sessions for that person.
 Use for this channel/thread only. Do NOT use for questions about other channels.
 </type>
 
-<type name="guild">
-Search across all channels. Use only when the info could be in another channel
-or when asking "who said X" across the server. This is retrieval/search, not
-personalized reasoning, AVOID using this.
-</type>
-
 <examples>
 <example>
 User: "oh right lol what was that joke again, you were friends with?"
-Action: memories(query="Who did Ryan joke I'm friends with?", type="user", userId="Ryan")
+Action: memories(query="Who did Ryan joke I'm friends with?", scope="user", userId="Ryan")
 </example>
 <example>
 User: "did anyone in this channel mention Gordon?"
-Action: memories(query="mention Gordon", type="session")
+Action: memories(query="mention Gordon", scope="session")
 </example>
 <example>
 User: "has anyone anywhere talked about gordon ramsey?"
-Action: memories(query="gordon ramsey", type="guild")
+Action: vectorSearch(query="gordon ramsey", scope="guild")
 </example>
 </examples>
 
 <when-not-to-use>
-<rule>Do not use type="guild" if a user or session scope can answer it.</rule>
+<rule>Do not use vectorSearch if a memories scope can answer it.</rule>
 <rule>Do not make up memory. If no result, say you could not find it.</rule>
 </when-not-to-use>
+</tool>
+
+<tool name="vectorSearch">
+<purpose>Retrieval-only search over stored messages.</purpose>
+<inputs>
+<field name="query">Semantic search query to find relevant messages.</field>
+<field name="scope">One of session | guild.</field>
+</inputs>
+
+<scope name="session">
+Search only the current channel/thread.
+</scope>
+
+<scope name="guild">
+Search across all channels in the current server.
+</scope>
+
+<examples>
+<example>
+User: "who said they love apples in this channel?"
+Action: vectorSearch(query="love apples", scope="session")
+</example>
+<example>
+User: "has anyone anywhere talked about gordon ramsey?"
+Action: vectorSearch(query="gordon ramsey", scope="guild")
+</example>
+</examples>
 </tool>
 
 <tool name="peerCard">

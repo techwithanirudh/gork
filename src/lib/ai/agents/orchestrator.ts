@@ -8,7 +8,15 @@ import { getUserInfo } from './tools/get-user-info';
 import { getWeather } from './tools/get-weather';
 import { searchWeb } from './tools/search-web';
 import { successToolCall } from '../utils';
-import { memories, peerCard, react, reply, skip, startDM } from './tools';
+import {
+  memories,
+  peerCard,
+  react,
+  reply,
+  skip,
+  startDM,
+  vectorSearch,
+} from './tools';
 import { joinVC, leaveVC } from './tools/voice-channel';
 
 export const orchestratorAgent = ({
@@ -45,6 +53,7 @@ export const orchestratorAgent = ({
       skip: skip({ message }),
       memories: memories({ message }),
       peerCard: peerCard({ message }),
+      vectorSearch: vectorSearch({ message }),
       joinVC: joinVC({ message }),
       leaveVC: leaveVC({ message }),
     },
