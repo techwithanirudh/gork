@@ -63,7 +63,7 @@ export const memories = ({ message }: { message: Message }) =>
             return { success: false, reason: 'User not found.' };
           }
 
-          const result = await queryUser(resolvedUserId, query, sessionId);
+          const result = await queryUser(resolvedUserId, query);
           return result
             ? { success: true, result }
             : { success: false, reason: 'No memory for user yet.' };
@@ -119,7 +119,7 @@ export const peerCard = ({ message }: { message: Message }) =>
         ? resolveUserId(userId, message.guild)
         : ctx.userId;
 
-      logger.debug({ userId }, 'Peer card query');
+      logger.debug({ userId: resolvedUserId }, 'Peer card query');
 
       if (!resolvedUserId) {
         return { success: false, reason: 'User not found.' };
@@ -132,7 +132,10 @@ export const peerCard = ({ message }: { message: Message }) =>
         }
         return { success: true, card };
       } catch (error) {
-        logger.error({ error, userId }, 'Peer card query failed');
+        logger.error(
+          { error, userId: resolvedUserId },
+          'Peer card query failed',
+        );
         return { success: false, reason: 'Peer card lookup failed.' };
       }
     },
