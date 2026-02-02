@@ -22,11 +22,11 @@ import { joinVC, leaveVC } from './tools/voice-channel';
 export const orchestratorAgent = ({
   message,
   hints,
-  honchoContext,
+  context,
 }: {
   message: Message;
   hints: RequestHints;
-  honchoContext?: ContextResult | null;
+  context?: ContextResult | null;
 }) =>
   new Agent({
     model: provider.languageModel('chat-model'),
@@ -34,7 +34,7 @@ export const orchestratorAgent = ({
       agent: 'chat',
       message,
       requestHints: hints,
-      honchoContext,
+      context,
     }),
     stopWhen: [
       stepCountIs(10),

@@ -16,17 +16,11 @@ export async function generateResponse(
   try {
     const ctx = buildMessageContext(msg);
 
-    let honchoContext: ContextResult | null = null;
-    try {
-      honchoContext = await getContext(ctx, { tokens: 1024 });
-    } catch {
-      // Honcho might not be available, continue without context
-    }
-
+    const context = await getContext(ctx, { tokens: 1024 });
     const agent = orchestratorAgent({
       message: msg,
       hints,
-      honchoContext,
+      context,
     });
     const { toolCalls } = await agent.generate({
       messages: [

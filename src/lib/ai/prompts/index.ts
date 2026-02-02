@@ -23,7 +23,7 @@ Your current status is ${requestHints.status} and your activity is ${
 }.
 </context>`;
 
-export const formatHonchoContext = (context?: ContextResult | null) => {
+export const formatContext = (context?: ContextResult | null) => {
   if (!context?.userRepresentation) return '';
 
   return `<user_context>
@@ -37,16 +37,16 @@ export const systemPrompt = ({
   requestHints,
   message,
   speakerName,
-  honchoContext,
+  context,
 }: {
   agent: string;
   requestHints: RequestHints;
   message?: Message;
   speakerName?: string;
-  honchoContext?: ContextResult | null;
+  context?: ContextResult | null;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
-  const honchoContextPrompt = formatHonchoContext(honchoContext);
+  const contextPrompt = formatContext(context);
 
   if (agent === 'chat') {
     return [
@@ -55,7 +55,7 @@ export const systemPrompt = ({
       examplesPrompt,
       memoryPrompt,
       requestPrompt,
-      honchoContextPrompt,
+      contextPrompt,
       toolsPrompt,
       replyPrompt,
     ]
