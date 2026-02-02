@@ -2,12 +2,13 @@ import { createLogger } from '@/lib/logger';
 import {
   buildMessageContext,
   getPeerCard,
+  isSnowflake,
   queryUser,
   resolveSessionId,
   searchGuild,
 } from '@/lib/memory/honcho';
 import { tool } from 'ai';
-import { SnowflakeUtil, type Message } from 'discord.js';
+import type { Guild, Message } from 'discord.js';
 import { z } from 'zod';
 
 const logger = createLogger('tools:memories');
@@ -26,6 +27,20 @@ export interface MemoryContext {
   participants: ChatParticipant[];
 }
 
+function resolveUserId(input: string, guild: Guild | null): string | null {
+  if (isSnowflake(input)) return input;
+  if (!guild) return null;
+
+  const needle = input.toLowerCase();
+  const member = guild.members.cache.find(
+    (m) =>
+      m.user.username.toLowerCase() === needle ||
+      m.displayName.toLowerCase() === needle ||
+      m.user.tag?.toLowerCase() === needle,
+  );
+  return member?.user.id ?? null;
+}
+
 export const memories = ({ message }: { message: Message }) =>
   tool({
     description:
@@ -39,63 +54,33 @@ export const memories = ({ message }: { message: Message }) =>
       targetUserId: z
         .string()
         .optional()
-        .describe(
-          'User ID or username for type "user" (defaults to message author)',
-        ),
+        .describe('User ID or username for type "user" (defaults to message author)'),
     }),
     execute: async ({ query, type = 'session', targetUserId }) => {
       const ctx = buildMessageContext(message);
       const sessionId = resolveSessionId(ctx);
 
-      logger.info({ type, query, targetUserId }, 'Memory query');
+      logger.debug({ type, query, targetUserId }, 'Memory query');
 
       try {
         if (type === 'user') {
-          let userId = targetUserId ?? ctx.userId;
-          let looksLikeSnowflake = false;
-          try {
-            SnowflakeUtil.deconstruct(userId);
-            looksLikeSnowflake = true;
-          } catch {
-            looksLikeSnowflake = false;
-          }
+          const userId = targetUserId
+            ? resolveUserId(targetUserId, message.guild)
+            : ctx.userId;
 
-          if (!looksLikeSnowflake && message.guild) {
-            const needle = userId.toLowerCase();
-            const member = message.guild.members.cache.find((m) => {
-              return (
-                m.user.username.toLowerCase() === needle ||
-                m.displayName.toLowerCase() === needle ||
-                m.user.tag?.toLowerCase() === needle
-              );
-            });
-            if (member) {
-              userId = member.user.id;
-            } else {
-              return {
-                success: false,
-                reason:
-                  'User not found in this server. Use a valid ID or username.',
-              };
-            }
+          if (!userId) {
+            return { success: false, reason: 'User not found.' };
           }
 
           const result = await queryUser(userId, query, sessionId);
-          if (!result) {
-            return {
-              success: false,
-              reason: "I don't have enough information about this user yet.",
-            };
-          }
-          return { success: true, result };
+          return result
+            ? { success: true, result }
+            : { success: false, reason: 'No memory for user yet.' };
         }
 
         if (type === 'guild') {
           if (!ctx.guildId) {
-            return {
-              success: false,
-              reason: 'Guild search is only available in servers, not DMs.',
-            };
+            return { success: false, reason: 'Guild search requires a server.' };
           }
           const results = await searchGuild(ctx.guildId, query);
           if (results.length > 0) {
@@ -107,28 +92,16 @@ export const memories = ({ message }: { message: Message }) =>
                 .join('\n'),
             };
           }
-          return {
-            success: false,
-            reason:
-              "I couldn't find any relevant discussions about that in this server.",
-          };
+          return { success: false, reason: 'No guild matches.' };
         }
 
         const result = await queryUser(ctx.userId, query, sessionId);
-        if (!result) {
-          return {
-            success: false,
-            reason:
-              "I don't have enough context from this conversation to answer that.",
-          };
-        }
-        return { success: true, result };
+        return result
+          ? { success: true, result }
+          : { success: false, reason: 'No session context.' };
       } catch (error) {
         logger.error({ error, query, type }, 'Memory query failed');
-        return {
-          success: false,
-          reason: 'I had trouble searching my memories. Please try again.',
-        };
+        return { success: false, reason: 'Memory lookup failed.' };
       }
     },
   });
@@ -144,34 +117,18 @@ export const peerCard = ({ message }: { message: Message }) =>
     }),
     execute: async ({ targetUserId }) => {
       const ctx = buildMessageContext(message);
-      let userId = targetUserId ?? ctx.userId;
+
+      const userId = targetUserId
+        ? resolveUserId(targetUserId, message.guild)
+        : ctx.userId;
 
       logger.debug({ userId }, 'Peer card query');
 
+      if (!userId) {
+        return { success: false, reason: 'User not found.' };
+      }
+
       try {
-        let looksLikeSnowflake = false;
-        try {
-          SnowflakeUtil.deconstruct(userId);
-          looksLikeSnowflake = true;
-        } catch {
-          looksLikeSnowflake = false;
-        }
-
-        if (!looksLikeSnowflake && message.guild) {
-          const needle = userId.toLowerCase();
-          const member = message.guild.members.cache.find(
-            (m) =>
-              m.user.username.toLowerCase() === needle ||
-              m.displayName.toLowerCase() === needle ||
-              m.user.tag?.toLowerCase() === needle,
-          );
-          if (member) {
-            userId = member.user.id;
-          } else {
-            return { success: false, reason: 'User not found.' };
-          }
-        }
-
         const card = await getPeerCard(userId);
         if (!card || card.length === 0) {
           return { success: false, reason: 'No peer card yet.' };
