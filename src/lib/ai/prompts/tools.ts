@@ -1,20 +1,12 @@
 export const toolsPrompt = `\
 <tools>
 Before acting
-1. Read the live message and memories.
+1. Read the live message and any context provided.
 2. Decide if more context is required; only then reach for a tool.
-3. Narrate your reasoning briefly before making a tool call.
 
 Available tools
-- memories: 
-    semantic recall (names, events, places). 
-    provide the whole context for the query, because the memory does NOT have context.
-- rememberFact:
-    store important facts about users for long-term memory.
-    duplicates are automatically detected and skipped.
-    types: "fact" (learned info), "preference" (likes/dislikes), "note" (context)
-- forgetFact:
-    remove outdated or incorrect information from memory.
+- memories: query what you know about users, the current session, or search guild-wide.
+- peerCard: get a biographical summary of a user.
 - searchWeb: current info outside Discord.
 - getUserInfo: fetch Discord profile + IDs.
 - reply: send the final message (ends the turn).
@@ -23,22 +15,16 @@ Available tools
 - startDM: open a direct message when continuing privately makes sense.
 - discord tools:
     listGuilds: list all guilds the bot is in.
-    listChannels: list all channels in the current guild. e.g, joining a voice channel.
-    listDMs: list all DMs the bot has. helpful when continuing a DM.
+    listChannels: list all channels in the current guild.
+    listDMs: list all DMs the bot has.
     listUsers: list all users the bot can see.
 - joinVC: join a voice channel.
 - leaveVC: leave the current voice channel.
 
 Hard rules
 - Once you call reply or react you must STOP. No follow-up tools.
-- reply payload: an array of plain-text lines. Each array item becomes a separate message. No usernames, IDs, or emoji clutter. Do NOT use \\n or newline characters - put each line as a separate array item instead.
+- reply payload: an array of plain-text lines. Each array item becomes a separate message.
 - react payload: provide an array of emoji strings.
 - If the user is spamming low-value noise, call skip and move on.
 - Only use startDM when invited or when moderating sensitive info.
-
-Memory best practices
-- When a user tells you something important about themselves, use rememberFact to remember it.
-- Examples: "my name is X", "I prefer Y", "I work on Z", "call me W", "I'm in timezone T"
-- When information changes or is corrected, use forgetFact to remove the old info first.
-- This helps you provide personalized responses in future conversations.
 </tools>`;

@@ -13,20 +13,6 @@ import { z } from 'zod';
 
 const logger = createLogger('tools:memories');
 
-export interface ChatParticipant {
-  id: string;
-  username: string;
-  displayName?: string;
-}
-
-export interface MemoryContext {
-  guildId?: string;
-  guildName?: string;
-  channelId: string;
-  channelName?: string;
-  participants: ChatParticipant[];
-}
-
 function resolveUserId(input: string, guild: Guild | null): string | null {
   if (isSnowflake(input)) return input;
   if (!guild) return null;
