@@ -3,6 +3,7 @@ import type { RequestHints } from '@/types';
 import type { Message } from 'discord.js';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
+import { memoryPrompt } from './memory';
 import { personalityPrompt } from './personality';
 import { relevancePrompt, replyPrompt, voicePrompt } from './tasks';
 import { toolsPrompt } from './tools';
@@ -52,6 +53,7 @@ export const systemPrompt = ({
       corePrompt,
       personalityPrompt,
       examplesPrompt,
+      memoryPrompt,
       requestPrompt,
       honchoContextPrompt,
       toolsPrompt,

@@ -40,30 +40,30 @@ export const memories = ({ message }: { message: Message }) =>
         .describe(
           'user=facts about a person, session=this channel only, guild=search all channels in server',
         ),
-      targetUserId: z
+      userId: z
         .string()
         .optional()
         .describe(
-          'For type="user": who to ask about (ID or username). Defaults to message author.',
+          'For type="user": who to ask about (e.g, id, username, displayName, tag). Defaults to message author.',
         ),
     }),
-    execute: async ({ query, type = 'session', targetUserId }) => {
+    execute: async ({ query, type = 'session', userId }) => {
       const ctx = buildMessageContext(message);
       const sessionId = resolveSessionId(ctx);
 
-      logger.debug({ type, query, targetUserId }, 'Memory query');
+      logger.debug({ type, query, userId }, 'Memory query');
 
       try {
         if (type === 'user') {
-          const userId = targetUserId
-            ? resolveUserId(targetUserId, message.guild)
+          const resolvedUserId = userId
+            ? resolveUserId(userId, message.guild)
             : ctx.userId;
 
-          if (!userId) {
+          if (!resolvedUserId) {
             return { success: false, reason: 'User not found.' };
           }
 
-          const result = await queryUser(userId, query, sessionId);
+          const result = await queryUser(resolvedUserId, query, sessionId);
           return result
             ? { success: true, result }
             : { success: false, reason: 'No memory for user yet.' };
@@ -105,28 +105,28 @@ export const peerCard = ({ message }: { message: Message }) =>
     description:
       'Get biographical summary of a user - their interests, facts, preferences. Use when you want an overview without a specific question.',
     inputSchema: z.object({
-      targetUserId: z
+      userId: z
         .string()
         .optional()
         .describe(
           'Who to get the card for (ID or username). Defaults to message author.',
         ),
     }),
-    execute: async ({ targetUserId }) => {
+    execute: async ({ userId }) => {
       const ctx = buildMessageContext(message);
 
-      const userId = targetUserId
-        ? resolveUserId(targetUserId, message.guild)
+      const resolvedUserId = userId
+        ? resolveUserId(userId, message.guild)
         : ctx.userId;
 
       logger.debug({ userId }, 'Peer card query');
 
-      if (!userId) {
+      if (!resolvedUserId) {
         return { success: false, reason: 'User not found.' };
       }
 
       try {
-        const card = await getPeerCard(userId);
+        const card = await getPeerCard(resolvedUserId);
         if (!card || card.length === 0) {
           return { success: false, reason: 'No peer card yet.' };
         }

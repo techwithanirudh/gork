@@ -2,8 +2,8 @@ import type { RequestHints } from '@/types/request';
 import { Experimental_Agent as Agent, stepCountIs } from 'ai';
 import { systemPrompt } from '../../prompts';
 import { provider } from '../../providers';
-import { getWeather } from '../../tools/get-weather';
-import { searchWeb } from '../../tools/search-web';
+import { getWeather } from '../tools/get-weather';
+import { searchWeb } from '../tools/search-web';
 
 export const voiceAgent = ({
   speaker,
