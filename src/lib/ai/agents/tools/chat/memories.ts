@@ -30,17 +30,18 @@ function resolveUserId(input: string, guild: Guild | null): string | null {
 export const memories = ({ message }: { message: Message }) =>
   tool({
     description:
-      'Query memories. Use "user" for user info, "session" for current channel, "guild" for server-wide search.',
+      'Query memories. type="user" for facts about a person, type="session" for this channel conversation, type="guild" to search all channels.',
     inputSchema: z.object({
-      query: z.string().describe('The question to answer'),
+      query: z.string().describe('Natural language question to answer from memory'),
       type: z
         .enum(['user', 'session', 'guild'])
-        .default('session')
-        .describe('Search scope'),
+        .describe(
+          'user=facts about a person, session=this channel only, guild=search all channels in server',
+        ),
       targetUserId: z
         .string()
         .optional()
-        .describe('User ID or username for type "user" (defaults to message author)'),
+        .describe('For type="user": who to ask about (ID or username). Defaults to message author.'),
     }),
     execute: async ({ query, type = 'session', targetUserId }) => {
       const ctx = buildMessageContext(message);
@@ -94,12 +95,13 @@ export const memories = ({ message }: { message: Message }) =>
 
 export const peerCard = ({ message }: { message: Message }) =>
   tool({
-    description: 'Get biographical summary for a user.',
+    description:
+      'Get biographical summary of a user - their interests, facts, preferences. Use when you want an overview without a specific question.',
     inputSchema: z.object({
       targetUserId: z
         .string()
         .optional()
-        .describe('User ID or username (defaults to message author)'),
+        .describe('Who to get the card for (ID or username). Defaults to message author.'),
     }),
     execute: async ({ targetUserId }) => {
       const ctx = buildMessageContext(message);
