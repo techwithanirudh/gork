@@ -29,6 +29,7 @@ const pinoTransport = transport({
     },
     {
       target: 'pino-pretty',
+      level: env.LOG_LEVEL || 'info',
       options: {
         colorize: true,
         translateTime: 'SYS:HH:MM:ss.l',
@@ -44,7 +45,7 @@ const baseLogger = pino(
     level: env.LOG_LEVEL || 'info',
     timestamp: stdTimeFunctions.isoTime,
   },
-  pinoTransport
+  pinoTransport,
 );
 
 export function createLogger(context: string): Logger {
