@@ -1,5 +1,3 @@
-export * from './types';
-
 export {
   addTurn,
   buildMessageContext,
@@ -14,6 +12,5 @@ export {
   type ContextOptions,
   type ContextResult,
   type MessageContext,
-  type MessageRole,
   type SearchResult,
 } from './honcho';

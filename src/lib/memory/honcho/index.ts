@@ -6,18 +6,15 @@ export {
   resolveSessionId,
 } from './ids';
 export {
-  ingestMessage,
   addTurn,
   getContext,
+  getPeerCard,
   queryUser,
   searchGuild,
-  getPeerCard,
 } from './service';
 export type {
-  MessageContext,
-  ContextResult,
-  SearchResult,
-  MessageRole,
   ContextOptions,
-  DiscordMessage,
+  ContextResult,
+  MessageContext,
+  SearchResult,
 } from './types';

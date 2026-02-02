@@ -41,6 +41,7 @@ export function buildMessageContext(message: Message): MessageContext {
     channelId: message.channel.id,
     guildId: message.guild?.id,
     parentChannelId,
+    messageId: message.id,
     isDM,
     botId,
   };
