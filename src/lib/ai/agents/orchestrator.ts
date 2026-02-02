@@ -4,13 +4,12 @@ import { Experimental_Agent as Agent, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
 import { systemPrompt } from '../prompts';
 import { provider } from '../providers';
-import { getUserInfo } from '../tools/get-user-info';
-import { getWeather } from '../tools/get-weather';
-import { searchWeb } from '../tools/search-web';
+import { getUserInfo } from './tools/get-user-info';
+import { getWeather } from './tools/get-weather';
+import { searchWeb } from './tools/search-web';
 import { successToolCall } from '../utils';
-import { memories, peerCard, react, reply, skip, startDM } from './tools/chat';
-import { joinVC, leaveVC } from './tools/chat/voice-channel';
-import { listChannels, listDMs, listGuilds, listUsers } from './tools/memory';
+import { memories, peerCard, react, reply, skip, startDM } from './tools';
+import { joinVC, leaveVC } from './tools/voice-channel';
 
 export const orchestratorAgent = ({
   message,
@@ -46,10 +45,6 @@ export const orchestratorAgent = ({
       skip: skip({ message }),
       memories: memories({ message }),
       peerCard: peerCard({ message }),
-      listGuilds: listGuilds({ message }),
-      listChannels: listChannels({ message }),
-      listDMs: listDMs({ message }),
-      listUsers: listUsers({ message }),
       joinVC: joinVC({ message }),
       leaveVC: leaveVC({ message }),
     },

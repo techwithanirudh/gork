@@ -32,7 +32,9 @@ export const memories = ({ message }: { message: Message }) =>
     description:
       'Query memories. type="user" for facts about a person, type="session" for this channel conversation, type="guild" to search all channels.',
     inputSchema: z.object({
-      query: z.string().describe('Natural language question to answer from memory'),
+      query: z
+        .string()
+        .describe('Natural language question to answer from memory'),
       type: z
         .enum(['user', 'session', 'guild'])
         .describe(
@@ -41,7 +43,9 @@ export const memories = ({ message }: { message: Message }) =>
       targetUserId: z
         .string()
         .optional()
-        .describe('For type="user": who to ask about (ID or username). Defaults to message author.'),
+        .describe(
+          'For type="user": who to ask about (ID or username). Defaults to message author.',
+        ),
     }),
     execute: async ({ query, type = 'session', targetUserId }) => {
       const ctx = buildMessageContext(message);
@@ -67,7 +71,10 @@ export const memories = ({ message }: { message: Message }) =>
 
         if (type === 'guild') {
           if (!ctx.guildId) {
-            return { success: false, reason: 'Guild search requires a server.' };
+            return {
+              success: false,
+              reason: 'Guild search requires a server.',
+            };
           }
           const results = await searchGuild(ctx.guildId, query);
           if (results.length > 0) {
@@ -101,7 +108,9 @@ export const peerCard = ({ message }: { message: Message }) =>
       targetUserId: z
         .string()
         .optional()
-        .describe('Who to get the card for (ID or username). Defaults to message author.'),
+        .describe(
+          'Who to get the card for (ID or username). Defaults to message author.',
+        ),
     }),
     execute: async ({ targetUserId }) => {
       const ctx = buildMessageContext(message);

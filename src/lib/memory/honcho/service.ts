@@ -1,12 +1,23 @@
 import { createLogger } from '@/lib/logger';
 import type { Message, Peer, Session } from '@honcho-ai/sdk';
 import { getHonchoClient } from './client';
-import type { ContextOptions, ContextResult, MessageContext, SearchResult } from './types';
-import { BOT_PEER_ID, resolvePeerId, resolveSessionId, toMetadata } from './utils';
+import type {
+  ContextOptions,
+  ContextResult,
+  MessageContext,
+  SearchResult,
+} from './types';
+import {
+  BOT_PEER_ID,
+  resolvePeerId,
+  resolveSessionId,
+  toMetadata,
+} from './utils';
 
 const logger = createLogger('honcho');
 
 let cachedBotPeer: Peer | null = null;
+const observedPeers = new Set<string>();
 
 async function getBotPeer(): Promise<Peer> {
   if (cachedBotPeer) return cachedBotPeer;
@@ -35,6 +46,28 @@ async function getSessionAndPeers(ctx: MessageContext) {
   return Promise.all([getSession(ctx), getPeer(ctx.userId), getBotPeer()]);
 }
 
+async function observePeers(session: Session, userPeer: Peer, botPeer: Peer) {
+  const userKey = `${session.id}:${userPeer.id}`;
+  if (!observedPeers.has(userKey)) {
+    await session.addPeers(userPeer);
+    await session.setPeerConfiguration(userPeer, {
+      observeMe: true,
+      observeOthers: true,
+    });
+    observedPeers.add(userKey);
+  }
+
+  const botKey = `${session.id}:${botPeer.id}`;
+  if (!observedPeers.has(botKey)) {
+    await session.addPeers(botPeer);
+    await session.setPeerConfiguration(botPeer, {
+      observeMe: false,
+      observeOthers: false,
+    });
+    observedPeers.add(botKey);
+  }
+}
+
 export async function addTurn({
   ctx,
   user,
@@ -48,15 +81,20 @@ export async function addTurn({
 
   try {
     const [session, userPeer, botPeer] = await getSessionAndPeers(ctx);
+    await observePeers(session, userPeer, botPeer);
     const metadata = toMetadata(ctx);
 
     const messages = [];
     if (user.trim()) messages.push(userPeer.message(user, { metadata }));
-    if (assistant.trim()) messages.push(botPeer.message(assistant, { metadata }));
+    if (assistant.trim())
+      messages.push(botPeer.message(assistant, { metadata }));
 
     if (messages.length > 0) {
       await session.addMessages(messages);
-      logger.debug({ sessionId: session.id, count: messages.length }, 'Turn added');
+      logger.debug(
+        { sessionId: session.id, count: messages.length },
+        'Turn added',
+      );
     }
   } catch (error) {
     logger.error({ error, ctx }, 'addTurn failed');
@@ -70,6 +108,7 @@ export async function getContext(
 ): Promise<ContextResult> {
   try {
     const [session, userPeer, botPeer] = await getSessionAndPeers(ctx);
+    await observePeers(session, userPeer, botPeer);
 
     const sessionContext = await session.context({
       tokens: options.tokens ?? 1024,
@@ -78,7 +117,10 @@ export async function getContext(
     });
 
     const messages = sessionContext.toOpenAI(botPeer.id);
-    logger.debug({ sessionId: session.id, count: messages.length }, 'Context retrieved');
+    logger.debug(
+      { sessionId: session.id, count: messages.length },
+      'Context retrieved',
+    );
 
     return {
       messages: messages.map((m) => ({
@@ -121,7 +163,10 @@ export async function getPeerCard(userId: string): Promise<string[] | null> {
   }
 }
 
-export async function searchGuild(guildId: string, query: string): Promise<SearchResult[]> {
+export async function searchGuild(
+  guildId: string,
+  query: string,
+): Promise<SearchResult[]> {
   try {
     const client = getHonchoClient();
     const messages = await client.search(query, {

@@ -6,18 +6,52 @@ Before acting
 
 Available tools
 
+<memory-tools>
 memories(query, type, targetUserId?)
-  Query your memory. Pick the right type:
-  - "user": Ask about a specific person. "What does Alice like?" "What's Bob's timezone?"
-    Use targetUserId to specify who (defaults to message author).
-  - "session": Ask about this conversation/channel. "What were we talking about?" "Did anyone mention X?"
-    Scoped to current channel only.
-  - "guild": Search across ALL channels in this server. "Has anyone discussed Y?" "Who mentioned Z?"
-    Use when the info might be in a different channel.
+  Query Honcho memory. Choose the scope based on what you need:
 
+  <type-user>
+  type="user": Use for personal facts or preferences.
+  - Answers can span multiple channels/sessions for that person.
+  - Best for: "What jokes does Ryan like?" "Who did Ryan say I'm friends with?"
+  - If targetUserId is missing, default to the message author.
+  </type-user>
+
+  <type-session>
+  type="session": Use for this channel only.
+  - Best for: "What were we talking about in this channel?"
+  - Use when the question is about the current thread/channel.
+  </type-session>
+
+  <type-guild>
+  type="guild": Search across ALL channels.
+  - Use only when you need to find a message that could be in another channel
+    or when asking "who said X" across the server.
+  - This is retrieval/search, not personalized reasoning.
+  </type-guild>
+
+  <examples>
+  <example>
+  User: "oh right lol what was that joke again, you were friends with?"
+  Action: memories(query="Who did Ryan joke I'm friends with?", type="user", targetUserId="Ryan")
+  </example>
+  <example>
+  User: "did anyone in this channel mention Gordon?"
+  Action: memories(query="mention Gordon", type="session")
+  </example>
+  <example>
+  User: "has anyone anywhere talked about gordon ramsey?"
+  Action: memories(query="gordon ramsey", type="guild")
+  </example>
+  </examples>
+</memory-tools>
+
+<memory-tools>
 peerCard(targetUserId?)
-  Get biographical summary of a user - their interests, facts, preferences.
-  Quick way to learn about someone without a specific question.
+  Get a concise biography for a user (interests, facts, preferences).
+  Use when you want a quick snapshot without a specific question.
+  Example: peerCard("Ryan")
+</memory-tools>
 
 searchWeb: current info outside Discord.
 getUserInfo: fetch Discord profile + IDs.
