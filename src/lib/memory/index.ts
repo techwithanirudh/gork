@@ -9,6 +9,7 @@ export {
   resolvePeerId,
   resolveSessionId,
   searchGuild,
+  toMetadata,
   type ContextOptions,
   type ContextResult,
   type MessageContext,

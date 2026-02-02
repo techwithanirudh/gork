@@ -1,6 +1,8 @@
 import { ChannelType, SnowflakeUtil, type Message } from 'discord.js';
 import type { MessageContext } from './types';
 
+export const BOT_PEER_ID = 'u-gork';
+
 export function isSnowflake(id: string): boolean {
   try {
     SnowflakeUtil.deconstruct(id);
@@ -11,17 +13,25 @@ export function isSnowflake(id: string): boolean {
 }
 
 export function resolvePeerId(userId: string): string {
-  return `discord-${userId}`;
+  return `u-${userId}`;
 }
 
 export function resolveSessionId(ctx: MessageContext): string {
   if (ctx.isDM) {
     const [a, b] = [ctx.userId, ctx.botId].sort();
-    return `dm_${a}_${b}`;
+    return `dm-${a}-${b}`;
   }
-
   const channelId = ctx.parentChannelId ?? ctx.channelId;
-  return `g_${ctx.guildId}_c_${channelId}`;
+  return `g-${ctx.guildId}-c-${channelId}`;
+}
+
+export function toMetadata(ctx: MessageContext) {
+  return {
+    guildId: ctx.guildId,
+    channelId: ctx.channelId,
+    userId: ctx.userId,
+    messageId: ctx.messageId,
+  };
 }
 
 export function buildMessageContext(message: Message): MessageContext {

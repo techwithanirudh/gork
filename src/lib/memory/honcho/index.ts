@@ -1,11 +1,5 @@
 export { getHonchoClient } from './client';
 export {
-  buildMessageContext,
-  isSnowflake,
-  resolvePeerId,
-  resolveSessionId,
-} from './ids';
-export {
   addTurn,
   getContext,
   getPeerCard,
@@ -18,3 +12,11 @@ export type {
   MessageContext,
   SearchResult,
 } from './types';
+export {
+  BOT_PEER_ID,
+  buildMessageContext,
+  isSnowflake,
+  resolvePeerId,
+  resolveSessionId,
+  toMetadata,
+} from './utils';

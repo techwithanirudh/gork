@@ -1,17 +1,11 @@
 import { createLogger } from '@/lib/logger';
 import type { Message, Peer, Session } from '@honcho-ai/sdk';
 import { getHonchoClient } from './client';
-import { resolvePeerId, resolveSessionId } from './ids';
-import type {
-  ContextOptions,
-  ContextResult,
-  MessageContext,
-  SearchResult,
-} from './types';
+import type { ContextOptions, ContextResult, MessageContext, SearchResult } from './types';
+import { BOT_PEER_ID, resolvePeerId, resolveSessionId, toMetadata } from './utils';
 
 const logger = createLogger('honcho');
 
-const BOT_PEER_ID = 'gork';
 let cachedBotPeer: Peer | null = null;
 
 async function getBotPeer(): Promise<Peer> {
@@ -37,6 +31,10 @@ async function getSession(ctx: MessageContext): Promise<Session> {
   });
 }
 
+async function getSessionAndPeers(ctx: MessageContext) {
+  return Promise.all([getSession(ctx), getPeer(ctx.userId), getBotPeer()]);
+}
+
 export async function addTurn({
   ctx,
   user,
@@ -48,19 +46,9 @@ export async function addTurn({
 }): Promise<void> {
   if (!user.trim() && !assistant.trim()) return;
 
-  const metadata = {
-    guildId: ctx.guildId,
-    channelId: ctx.channelId,
-    userId: ctx.userId,
-    messageId: ctx.messageId,
-  };
-
   try {
-    const [session, userPeer, botPeer] = await Promise.all([
-      getSession(ctx),
-      getPeer(ctx.userId),
-      getBotPeer(),
-    ]);
+    const [session, userPeer, botPeer] = await getSessionAndPeers(ctx);
+    const metadata = toMetadata(ctx);
 
     const messages = [];
     if (user.trim()) messages.push(userPeer.message(user, { metadata }));
@@ -71,7 +59,7 @@ export async function addTurn({
       logger.debug({ sessionId: session.id, count: messages.length }, 'Turn added');
     }
   } catch (error) {
-    logger.error({ error, ctx }, 'Failed to add turn');
+    logger.error({ error, ctx }, 'addTurn failed');
     throw error;
   }
 }
@@ -80,27 +68,17 @@ export async function getContext(
   ctx: MessageContext,
   options: ContextOptions = {},
 ): Promise<ContextResult> {
-  const tokens = options.tokens ?? 1024;
-
   try {
-    const [session, userPeer, botPeer] = await Promise.all([
-      getSession(ctx),
-      getPeer(ctx.userId),
-      getBotPeer(),
-    ]);
+    const [session, userPeer, botPeer] = await getSessionAndPeers(ctx);
 
     const sessionContext = await session.context({
-      tokens,
+      tokens: options.tokens ?? 1024,
       peerTarget: userPeer.id,
       summary: true,
     });
 
     const messages = sessionContext.toOpenAI(botPeer.id);
-
-    logger.debug(
-      { sessionId: session.id, count: messages.length, hasRep: !!sessionContext.peerRepresentation },
-      'Context retrieved',
-    );
+    logger.debug({ sessionId: session.id, count: messages.length }, 'Context retrieved');
 
     return {
       messages: messages.map((m) => ({
@@ -110,7 +88,7 @@ export async function getContext(
       userRepresentation: sessionContext.peerRepresentation ?? undefined,
     };
   } catch (error) {
-    logger.error({ error, ctx }, 'Failed to get context');
+    logger.error({ error, ctx }, 'getContext failed');
     return { messages: [] };
   }
 }
@@ -123,10 +101,10 @@ export async function queryUser(
   try {
     const peer = await getPeer(userId);
     const response = await peer.chat(query, { session: sessionId });
-    logger.debug({ userId, query, hasResponse: !!response }, 'User queried');
+    logger.debug({ userId, hasResponse: !!response }, 'queryUser');
     return response;
   } catch (error) {
-    logger.error({ error, userId, query }, 'Failed to query user');
+    logger.error({ error, userId }, 'queryUser failed');
     return null;
   }
 }
@@ -135,18 +113,15 @@ export async function getPeerCard(userId: string): Promise<string[] | null> {
   try {
     const peer = await getPeer(userId);
     const card = await peer.card();
-    logger.debug({ userId, hasCard: !!card }, 'Peer card retrieved');
+    logger.debug({ userId, hasCard: !!card }, 'getPeerCard');
     return card;
   } catch (error) {
-    logger.error({ error, userId }, 'Failed to get peer card');
+    logger.error({ error, userId }, 'getPeerCard failed');
     return null;
   }
 }
 
-export async function searchGuild(
-  guildId: string,
-  query: string,
-): Promise<SearchResult[]> {
+export async function searchGuild(guildId: string, query: string): Promise<SearchResult[]> {
   try {
     const client = getHonchoClient();
     const messages = await client.search(query, {
@@ -154,15 +129,13 @@ export async function searchGuild(
       limit: 10,
     });
 
-    const results = messages.map((msg: Message) => ({
+    logger.debug({ guildId, count: messages.length }, 'searchGuild');
+    return messages.map((msg: Message) => ({
       sessionId: msg.sessionId,
       content: msg.content,
     }));
-
-    logger.debug({ guildId, query, count: results.length }, 'Guild search');
-    return results;
   } catch (error) {
-    logger.error({ error, guildId, query }, 'Guild search failed');
+    logger.error({ error, guildId }, 'searchGuild failed');
     return [];
   }
 }
