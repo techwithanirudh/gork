@@ -12,15 +12,12 @@ import {
 const logger = createLogger('honcho');
 const client = getHonchoClient();
 
-let cachedBotPeer: Peer | null = null;
 const observedPeers = new Set<string>();
 
 async function getBotPeer(): Promise<Peer> {
-  if (cachedBotPeer) return cachedBotPeer;
-  cachedBotPeer = await client.peer(BOT_PEER_ID, {
+  return client.peer(BOT_PEER_ID, {
     configuration: { observeMe: false },
   });
-  return cachedBotPeer;
 }
 
 async function getPeer(userId: string): Promise<Peer> {
