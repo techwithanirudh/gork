@@ -1,11 +1,9 @@
-import {
-  getPeerByUserId,
-  resolveUserId,
-} from './shared';
+import { getPeerByUserId } from './shared';
 import { getContextFromMessage, getSessionId } from '@/lib/memory';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
+import { resolveUserId } from '@/lib/discord/resolve-user';
 
 export const getUserInsights = ({ message }: { message: Message }) =>
   tool({
@@ -24,12 +22,15 @@ export const getUserInsights = ({ message }: { message: Message }) =>
     }),
     execute: async ({ query, userId, scope }) => {
       const ctx = getContextFromMessage(message);
-      const resolved = await resolveUserId(message, userId);
-      if (!resolved.userId) {
+      const resolvedUserId = userId
+        ? await resolveUserId(message, userId)
+        : ctx.userId;
+
+      if (!resolvedUserId) {
         return { success: false, reason: 'User not found.' };
       }
 
-      const peer = await getPeerByUserId(resolved.userId);
+      const peer = await getPeerByUserId(resolvedUserId);
       const sessionId = getSessionId(ctx);
       const response = await peer.chat(query, {
         session: scope === 'global' ? undefined : sessionId,

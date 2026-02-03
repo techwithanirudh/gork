@@ -78,10 +78,16 @@ export async function addTurn({
     ]);
 
     const metadata = toMetadata(ctx);
+    const reasoningConfig = { reasoning: { enabled: true } };
     const messages = [];
-    if (user.trim()) messages.push(userPeer.message(user, { metadata }));
+    if (user.trim())
+      messages.push(
+        userPeer.message(user, { metadata, configuration: reasoningConfig }),
+      );
     if (assistant.trim())
-      messages.push(botPeer.message(assistant, { metadata }));
+      messages.push(
+        botPeer.message(assistant, { metadata, configuration: reasoningConfig }),
+      );
 
     if (messages.length > 0) {
       await session.addMessages(messages);

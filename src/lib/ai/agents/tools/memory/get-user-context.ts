@@ -1,7 +1,9 @@
-import { getPeerByUserId, resolveUserId } from './shared';
+import { getPeerByUserId } from './shared';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
+import { resolveUserId } from '@/lib/discord/resolve-user';
+import { getContextFromMessage, resolvePeerId } from '@/lib/memory';
 
 export const getUserContext = ({ message }: { message: Message }) =>
   tool({
@@ -21,18 +23,21 @@ export const getUserContext = ({ message }: { message: Message }) =>
         .describe('Include peer card summary (default false).'),
     }),
     execute: async ({ userId, query, includeCard }) => {
-      const resolved = await resolveUserId(message, userId);
-      if (!resolved.userId) {
+      const ctx = getContextFromMessage(message);
+      const resolvedUserId = userId
+        ? await resolveUserId(message, userId)
+        : ctx.userId;
+
+      if (!resolvedUserId) {
         return { success: false, reason: 'User not found.' };
       }
 
-      const peer = await getPeerByUserId(resolved.userId);
+      const peer = await getPeerByUserId(resolvedUserId);
       const representation = await peer.representation({
         searchQuery: query,
-        searchTopK: 8,
-        maxConclusions: 24,
+        searchTopK: 10,
+        includeMostFrequent: true,
       });
-
       const card = includeCard ? await peer.card() : null;
 
       const parts = [];
