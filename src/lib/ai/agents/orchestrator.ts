@@ -4,7 +4,6 @@ import { Experimental_Agent as Agent, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
 import { systemPrompt } from '../prompts';
 import { provider } from '../providers';
-import { getUserInfo } from './tools/get-user-info';
 import { getWeather } from './tools/get-weather';
 import { searchWeb } from './tools/search-web';
 import { successToolCall } from '../utils';
@@ -12,7 +11,7 @@ import {
   getSessionContext,
   getUserContext,
   getUserInsights,
-  peerCard,
+  getUserProfile,
   react,
   reply,
   skip,
@@ -49,14 +48,13 @@ export const orchestratorAgent = ({
       getWeather,
       searchWeb,
       startDM: startDM({ message }),
-      getUserInfo: getUserInfo({ message }),
+      getUserProfile: getUserProfile({ message }),
       react: react({ message }),
       reply: reply({ message }),
       skip: skip({ message }),
       getSessionContext: getSessionContext({ message }),
       getUserContext: getUserContext({ message }),
       getUserInsights: getUserInsights({ message }),
-      peerCard: peerCard({ message }),
       vectorSearch: vectorSearch({ message }),
       joinVC: joinVC({ message }),
       leaveVC: leaveVC({ message }),

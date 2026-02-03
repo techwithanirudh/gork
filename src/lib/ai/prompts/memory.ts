@@ -9,7 +9,7 @@ or the wider server. Pick the smallest scope that can answer the question.
 <step>Is the question about a specific person or their preferences? Use getUserContext.</step>
 <step>Is the question about the current channel/thread? Use getSessionContext.</step>
 <step>Is the question about who said something anywhere in the server? Use vectorSearch scope="guild".</step>
-<step>Need a quick profile overview? Use peerCard.</step>
+<step>Need a quick profile overview? Use getUserProfile.</step>
 <step>Need deeper personalization or subtle insights? Use getUserInsights (slow).</step>
 </decision-flow>
 
@@ -95,8 +95,8 @@ Action: vectorSearch(query="gordon ramsey", scope="guild")
 <rule>Do not make up memory. If no result, say you could not find it.</rule>
 </when-not-to-use>
 
-<tool name="peerCard">
-<purpose>Get a concise biography for a user (interests, facts, preferences).</purpose>
+<tool name="getUserProfile">
+<purpose>Get a Discord user profile with memory summary.</purpose>
 <inputs>
 <field name="userId">Optional user identifier (ID, username, tag, display name).</field>
 </inputs>
@@ -104,17 +104,7 @@ Action: vectorSearch(query="gordon ramsey", scope="guild")
 <examples>
 <example>
 User: "give me a quick overview of Ryan"
-Action: peerCard("Ryan")
-</example>
-</examples>
-</tool>
-
-<tool name="getUserInfo">
-<purpose>Resolve a user ID and profile details when the name is ambiguous.</purpose>
-<examples>
-<example>
-User: "who is ryan?"
-Action: getUserInfo(userId="ryan")
+Action: getUserProfile(userId="Ryan")
 </example>
 </examples>
 </tool>

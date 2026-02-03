@@ -1,15 +1,16 @@
 import { createLogger } from '@/lib/logger';
 import { resolveUser } from '@/lib/discord/resolve-user';
+import { getPeerCard } from '@/lib/memory/honcho';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
 
-const logger = createLogger('tools:user-info');
+const logger = createLogger('tools:user-profile');
 
-export const getUserInfo = ({ message }: { message: Message }) =>
+export const getUserProfile = ({ message }: { message: Message }) =>
   tool({
     description:
-      'Get detailed information about a Discord user by their username, tag, display name, or ID.',
+      'Get a Discord user profile with Honcho memory summary (peer card).',
     inputSchema: z.object({
       userId: z
         .string()
@@ -28,6 +29,8 @@ export const getUserInfo = ({ message }: { message: Message }) =>
           };
         }
 
+        const peerCard = await getPeerCard(user.id);
+
         return {
           success: true,
           data: {
@@ -39,10 +42,11 @@ export const getUserInfo = ({ message }: { message: Message }) =>
             createdAt: user.createdAt.toISOString(),
             avatarURL: user.displayAvatarURL(),
             flags: user.flags?.toArray() || [],
+            summary: peerCard?.length ? peerCard : [],
           },
         };
       } catch (error) {
-        logger.error({ error }, 'Error in getUserInfo:');
+        logger.error({ error }, 'Error in getUserProfile:');
         return {
           success: false,
           error: 'Failed to fetch user information',

@@ -8,10 +8,9 @@ Available tools:
 getSessionContext: fast summary + highlights for this channel.
 getUserContext: fast user representation (and optional peer card).
 getUserInsights: deeper personalization insights (slow).
-peerCard: user profile summary from Honcho.
+getUserProfile: Discord profile with memory summary.
 vectorSearch: retrieval-only search over stored messages.
 searchWeb: current info outside Discord.
-getUserInfo: fetch Discord profile + IDs.
 reply: send the final message (ends the turn).
 react: add emoji reaction (ends the turn).
 skip: bow out silently when a response has no value.

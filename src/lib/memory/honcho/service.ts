@@ -91,10 +91,6 @@ export async function addTurn({
 
     if (messages.length > 0) {
       await session.addMessages(messages);
-      logger.debug(
-        { sessionId: session.id, count: messages.length },
-        'Turn added',
-      );
     }
   } catch (error) {
     logger.error({ error, ctx }, 'addTurn failed');
@@ -116,10 +112,6 @@ export async function getContext(
     });
 
     const messages = sessionContext.toOpenAI(botPeer.id);
-    logger.debug(
-      { sessionId: session.id, count: messages.length },
-      'Context retrieved',
-    );
 
     return {
       messages: messages.map((m) => ({
@@ -134,27 +126,10 @@ export async function getContext(
   }
 }
 
-export async function queryUser(
-  userId: string,
-  query: string,
-  sessionId?: string,
-): Promise<string | null> {
-  try {
-    const peer = await getPeer(userId);
-    const response = await peer.chat(query, { session: sessionId });
-    logger.debug({ userId, hasResponse: !!response }, 'queryUser');
-    return response;
-  } catch (error) {
-    logger.error({ error, userId }, 'queryUser failed');
-    return null;
-  }
-}
-
 export async function getPeerCard(userId: string): Promise<string[] | null> {
   try {
     const peer = await getPeer(userId);
     const card = await peer.card();
-    logger.debug({ userId, hasCard: !!card }, 'getPeerCard');
     return card;
   } catch (error) {
     logger.error({ error, userId }, 'getPeerCard failed');
@@ -173,7 +148,6 @@ export async function searchGuild(
       limit: 10,
     });
 
-    logger.debug({ guildId, count: messages.length }, 'searchGuild');
     return messages.map((msg: Message) => ({
       sessionId: msg.sessionId,
       content: msg.content,
