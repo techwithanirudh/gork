@@ -1,4 +1,9 @@
-export { memories, peerCard } from './memory/memories';
+export {
+  getSessionContext,
+  getUserContext,
+  getUserInsights,
+  peerCard,
+} from './memory';
 export { react } from './react';
 export { reply } from './reply';
 export { skip } from './skip';

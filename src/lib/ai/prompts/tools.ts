@@ -5,7 +5,9 @@ Before acting
 2. Decide if more context is required; only then reach for a tool.
 
 Available tools:
-memories: Honcho reasoning over user or session memory.
+getSessionContext: fast summary + highlights for this channel.
+getUserContext: fast user representation (and optional peer card).
+getUserInsights: deeper personalization insights (slow).
 peerCard: user profile summary from Honcho.
 vectorSearch: retrieval-only search over stored messages.
 searchWeb: current info outside Discord.

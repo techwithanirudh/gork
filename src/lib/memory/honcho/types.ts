@@ -13,7 +13,7 @@ export interface ContextResult {
     role: 'system' | 'user' | 'assistant';
     content: string;
   }>;
-  userRepresentation?: string;
+  sessionSummary?: string;
 }
 
 export interface SearchResult {

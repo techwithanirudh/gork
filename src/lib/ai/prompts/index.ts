@@ -24,12 +24,11 @@ Your current status is ${requestHints.status} and your activity is ${
 </context>`;
 
 export const formatContext = (context?: ContextResult | null) => {
-  if (!context?.userRepresentation) return '';
+  if (!context?.sessionSummary) return '';
 
-  return `<user_context>
-What you know about this user from previous interactions:
-${context.userRepresentation}
-</user_context>`;
+  return `<session_summary>
+${context.sessionSummary}
+</session_summary>`;
 };
 
 export const systemPrompt = ({

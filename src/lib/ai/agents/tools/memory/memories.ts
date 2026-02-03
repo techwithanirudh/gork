@@ -2,29 +2,15 @@ import { createLogger } from '@/lib/logger';
 import {
   buildMessageContext,
   getPeerCard,
-  isSnowflake,
   queryUser,
   resolveSessionId,
 } from '@/lib/memory/honcho';
 import { tool } from 'ai';
-import type { Guild, Message } from 'discord.js';
+import type { Message } from 'discord.js';
 import { z } from 'zod';
+import { resolveUserId } from '@/lib/discord/resolve-user';
 
 const logger = createLogger('tools:memories');
-
-function resolveUserId(input: string, guild: Guild | null): string | null {
-  if (isSnowflake(input)) return input;
-  if (!guild) return null;
-
-  const needle = input.toLowerCase();
-  const member = guild.members.cache.find(
-    (m) =>
-      m.user.username.toLowerCase() === needle ||
-      m.displayName.toLowerCase() === needle ||
-      m.user.tag?.toLowerCase() === needle,
-  );
-  return member?.user.id ?? null;
-}
 
 export const memories = ({ message }: { message: Message }) =>
   tool({
@@ -53,7 +39,7 @@ export const memories = ({ message }: { message: Message }) =>
       try {
         if (scope === 'user') {
           const resolvedUserId = userId
-            ? resolveUserId(userId, message.guild)
+            ? await resolveUserId(message, userId)
             : ctx.userId;
 
           if (!resolvedUserId) {
@@ -97,7 +83,7 @@ export const peerCard = ({ message }: { message: Message }) =>
       const ctx = buildMessageContext(message);
 
       const resolvedUserId = userId
-        ? resolveUserId(userId, message.guild)
+        ? await resolveUserId(message, userId)
         : ctx.userId;
 
       logger.debug({ userId: resolvedUserId }, 'Peer card query');

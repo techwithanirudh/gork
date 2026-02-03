@@ -111,8 +111,7 @@ export async function getContext(
     await observePeers(session, userPeer, botPeer);
 
     const sessionContext = await session.context({
-      tokens: options.tokens ?? 1024,
-      peerTarget: userPeer.id,
+      tokens: options.tokens ?? 2048,
       summary: true,
     });
 
@@ -127,7 +126,7 @@ export async function getContext(
         role: m.role as 'system' | 'user' | 'assistant',
         content: m.content,
       })),
-      userRepresentation: sessionContext.peerRepresentation ?? undefined,
+      sessionSummary: sessionContext.summary?.content ?? undefined,
     };
   } catch (error) {
     logger.error({ error, ctx }, 'getContext failed');

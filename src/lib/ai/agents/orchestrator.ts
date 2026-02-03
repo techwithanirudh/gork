@@ -9,7 +9,9 @@ import { getWeather } from './tools/get-weather';
 import { searchWeb } from './tools/search-web';
 import { successToolCall } from '../utils';
 import {
-  memories,
+  getSessionContext,
+  getUserContext,
+  getUserInsights,
   peerCard,
   react,
   reply,
@@ -51,7 +53,9 @@ export const orchestratorAgent = ({
       react: react({ message }),
       reply: reply({ message }),
       skip: skip({ message }),
-      memories: memories({ message }),
+      getSessionContext: getSessionContext({ message }),
+      getUserContext: getUserContext({ message }),
+      getUserInsights: getUserInsights({ message }),
       peerCard: peerCard({ message }),
       vectorSearch: vectorSearch({ message }),
       joinVC: joinVC({ message }),
