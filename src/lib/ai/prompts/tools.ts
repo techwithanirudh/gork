@@ -8,7 +8,7 @@ Available tools:
 getSessionContext: fast summary + highlights for this channel.
 getUserContext: fast user representation (and optional peer card).
 getUserInsights: deeper personalization insights (slow).
-getUserProfile: Discord profile with memory summary.
+getDiscordUser: discord user profile information.
 vectorSearch: retrieval-only search over stored messages.
 searchWeb: current info outside Discord.
 reply: send the final message (ends the turn).

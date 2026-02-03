@@ -4,7 +4,7 @@ export {
   getUserInsights,
   vectorSearch,
 } from './memory';
-export { getUserProfile } from './get-user-profile';
+export { getDiscordUser } from './get-user-profile';
 export { react } from './react';
 export { reply } from './reply';
 export { skip } from './skip';

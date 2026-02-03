@@ -5,12 +5,11 @@ import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
 
-const logger = createLogger('tools:user-profile');
+const logger = createLogger('tools:discord-user');
 
-export const getUserProfile = ({ message }: { message: Message }) =>
+export const getDiscordUser = ({ message }: { message: Message }) =>
   tool({
-    description:
-      'Get a Discord user profile with Honcho memory summary (peer card).',
+    description: 'Get a Discord user profile by username, tag, or ID.',
     inputSchema: z.object({
       userId: z
         .string()
