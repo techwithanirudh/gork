@@ -1,5 +1,6 @@
 import { Honcho } from '@honcho-ai/sdk';
 import { env } from '@/env';
+
 let honchoClient: Honcho | null = null;
 
 export function getHonchoClient(): Honcho {

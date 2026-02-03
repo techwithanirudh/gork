@@ -13,6 +13,7 @@ import { getTrigger } from '@/utils/triggers';
 import { Message, PermissionsBitField } from 'discord.js';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
+import type { ToolSet, TypedToolCall } from 'ai';
 
 const logger = createLogger('events:message');
 
@@ -61,27 +62,21 @@ async function canReply(message: Message): Promise<boolean> {
   return true;
 }
 
-interface ToolCallResult {
-  toolName: string;
-  input?: Record<string, unknown>;
-}
-
-async function onSuccess(message: Message, toolCalls?: ToolCallResult[]) {
-  // Extract the bot's response content from the reply tool call
-  let botResponse = '';
+async function onSuccess(message: Message, toolCalls?: TypedToolCall<ToolSet>[]) {
+  let response = '';
   if (toolCalls) {
     const replyCall = toolCalls.find((tc) => tc.toolName === 'reply');
     if (replyCall?.input?.content) {
       const content = replyCall.input.content;
-      botResponse = Array.isArray(content) ? content.join('\n') : String(content);
+      response = Array.isArray(content) ? content.join('\n') : String(content);
     }
   }
 
   const ctx = buildMessageContext(message);
   try {
-    await addTurn({ ctx, user: message.content, assistant: botResponse });
+    await addTurn({ ctx, user: message.content, assistant: response });
   } catch (error) {
-    logger.error({ error }, 'Failed to add turn to Honcho');
+    logger.error({ error }, 'Failed to add turn to memory');
   }
 }
 
@@ -116,7 +111,7 @@ export async function execute(message: Message) {
     const result = await generateResponse(message, messages, hints);
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
-      await onSuccess(message, result.toolCalls as ToolCallResult[]);
+      await onSuccess(message, result.toolCalls);
     }
     return;
   }
@@ -155,6 +150,6 @@ export async function execute(message: Message) {
   const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
-    await onSuccess(message, result.toolCalls as ToolCallResult[]);
+    await onSuccess(message, result.toolCalls);
   }
 }
