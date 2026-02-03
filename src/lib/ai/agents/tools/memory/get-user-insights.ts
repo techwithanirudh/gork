@@ -9,6 +9,8 @@ import type { Message } from 'discord.js';
 import { z } from 'zod';
 import { resolveUserId } from '@/lib/discord/resolve-user';
 
+const client = getHonchoClient();
+
 export const getUserInsights = ({ message }: { message: Message }) =>
   tool({
     description:
@@ -34,7 +36,6 @@ export const getUserInsights = ({ message }: { message: Message }) =>
         return { success: false, reason: 'User not found.' };
       }
 
-      const client = getHonchoClient();
       const peer = await client.peer(resolvePeerId(resolvedUserId));
       const sessionId = resolveSessionId(ctx);
       const response = await peer.chat(query, {

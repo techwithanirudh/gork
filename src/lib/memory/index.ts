@@ -3,7 +3,6 @@ export {
   buildMessageContext,
   getContext,
   getHonchoClient,
-  getPeerCard,
   isSnowflake,
   resolvePeerId,
   resolveSessionId,

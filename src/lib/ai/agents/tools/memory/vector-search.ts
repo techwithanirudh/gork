@@ -6,7 +6,7 @@ import type { Message } from 'discord.js';
 import { z } from 'zod';
 
 const logger = createLogger('tools:vector-search');
-const honchoClient = getHonchoClient();
+const client = getHonchoClient();
 
 export const vectorSearch = ({ message }: { message: Message }) =>
   tool({
@@ -36,7 +36,7 @@ export const vectorSearch = ({ message }: { message: Message }) =>
       try {
         if (scope === 'session') {
           const sessionId = resolveSessionId(ctx);
-          const session = await honchoClient.session(sessionId);
+          const session = await client.session(sessionId);
           const results = await session.search(query, { limit: max });
           return results.length > 0
             ? {
@@ -53,7 +53,7 @@ export const vectorSearch = ({ message }: { message: Message }) =>
               reason: 'Guild search requires a server.',
             };
           }
-          const results = await honchoClient.search(query, {
+          const results = await client.search(query, {
             limit: max,
             filters: { metadata: { guildId: ctx.guildId } },
           });
@@ -70,7 +70,7 @@ export const vectorSearch = ({ message }: { message: Message }) =>
           const filters = ctx.guildId
             ? undefined
             : { metadata: { userId: ctx.userId } };
-          const results = await honchoClient.search(query, {
+          const results = await client.search(query, {
             limit: max,
             filters,
           });

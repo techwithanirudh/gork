@@ -7,6 +7,8 @@ import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
 
+const client = getHonchoClient();
+
 export const getSessionContext = ({ message }: { message: Message }) =>
   tool({
     description: 'Get a fast summary and highlights for this channel/thread.',
@@ -26,7 +28,6 @@ export const getSessionContext = ({ message }: { message: Message }) =>
     execute: async ({ query, tokens }) => {
       const ctx = buildMessageContext(message);
       const sessionId = resolveSessionId(ctx);
-      const client = getHonchoClient();
       const session = await client.session(sessionId);
       const context = await session.context({
         summary: true,

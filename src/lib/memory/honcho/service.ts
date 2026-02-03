@@ -10,13 +10,13 @@ import {
 } from './utils';
 
 const logger = createLogger('honcho');
+const client = getHonchoClient();
 
 let cachedBotPeer: Peer | null = null;
 const observedPeers = new Set<string>();
 
 async function getBotPeer(): Promise<Peer> {
   if (cachedBotPeer) return cachedBotPeer;
-  const client = getHonchoClient();
   cachedBotPeer = await client.peer(BOT_PEER_ID, {
     configuration: { observeMe: false },
   });
@@ -24,7 +24,6 @@ async function getBotPeer(): Promise<Peer> {
 }
 
 async function getPeer(userId: string): Promise<Peer> {
-  const client = getHonchoClient();
   return client.peer(resolvePeerId(userId), {
     configuration: { observeMe: true },
   });
@@ -68,7 +67,6 @@ export async function addTurn({
   if (!user.trim() && !assistant.trim()) return;
 
   try {
-    const client = getHonchoClient();
     const session = await client.session(resolveSessionId(ctx), {
       metadata: ctx.guildId ? { guildId: ctx.guildId } : undefined,
     });
@@ -108,7 +106,6 @@ export async function getContext(
   options: ContextOptions = {},
 ): Promise<ContextResult> {
   try {
-    const client = getHonchoClient();
     const session = await client.session(resolveSessionId(ctx), {
       metadata: ctx.guildId ? { guildId: ctx.guildId } : undefined,
     });
@@ -148,15 +145,5 @@ export async function getContext(
   }
 }
 
-export async function getPeerCard(userId: string): Promise<string[] | null> {
-  try {
-    const peer = await getPeer(userId);
-    const card = await peer.card();
-    return card;
-  } catch (error) {
-    logger.error({ error, userId }, 'getPeerCard failed');
-    return null;
-  }
-}
 
 

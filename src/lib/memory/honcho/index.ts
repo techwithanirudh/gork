@@ -2,7 +2,6 @@ export { getHonchoClient } from './client';
 export {
   addTurn,
   getContext,
-  getPeerCard,
 } from './service';
 export type {
   ContextOptions,

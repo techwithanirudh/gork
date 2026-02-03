@@ -1,13 +1,14 @@
 import {
   buildMessageContext,
   getHonchoClient,
-  getPeerCard,
   resolvePeerId,
 } from '@/lib/memory/honcho';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
 import { resolveUserId } from '@/lib/discord/resolve-user';
+
+const client = getHonchoClient();
 
 export const getUserContext = ({ message }: { message: Message }) =>
   tool({
@@ -36,7 +37,6 @@ export const getUserContext = ({ message }: { message: Message }) =>
         return { success: false, reason: 'User not found.' };
       }
 
-      const client = getHonchoClient();
       const peer = await client.peer(resolvePeerId(resolvedUserId));
       const representation = await peer.representation({
         searchQuery: query,
@@ -44,7 +44,7 @@ export const getUserContext = ({ message }: { message: Message }) =>
         maxConclusions: 24,
       });
 
-      const card = includeCard ? await getPeerCard(resolvedUserId) : null;
+      const card = includeCard ? await peer.card() : null;
 
       const parts = [];
       if (representation?.trim()) {

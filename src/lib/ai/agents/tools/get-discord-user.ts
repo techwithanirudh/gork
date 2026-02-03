@@ -1,11 +1,12 @@
 import { createLogger } from '@/lib/logger';
 import { resolveUser } from '@/lib/discord/resolve-user';
-import { getPeerCard } from '@/lib/memory/honcho';
+import { getHonchoClient, resolvePeerId } from '@/lib/memory/honcho';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
 
 const logger = createLogger('tools:discord-user');
+const client = getHonchoClient();
 
 export const getDiscordUser = ({ message }: { message: Message }) =>
   tool({
@@ -28,7 +29,8 @@ export const getDiscordUser = ({ message }: { message: Message }) =>
           };
         }
 
-        const peerCard = await getPeerCard(user.id);
+        const peer = await client.peer(resolvePeerId(user.id));
+        const peerCard = await peer.card();
 
         return {
           success: true,
