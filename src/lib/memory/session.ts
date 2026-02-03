@@ -1,11 +1,50 @@
 import { createLogger } from '@/lib/logger';
+import type { Peer, Session } from '@honcho-ai/sdk';
 import { getHonchoClient } from './client';
 import type { ContextOptions, ContextResult, MessageContext } from './types';
-import { getSessionId, toMetadata } from './utils';
-import { ensureSessionPeers, getBotPeer, getUserPeer } from './peers';
+import { BOT_PEER_ID, getSessionId, resolvePeerId, toMetadata } from './utils';
 
 const logger = createLogger('honcho');
 const client = getHonchoClient();
+const observedPeers = new Set<string>();
+
+async function getBotPeer(): Promise<Peer> {
+  return client.peer(BOT_PEER_ID, {
+    configuration: { observeMe: false },
+  });
+}
+
+async function getUserPeer(userId: string): Promise<Peer> {
+  return client.peer(resolvePeerId(userId), {
+    configuration: { observeMe: true },
+  });
+}
+
+async function ensureSessionPeers(
+  session: Session,
+  peers: Array<{
+    peer: Peer;
+    configuration: { observeMe: boolean; observeOthers: boolean };
+  }>,
+) {
+  const missing = peers.filter(
+    ({ peer }) => !observedPeers.has(`${session.id}:${peer.id}`),
+  );
+
+  if (missing.length === 0) return;
+
+  await session.addPeers(missing.map(({ peer }) => peer));
+
+  await Promise.all(
+    missing.map(({ peer, configuration }) =>
+      session.setPeerConfiguration(peer, configuration),
+    ),
+  );
+
+  for (const { peer } of missing) {
+    observedPeers.add(`${session.id}:${peer.id}`);
+  }
+}
 
 export async function addTurn({
   ctx,
