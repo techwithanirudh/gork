@@ -1,7 +1,7 @@
 import { createLogger } from '@/lib/logger';
 import { getHonchoClient } from './client';
 import type { ContextOptions, ContextResult, MessageContext } from './types';
-import { resolveSessionId, toMetadata } from './utils';
+import { getSessionId, toMetadata } from './utils';
 import { ensureSessionPeers, getBotPeer, getUserPeer } from './peers';
 
 const logger = createLogger('honcho');
@@ -19,7 +19,7 @@ export async function addTurn({
   if (!user.trim() && !assistant.trim()) return;
 
   try {
-    const session = await client.session(resolveSessionId(ctx), {
+    const session = await client.session(getSessionId(ctx), {
       metadata: ctx.guildId ? { guildId: ctx.guildId } : undefined,
     });
     const [userPeer, botPeer] = await Promise.all([
@@ -58,7 +58,7 @@ export async function getContext(
   options: ContextOptions = {},
 ): Promise<ContextResult> {
   try {
-    const session = await client.session(resolveSessionId(ctx), {
+    const session = await client.session(getSessionId(ctx), {
       metadata: ctx.guildId ? { guildId: ctx.guildId } : undefined,
     });
     const [userPeer, botPeer] = await Promise.all([

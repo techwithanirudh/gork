@@ -1,15 +1,11 @@
 import { createLogger } from '@/lib/logger';
-import {
-  buildMessageContext,
-  getHonchoClient,
-  resolveSessionId,
-} from '@/lib/memory';
+import { getContextFromMessage } from '@/lib/memory';
+import { getSessionForContext, client } from './shared';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
 
 const logger = createLogger('tools:vector-search');
-const client = getHonchoClient();
 
 export const vectorSearch = ({ message }: { message: Message }) =>
   tool({
@@ -33,13 +29,12 @@ export const vectorSearch = ({ message }: { message: Message }) =>
         .describe('Optional max number of results to return (default 5).'),
     }),
     execute: async ({ query, scope, limit }) => {
-      const ctx = buildMessageContext(message);
+      const ctx = getContextFromMessage(message);
       const max = limit ?? 5;
 
       try {
         if (scope === 'session') {
-          const sessionId = resolveSessionId(ctx);
-          const session = await client.session(sessionId);
+          const session = await getSessionForContext(ctx);
           const results = await session.search(query, { limit: max });
           return results.length > 0
             ? {

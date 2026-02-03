@@ -16,7 +16,7 @@ export function resolvePeerId(userId: string): string {
   return `u-${userId}`;
 }
 
-export function resolveSessionId(ctx: MessageContext): string {
+export function getSessionId(ctx: MessageContext): string {
   if (ctx.isDM) {
     const [a, b] = [ctx.userId, ctx.botId].sort();
     return `dm-${a}-${b}`;
@@ -34,7 +34,7 @@ export function toMetadata(ctx: MessageContext) {
   };
 }
 
-export function buildMessageContext(message: Message): MessageContext {
+export function getContextFromMessage(message: Message): MessageContext {
   const botId = message.client.user?.id ?? 'gork';
   const isDM = !message.guild;
 

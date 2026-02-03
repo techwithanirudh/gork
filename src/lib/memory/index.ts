@@ -1,12 +1,9 @@
+export { getHonchoClient } from './client';
+export { addTurn, getContext } from './session';
+export type { ContextOptions, ContextResult, MessageContext } from './types';
 export {
-  addTurn,
-  buildMessageContext,
-  getContext,
-  getHonchoClient,
+  getContextFromMessage,
+  getSessionId,
   isSnowflake,
   resolvePeerId,
-  resolveSessionId,
-  type ContextOptions,
-  type ContextResult,
-  type MessageContext,
-} from './honcho';
+} from './utils';

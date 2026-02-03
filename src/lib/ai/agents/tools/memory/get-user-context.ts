@@ -1,14 +1,7 @@
-import {
-  buildMessageContext,
-  getHonchoClient,
-  resolvePeerId,
-} from '@/lib/memory';
+import { getPeerByUserId, resolveUserId } from './shared';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
-import { resolveUserId } from '@/lib/discord/resolve-user';
-
-const client = getHonchoClient();
 
 export const getUserContext = ({ message }: { message: Message }) =>
   tool({
@@ -28,16 +21,12 @@ export const getUserContext = ({ message }: { message: Message }) =>
         .describe('Include peer card summary (default false).'),
     }),
     execute: async ({ userId, query, includeCard }) => {
-      const ctx = buildMessageContext(message);
-      const resolvedUserId = userId
-        ? await resolveUserId(message, userId)
-        : ctx.userId;
-
-      if (!resolvedUserId) {
+      const resolved = await resolveUserId(message, userId);
+      if (!resolved.userId) {
         return { success: false, reason: 'User not found.' };
       }
 
-      const peer = await client.peer(resolvePeerId(resolvedUserId));
+      const peer = await getPeerByUserId(resolved.userId);
       const representation = await peer.representation({
         searchQuery: query,
         searchTopK: 8,

@@ -1,15 +1,11 @@
 import {
-  buildMessageContext,
-  getHonchoClient,
-  resolvePeerId,
-  resolveSessionId,
-} from '@/lib/memory';
+  getPeerByUserId,
+  resolveUserId,
+} from './shared';
+import { getContextFromMessage, getSessionId } from '@/lib/memory';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
-import { resolveUserId } from '@/lib/discord/resolve-user';
-
-const client = getHonchoClient();
 
 export const getUserInsights = ({ message }: { message: Message }) =>
   tool({
@@ -27,17 +23,14 @@ export const getUserInsights = ({ message }: { message: Message }) =>
         .describe('Scope for insights (default session).'),
     }),
     execute: async ({ query, userId, scope }) => {
-      const ctx = buildMessageContext(message);
-      const resolvedUserId = userId
-        ? await resolveUserId(message, userId)
-        : ctx.userId;
-
-      if (!resolvedUserId) {
+      const ctx = getContextFromMessage(message);
+      const resolved = await resolveUserId(message, userId);
+      if (!resolved.userId) {
         return { success: false, reason: 'User not found.' };
       }
 
-      const peer = await client.peer(resolvePeerId(resolvedUserId));
-      const sessionId = resolveSessionId(ctx);
+      const peer = await getPeerByUserId(resolved.userId);
+      const sessionId = getSessionId(ctx);
       const response = await peer.chat(query, {
         session: scope === 'global' ? undefined : sessionId,
       });

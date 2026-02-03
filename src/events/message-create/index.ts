@@ -1,7 +1,7 @@
 import { keywords, messageThreshold } from '@/config';
 import { ratelimit, redisKeys } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
-import { addTurn, buildMessageContext } from '@/lib/memory';
+import { addTurn, getContextFromMessage } from '@/lib/memory';
 import { buildChatContext } from '@/utils/context';
 import { logReply } from '@/utils/log';
 import {
@@ -72,7 +72,7 @@ async function onSuccess(message: Message, toolCalls?: TypedToolCall<ToolSet>[])
     }
   }
 
-  const ctx = buildMessageContext(message);
+  const ctx = getContextFromMessage(message);
   try {
     await addTurn({ ctx, user: message.content, assistant: response });
   } catch (error) {

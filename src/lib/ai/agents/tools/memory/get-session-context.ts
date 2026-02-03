@@ -1,13 +1,8 @@
-import {
-  buildMessageContext,
-  getHonchoClient,
-  resolveSessionId,
-} from '@/lib/memory';
+import { getContextFromMessage } from '@/lib/memory';
+import { getSessionForContext } from './shared';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
-
-const client = getHonchoClient();
 
 export const getSessionContext = ({ message }: { message: Message }) =>
   tool({
@@ -26,9 +21,8 @@ export const getSessionContext = ({ message }: { message: Message }) =>
         .describe('Token budget for session context (default 2048).'),
     }),
     execute: async ({ query, tokens }) => {
-      const ctx = buildMessageContext(message);
-      const sessionId = resolveSessionId(ctx);
-      const session = await client.session(sessionId);
+      const ctx = getContextFromMessage(message);
+      const session = await getSessionForContext(ctx);
       const context = await session.context({
         summary: true,
         tokens: tokens ?? 2048,

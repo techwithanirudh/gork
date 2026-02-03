@@ -1,9 +1,5 @@
 import { orchestratorAgent } from '@/lib/ai/agents/orchestrator';
-import {
-  getContext,
-  buildMessageContext,
-  type ContextResult,
-} from '@/lib/memory';
+import { getContext, getContextFromMessage, type ContextResult } from '@/lib/memory';
 import { createLogger } from '@/lib/logger';
 import type { RequestHints } from '@/types';
 import type { ModelMessage } from 'ai';
@@ -17,7 +13,7 @@ export async function generateResponse(
   hints: RequestHints,
 ) {
   try {
-    const ctx = buildMessageContext(msg);
+    const ctx = getContextFromMessage(msg);
 
     const context = await getContext(ctx, {});
     const agent = orchestratorAgent({
