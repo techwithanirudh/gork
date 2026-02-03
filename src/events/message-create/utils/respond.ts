@@ -3,7 +3,7 @@ import {
   getContext,
   buildMessageContext,
   type ContextResult,
-} from '@/lib/memory/honcho';
+} from '@/lib/memory';
 import { createLogger } from '@/lib/logger';
 import type { RequestHints } from '@/types';
 import type { ModelMessage } from 'ai';

@@ -1,4 +1,4 @@
-import type { ContextResult } from '@/lib/memory/honcho';
+import type { ContextResult } from '@/lib/memory';
 import type { RequestHints } from '@/types/request';
 import { Experimental_Agent as Agent, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';

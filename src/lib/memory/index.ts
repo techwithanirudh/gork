@@ -6,7 +6,6 @@ export {
   isSnowflake,
   resolvePeerId,
   resolveSessionId,
-  toMetadata,
   type ContextOptions,
   type ContextResult,
   type MessageContext,

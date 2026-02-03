@@ -1,4 +1,4 @@
-import { isSnowflake } from '@/lib/memory/honcho';
+import { isSnowflake } from '@/lib/memory';
 import type { Guild, Message, User } from 'discord.js';
 
 async function fetchUserById(

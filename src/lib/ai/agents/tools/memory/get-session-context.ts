@@ -2,7 +2,7 @@ import {
   buildMessageContext,
   getHonchoClient,
   resolveSessionId,
-} from '@/lib/memory/honcho';
+} from '@/lib/memory';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';

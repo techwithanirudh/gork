@@ -1,6 +1,9 @@
 import { createLogger } from '@/lib/logger';
-import { buildMessageContext, resolveSessionId } from '@/lib/memory/honcho';
-import { getHonchoClient } from '@/lib/memory/honcho/client';
+import {
+  buildMessageContext,
+  getHonchoClient,
+  resolveSessionId,
+} from '@/lib/memory';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';

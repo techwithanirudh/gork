@@ -1,4 +1,4 @@
-import type { ContextResult } from '@/lib/memory/honcho';
+import type { ContextResult } from '@/lib/memory';
 import type { RequestHints } from '@/types';
 import type { Message } from 'discord.js';
 import { corePrompt } from './core';

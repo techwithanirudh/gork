@@ -1,7 +1,7 @@
 import { keywords, messageThreshold } from '@/config';
 import { ratelimit, redisKeys } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
-import { addTurn, buildMessageContext } from '@/lib/memory/honcho';
+import { addTurn, buildMessageContext } from '@/lib/memory';
 import { buildChatContext } from '@/utils/context';
 import { logReply } from '@/utils/log';
 import {
