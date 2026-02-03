@@ -3,7 +3,6 @@ export {
   addTurn,
   getContext,
   getPeerCard,
-  queryUser,
   searchGuild,
 } from './service';
 export type {

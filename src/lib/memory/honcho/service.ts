@@ -35,16 +35,30 @@ async function getPeer(userId: string): Promise<Peer> {
   });
 }
 
-async function ensureObserved(
+async function ensurePeers(
   session: Session,
-  peer: Peer,
-  configuration: { observeMe: boolean; observeOthers: boolean },
+  peers: Array<{
+    peer: Peer;
+    configuration: { observeMe: boolean; observeOthers: boolean };
+  }>,
 ) {
-  const key = `${session.id}:${peer.id}`;
-  if (observedPeers.has(key)) return;
-  await session.addPeers(peer);
-  await session.setPeerConfiguration(peer, configuration);
-  observedPeers.add(key);
+  const missing = peers.filter(
+    ({ peer }) => !observedPeers.has(`${session.id}:${peer.id}`),
+  );
+
+  if (missing.length === 0) return;
+
+  await session.addPeers(missing.map(({ peer }) => peer));
+
+  await Promise.all(
+    missing.map(({ peer, configuration }) =>
+      session.setPeerConfiguration(peer, configuration),
+    ),
+  );
+
+  for (const { peer } of missing) {
+    observedPeers.add(`${session.id}:${peer.id}`);
+  }
 }
 
 export async function addTurn({
@@ -68,14 +82,16 @@ export async function addTurn({
       getBotPeer(),
     ]);
 
-    await ensureObserved(session, userPeer, {
-      observeMe: true,
-      observeOthers: true,
-    });
-    await ensureObserved(session, botPeer, {
-      observeMe: false,
-      observeOthers: false,
-    });
+    await ensurePeers(session, [
+      {
+        peer: userPeer,
+        configuration: { observeMe: true, observeOthers: true },
+      },
+      {
+        peer: botPeer,
+        configuration: { observeMe: false, observeOthers: false },
+      },
+    ]);
     const metadata = toMetadata(ctx);
 
     const messages = [];
@@ -106,14 +122,16 @@ export async function getContext(
       getBotPeer(),
     ]);
 
-    await ensureObserved(session, userPeer, {
-      observeMe: true,
-      observeOthers: true,
-    });
-    await ensureObserved(session, botPeer, {
-      observeMe: false,
-      observeOthers: false,
-    });
+    await ensurePeers(session, [
+      {
+        peer: userPeer,
+        configuration: { observeMe: true, observeOthers: true },
+      },
+      {
+        peer: botPeer,
+        configuration: { observeMe: false, observeOthers: false },
+      },
+    ]);
 
     const sessionContext = await session.context({
       tokens: options.tokens ?? 2048,

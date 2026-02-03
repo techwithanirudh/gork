@@ -5,7 +5,6 @@ export {
   getHonchoClient,
   getPeerCard,
   isSnowflake,
-  queryUser,
   resolvePeerId,
   resolveSessionId,
   searchGuild,
