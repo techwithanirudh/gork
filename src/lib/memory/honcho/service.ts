@@ -35,37 +35,16 @@ async function getPeer(userId: string): Promise<Peer> {
   });
 }
 
-async function getSession(ctx: MessageContext): Promise<Session> {
-  const client = getHonchoClient();
-  return client.session(resolveSessionId(ctx), {
-    metadata: ctx.guildId ? { guildId: ctx.guildId } : undefined,
-  });
-}
-
-async function getSessionAndPeers(ctx: MessageContext) {
-  return Promise.all([getSession(ctx), getPeer(ctx.userId), getBotPeer()]);
-}
-
-async function observePeers(session: Session, userPeer: Peer, botPeer: Peer) {
-  const userKey = `${session.id}:${userPeer.id}`;
-  if (!observedPeers.has(userKey)) {
-    await session.addPeers(userPeer);
-    await session.setPeerConfiguration(userPeer, {
-      observeMe: true,
-      observeOthers: true,
-    });
-    observedPeers.add(userKey);
-  }
-
-  const botKey = `${session.id}:${botPeer.id}`;
-  if (!observedPeers.has(botKey)) {
-    await session.addPeers(botPeer);
-    await session.setPeerConfiguration(botPeer, {
-      observeMe: false,
-      observeOthers: false,
-    });
-    observedPeers.add(botKey);
-  }
+async function ensureObserved(
+  session: Session,
+  peer: Peer,
+  configuration: { observeMe: boolean; observeOthers: boolean },
+) {
+  const key = `${session.id}:${peer.id}`;
+  if (observedPeers.has(key)) return;
+  await session.addPeers(peer);
+  await session.setPeerConfiguration(peer, configuration);
+  observedPeers.add(key);
 }
 
 export async function addTurn({
@@ -80,8 +59,23 @@ export async function addTurn({
   if (!user.trim() && !assistant.trim()) return;
 
   try {
-    const [session, userPeer, botPeer] = await getSessionAndPeers(ctx);
-    await observePeers(session, userPeer, botPeer);
+    const client = getHonchoClient();
+    const session = await client.session(resolveSessionId(ctx), {
+      metadata: ctx.guildId ? { guildId: ctx.guildId } : undefined,
+    });
+    const [userPeer, botPeer] = await Promise.all([
+      getPeer(ctx.userId),
+      getBotPeer(),
+    ]);
+
+    await ensureObserved(session, userPeer, {
+      observeMe: true,
+      observeOthers: true,
+    });
+    await ensureObserved(session, botPeer, {
+      observeMe: false,
+      observeOthers: false,
+    });
     const metadata = toMetadata(ctx);
 
     const messages = [];
@@ -103,8 +97,23 @@ export async function getContext(
   options: ContextOptions = {},
 ): Promise<ContextResult> {
   try {
-    const [session, userPeer, botPeer] = await getSessionAndPeers(ctx);
-    await observePeers(session, userPeer, botPeer);
+    const client = getHonchoClient();
+    const session = await client.session(resolveSessionId(ctx), {
+      metadata: ctx.guildId ? { guildId: ctx.guildId } : undefined,
+    });
+    const [userPeer, botPeer] = await Promise.all([
+      getPeer(ctx.userId),
+      getBotPeer(),
+    ]);
+
+    await ensureObserved(session, userPeer, {
+      observeMe: true,
+      observeOthers: true,
+    });
+    await ensureObserved(session, botPeer, {
+      observeMe: false,
+      observeOthers: false,
+    });
 
     const sessionContext = await session.context({
       tokens: options.tokens ?? 2048,
