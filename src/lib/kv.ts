@@ -38,7 +38,7 @@ redis.on('ready', () => {
 
 export const ratelimit = {
   async limit(
-    key: string
+    key: string,
   ): Promise<{ success: boolean; remaining?: number; reset?: number }> {
     const now = Date.now();
     const windowStart = now - WINDOW_SECONDS * 1000;
@@ -70,5 +70,4 @@ export const ratelimit = {
 export const redisKeys = {
   messageCount: (ctx: string) => `${PREFIX}:ctx:messageCount:${ctx}`,
   channelCount: (ctx: string) => `${PREFIX}:ctx:channelCount:${ctx}`,
-  memorySessions: () => `${PREFIX}:memory:sessions`,
 };

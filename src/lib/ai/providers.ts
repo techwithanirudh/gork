@@ -49,13 +49,13 @@ export const provider = customProvider({
   languageModels: {
     'chat-model': chatModel,
     'relevance-model': relevanceModel,
-    'agent-model': hackclub('moonshotai/kimi-k2-thinking'),
+    'agent-model': hackclub('moonshotai/kimi-k2.5'),
   },
   imageModels: {
     // 'small-model': openai.imageModel('dall-e-2'),
   },
   embeddingModels: {
     'small-model': openai.embedding('text-embedding-3-small'),
-    'large-model': hackclub.embedding('openai/text-embedding-3-large'),
+    'large-model': hackclub.textEmbeddingModel('openai/text-embedding-3-large'),
   },
 });

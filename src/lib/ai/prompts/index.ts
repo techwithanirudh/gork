@@ -1,15 +1,14 @@
+import type { ContextResult } from '@/lib/memory/honcho';
 import type { RequestHints } from '@/types';
 import type { Message } from 'discord.js';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
+import { memoryPrompt } from './memory';
 import { personalityPrompt } from './personality';
-import {
-  memoryPrompt,
-  relevancePrompt,
-  replyPrompt,
-  voicePrompt,
-} from './tasks';
+import { relevancePrompt, replyPrompt, voicePrompt } from './tasks';
 import { toolsPrompt } from './tools';
+
+export type { ContextResult };
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 <context>
@@ -24,25 +23,39 @@ Your current status is ${requestHints.status} and your activity is ${
 }.
 </context>`;
 
+export const formatContext = (context?: ContextResult | null) => {
+  if (!context?.userRepresentation) return '';
+
+  return `<user_context>
+What you know about this user from previous interactions:
+${context.userRepresentation}
+</user_context>`;
+};
+
 export const systemPrompt = ({
   agent,
   requestHints,
   message,
   speakerName,
+  context,
 }: {
   agent: string;
   requestHints: RequestHints;
   message?: Message;
   speakerName?: string;
+  context?: ContextResult | null;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const contextPrompt = formatContext(context);
 
   if (agent === 'chat') {
     return [
       corePrompt,
       personalityPrompt,
       examplesPrompt,
+      memoryPrompt,
       requestPrompt,
+      contextPrompt,
       toolsPrompt,
       replyPrompt,
     ]
@@ -60,8 +73,6 @@ export const systemPrompt = ({
       .filter(Boolean)
       .join('\n\n')
       .trim();
-  } else if (agent === 'memory') {
-    return [corePrompt, memoryPrompt].filter(Boolean).join('\n\n').trim();
   } else if (agent === 'voice') {
     return [
       corePrompt,

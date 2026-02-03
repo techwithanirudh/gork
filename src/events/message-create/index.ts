@@ -1,20 +1,19 @@
 import { keywords, messageThreshold } from '@/config';
-import { saveChatMemory } from '@/lib/ai/memory/ingest';
 import { ratelimit, redisKeys } from '@/lib/kv';
+import { createLogger } from '@/lib/logger';
+import { addTurn, buildMessageContext } from '@/lib/memory/honcho';
 import { buildChatContext } from '@/utils/context';
+import { logReply } from '@/utils/log';
 import {
   checkMessageQuota,
   handleMessageCount,
   resetMessageCount,
 } from '@/utils/message-rate-limiter';
+import { getTrigger } from '@/utils/triggers';
 import { Message, PermissionsBitField } from 'discord.js';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
-
-import { createLogger } from '@/lib/logger';
-
-import { logReply } from '@/utils/log';
-import { getTrigger } from '@/utils/triggers';
+import type { ToolSet, TypedToolCall } from 'ai';
 
 const logger = createLogger('events:message');
 
@@ -44,16 +43,16 @@ async function canReply(message: Message): Promise<boolean> {
     if (!channel.isDMBased() && 'guild' in channel) {
       const permissions = botMember.permissionsIn(channel);
       const hasReadPermission = permissions.has(
-        PermissionsBitField.Flags.ViewChannel
+        PermissionsBitField.Flags.ViewChannel,
       );
       const hasSendPermission = permissions.has(
-        PermissionsBitField.Flags.SendMessages
+        PermissionsBitField.Flags.SendMessages,
       );
 
       if (!hasReadPermission || !hasSendPermission) {
         logger.debug(
           { read: hasReadPermission, send: hasSendPermission },
-          `[${guild.id}] Missing permissions in channel ${channel.id}`
+          `[${guild.id}] Missing permissions in channel ${channel.id}`,
         );
         return false;
       }
@@ -63,8 +62,22 @@ async function canReply(message: Message): Promise<boolean> {
   return true;
 }
 
-async function onSuccess(message: Message) {
-  await saveChatMemory(message, 5);
+async function onSuccess(message: Message, toolCalls?: TypedToolCall<ToolSet>[]) {
+  let response = '';
+  if (toolCalls) {
+    const replyCall = toolCalls.find((tc) => tc.toolName === 'reply');
+    if (replyCall?.input?.content) {
+      const content = replyCall.input.content;
+      response = Array.isArray(content) ? content.join('\n') : String(content);
+    }
+  }
+
+  const ctx = buildMessageContext(message);
+  try {
+    await addTurn({ ctx, user: message.content, assistant: response });
+  } catch (error) {
+    logger.error({ error }, 'Failed to add turn to memory');
+  }
 }
 
 export async function execute(message: Message) {
@@ -92,13 +105,13 @@ export async function execute(message: Message) {
       {
         message: `${author.username}: ${content}`,
       },
-      `[${ctxId}] Triggered by ${trigger.type}`
+      `[${ctxId}] Triggered by ${trigger.type}`,
     );
 
     const result = await generateResponse(message, messages, hints);
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
-      await onSuccess(message);
+      await onSuccess(message, result.toolCalls);
     }
     return;
   }
@@ -107,7 +120,7 @@ export async function execute(message: Message) {
 
   if (!hasQuota) {
     logger.debug(
-      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`
+      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`,
     );
     return;
   }
@@ -115,11 +128,11 @@ export async function execute(message: Message) {
   const { probability, reason } = await assessRelevance(
     message,
     messages,
-    hints
+    hints,
   );
   logger.info(
     { reason, probability, message: `${author.username}: ${content}` },
-    `[${ctxId}] Relevance check`
+    `[${ctxId}] Relevance check`,
   );
 
   const willReply = probability > 0.5;
@@ -137,6 +150,6 @@ export async function execute(message: Message) {
   const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
-    await onSuccess(message);
+    await onSuccess(message, result.toolCalls);
   }
 }
