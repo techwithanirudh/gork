@@ -7,10 +7,8 @@ export {
   isSnowflake,
   resolvePeerId,
   resolveSessionId,
-  searchGuild,
   toMetadata,
   type ContextOptions,
   type ContextResult,
   type MessageContext,
-  type SearchResult,
 } from './honcho';

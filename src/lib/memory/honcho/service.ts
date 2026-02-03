@@ -1,12 +1,7 @@
 import { createLogger } from '@/lib/logger';
-import type { Message, Peer, Session } from '@honcho-ai/sdk';
+import type { Peer, Session } from '@honcho-ai/sdk';
 import { getHonchoClient } from './client';
-import type {
-  ContextOptions,
-  ContextResult,
-  MessageContext,
-  SearchResult,
-} from './types';
+import type { ContextOptions, ContextResult, MessageContext } from './types';
 import {
   BOT_PEER_ID,
   resolvePeerId,
@@ -164,23 +159,4 @@ export async function getPeerCard(userId: string): Promise<string[] | null> {
   }
 }
 
-export async function searchGuild(
-  guildId: string,
-  query: string,
-): Promise<SearchResult[]> {
-  try {
-    const client = getHonchoClient();
-    const messages = await client.search(query, {
-      filters: { metadata: { guildId } },
-      limit: 10,
-    });
 
-    return messages.map((msg: Message) => ({
-      sessionId: msg.sessionId,
-      content: msg.content,
-    }));
-  } catch (error) {
-    logger.error({ error, guildId }, 'searchGuild failed');
-    return [];
-  }
-}

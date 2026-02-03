@@ -16,11 +16,6 @@ export interface ContextResult {
   sessionSummary?: string;
 }
 
-export interface SearchResult {
-  sessionId: string;
-  content: string;
-}
-
 export interface ContextOptions {
   tokens?: number;
 }

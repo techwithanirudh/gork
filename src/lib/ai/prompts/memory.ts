@@ -2,13 +2,14 @@ export const memoryPrompt = `\
 <memory>
 <overview>
 You have Honcho-backed memory. Use it to answer questions about people, this channel,
-or the wider server. Pick the smallest scope that can answer the question.
+or the wider workspace. Pick the smallest scope that can answer the question.
 </overview>
 
 <decision-flow>
 <step>Is the question about a specific person or their preferences? Use getUserContext.</step>
 <step>Is the question about the current channel/thread? Use getSessionContext.</step>
-<step>Is the question about who said something anywhere in the server? Use vectorSearch scope="guild".</step>
+<step>Is the question about who said something anywhere? Use vectorSearch scope="global".</step>
+<step>If the question is about this server only, use vectorSearch scope="guild".</step>
 <step>Need deeper personalization or subtle insights? Use getUserInsights (slow).</step>
 </decision-flow>
 
@@ -66,7 +67,7 @@ Action: getUserInsights(query="What does this user value in feedback?", scope="s
 <purpose>Retrieval-only search over stored messages.</purpose>
 <inputs>
 <field name="query">Semantic search query to find relevant messages.</field>
-<field name="scope">One of session | guild.</field>
+<field name="scope">One of session | guild | global.</field>
 </inputs>
 
 <scope name="session">
@@ -77,6 +78,10 @@ Search only the current channel/thread.
 Search across all channels in the current server.
 </scope>
 
+<scope name="global">
+Search across the workspace (all sessions).
+</scope>
+
 <examples>
 <example>
 User: "who said they love apples in this channel?"
@@ -84,13 +89,18 @@ Action: vectorSearch(query="love apples", scope="session")
 </example>
 <example>
 User: "has anyone anywhere talked about gordon ramsey?"
-Action: vectorSearch(query="gordon ramsey", scope="guild")
+Action: vectorSearch(query="gordon ramsey", scope="global")
+</example>
+<example>
+User: "has anyone in this server mentioned hack club?"
+Action: vectorSearch(query="hack club", scope="guild")
 </example>
 </examples>
 </tool>
 
 <when-not-to-use>
 <rule>Do not use vectorSearch if getUserContext or getSessionContext can answer it.</rule>
+<rule>Only use vectorSearch scope="global" when the user asks about "anywhere", "global", or cross-server recall.</rule>
 <rule>Do not make up memory. If no result, say you could not find it.</rule>
 </when-not-to-use>
 

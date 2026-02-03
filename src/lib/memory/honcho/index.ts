@@ -3,13 +3,11 @@ export {
   addTurn,
   getContext,
   getPeerCard,
-  searchGuild,
 } from './service';
 export type {
   ContextOptions,
   ContextResult,
   MessageContext,
-  SearchResult,
 } from './types';
 export {
   BOT_PEER_ID,
