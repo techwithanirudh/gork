@@ -8,7 +8,14 @@ import { getUserInfo } from '../tools/get-user-info';
 import { getWeather } from '../tools/get-weather';
 import { searchWeb } from '../tools/search-web';
 import { successToolCall } from '../utils';
-import { memories, react, reply, skip, startDM } from './tools/chat';
+import {
+  generateImage,
+  memories,
+  react,
+  reply,
+  skip,
+  startDM,
+} from './tools/chat';
 import { joinVC, leaveVC } from './tools/chat/voice-channel';
 import { listChannels, listDMs, listGuilds, listUsers } from './tools/memory';
 
@@ -31,12 +38,14 @@ export const orchestratorAgent = ({
       successToolCall('reply'),
       successToolCall('react'),
       successToolCall('skip'),
+      successToolCall('generateImage'),
     ],
     toolChoice: 'required',
     tools: {
       getWeather,
       searchWeb,
       startDM: startDM({ message }),
+      generateImage: generateImage({ message }),
       getUserInfo: getUserInfo({ message }),
       react: react({ message }),
       reply: reply({ message }),
@@ -70,7 +79,7 @@ export const orchestratorAgent = ({
             return;
 
           await saveToolMemory(message, call.toolName, result);
-        })
+        }),
       );
     },
     experimental_telemetry: {

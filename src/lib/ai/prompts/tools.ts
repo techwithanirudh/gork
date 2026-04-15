@@ -15,6 +15,7 @@ Available tools
 - react: add emoji reaction (ends the turn).
 - skip: bow out silently when a response has no value.
 - startDM: open a direct message when continuing privately makes sense.
+- generateImage: create and post an AI-generated image in the channel.
 - discord tools:
     listGuilds: list all guilds the bot is in.
     listChannels: list all channels in the current guild. e.g, joining a voice channel.
