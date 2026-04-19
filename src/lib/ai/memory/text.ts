@@ -22,7 +22,7 @@ export function formatMemories(
       }
 
       const structured = expandMetadata(metadata);
-      if (structured.version && structured.version !== 2) {
+      if (structured.version && ![1, 2].includes(structured.version)) {
         return null;
       }
 

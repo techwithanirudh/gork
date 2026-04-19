@@ -24,7 +24,7 @@ export type Channel = z.infer<typeof ChannelObjectSchema>;
 export type Participant = z.infer<typeof ParticipantObjectSchema>;
 
 const StructuredBaseSchema = z.object({
-  version: z.literal(2).default(2),
+  version: z.union([z.literal(1), z.literal(2)]).default(1),
   type: z.enum(['chat', 'tool', 'summary', 'entity']),
   createdAt: z.number().int(),
   lastRetrievalTime: z.number().optional(),
@@ -68,7 +68,7 @@ export type PineconeMetadataInput = z.infer<typeof StructuredMetadataSchema>;
 
 const StorageBaseSchema = z.object({
   hash: z.string().optional(),
-  version: z.literal(2),
+  version: z.union([z.literal(1), z.literal(2)]),
   type: z.enum(['chat', 'tool', 'summary', 'entity']),
   createdAt: z.number().int(),
   lastRetrievalTime: z.number().optional(),
