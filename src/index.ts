@@ -1,4 +1,7 @@
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
+import { LangfuseExporter } from 'langfuse-vercel';
 import { commands } from '@/commands';
 import { deployCommands } from '@/deploy-commands';
 import { env } from '@/env';
@@ -8,6 +11,12 @@ import { createLogger } from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
 
 const logger = createLogger('core');
+
+export const langfuse = new NodeSDK({
+  traceExporter: new LangfuseExporter(),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
 export const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -46,6 +55,7 @@ client.once(Events.ClientReady, async (client) => {
     logger.warn({ error }, 'Redis connection failed; continuing without cache');
   }
 
+  langfuse.start();
   beginStatusUpdates(client);
 });
 
@@ -94,6 +104,7 @@ const gracefulShutdown = async (signal: string) => {
     logger.info('Redis connection closed');
   }
 
+  await langfuse.shutdown();
   process.exit(0);
 };
 
@@ -115,6 +126,12 @@ process.on('beforeExit', () => {
   }
 });
 
-client.login(env.DISCORD_TOKEN).catch((err) => {
+client.login(env.DISCORD_TOKEN).catch(async (err) => {
   logger.error('Login failed:', err);
+
+  await langfuse.shutdown();
+
+  if (redis?.isOpen) {
+    await redis.quit();
+  }
 });

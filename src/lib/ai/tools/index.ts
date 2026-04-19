@@ -10,17 +10,21 @@ import { searchWeb } from './search-web';
 import { skip } from './skip';
 import { startDM } from './start-dm';
 
+const sharedTools = {
+  getWeather,
+  searchWeb,
+} as const;
+
 export function createToolset({ message }: { message: Message }) {
   return {
-    getWeather,
-    searchWeb,
+    ...sharedTools,
     searchMemories: searchMemories(),
-    startDM: startDM({ message }),
     getUserInfo: getUserInfo({ message }),
+    listChannels: listChannels({ message }),
+    listGuilds: listGuilds({ message }),
     react: react({ message }),
     reply: reply({ message }),
     skip: skip({ message }),
-    listGuilds: listGuilds({ message }),
-    listChannels: listChannels({ message }),
+    startDM: startDM({ message }),
   };
 }

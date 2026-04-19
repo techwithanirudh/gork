@@ -27,6 +27,10 @@ export const env = createEnv({
     DEEPGRAM_API_KEY: z.string().min(1),
     // Exa
     EXA_API_KEY: z.string().min(1),
+    // Langfuse
+    LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
+    LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
+    LANGFUSE_BASEURL: z.url().min(1).optional(),
     // Pinecone
     PINECONE_API_KEY: z.string().min(1),
     PINECONE_INDEX: z.string().min(1),

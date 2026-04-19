@@ -3,7 +3,8 @@ import type { RequestHints } from '@/types';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
-import { relevancePrompt, replyPrompt } from './tasks';
+import { relevancePrompt } from './tasks/relevance';
+import { replyPrompt } from './tasks/reply';
 import { toolsPrompt } from './tools';
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\

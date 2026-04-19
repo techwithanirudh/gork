@@ -24,6 +24,7 @@
     "fix": "ultracite fix"
   },
   "dependencies": {
+    "@exalabs/ai-sdk": "^1.0.5",
     "@ai-sdk/google": "^3.0.64",
     "@ai-sdk/openai": "^3.0.53",
     "@cspell/dict-bash": "^4.2.2",
@@ -35,6 +36,8 @@
     "@elevenlabs/elevenlabs-js": "^2.43.0",
     "@neondatabase/serverless": "^1.1.0",
     "@openrouter/ai-sdk-provider": "^2.8.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.73.0",
+    "@opentelemetry/sdk-node": "^0.206.0",
     "@pinecone-database/pinecone": "^7.2.0",
     "@t3-oss/env-core": "^0.13.11",
     "@vercel/functions": "^3.4.3",
@@ -46,9 +49,9 @@
     "discord.js": "^14.26.3",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
-    "exa-js": "^2.11.0",
     "ffmpeg-static": "^5.3.0",
     "jsonrepair": "^3.14.0",
+    "langfuse-vercel": "^3.38.20",
     "libsodium-wrappers": "^0.8.4",
     "lint-staged": "^16.4.0",
     "node-crc": "^4.0.0",
