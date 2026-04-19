@@ -12,7 +12,7 @@ export const listGuilds = ({ message }: { message: Message }) =>
         .optional()
         .describe('Optional name query to filter guilds'),
     }),
-    execute: async ({ query }) => {
+    execute: ({ query }) => {
       const all = message.client.guilds.cache.map((g) => ({
         id: g.id,
         name: g.name,

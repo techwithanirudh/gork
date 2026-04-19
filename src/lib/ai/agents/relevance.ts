@@ -1,6 +1,6 @@
 import { Experimental_Agent as Agent, tool } from 'ai';
 import type { Message } from 'discord.js';
-import { probabilitySchema } from '@/lib/validators';
+import { probabilitySchema } from '@/lib/validators/probability';
 import type { RequestHints } from '@/types/request';
 import { systemPrompt } from '../prompts';
 import { provider } from '../providers';
@@ -26,7 +26,7 @@ export const relevanceAgent = ({
         inputSchema: probabilitySchema,
       }),
     },
-    prepareStep: async ({ stepNumber }) => {
+    prepareStep: ({ stepNumber }) => {
       if (stepNumber === 0) {
         // Force the relevance tool to be used first
         return {

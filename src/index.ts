@@ -43,26 +43,33 @@ client.on(Events.GuildCreate, async (guild) => {
   }
 });
 
-client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isCommand()) {
+client.on(Events.InteractionCreate, (interaction) => {
+  if (!(interaction.isChatInputCommand() && interaction.inCachedGuild())) {
     return;
   }
   const { commandName } = interaction;
   if (commands[commandName as keyof typeof commands]) {
-    // @ts-expect-error todo: fix this
-    commands[commandName as keyof typeof commands].execute(interaction);
+    commands[commandName as keyof typeof commands]
+      .execute(interaction)
+      .catch((error: unknown) => {
+        logger.error({ error }, 'Command execution failed');
+      });
   }
 });
 
-Object.keys(events).forEach((key) => {
+for (const key of Object.keys(events)) {
   const event = events[key as keyof typeof events];
 
   if (event?.once) {
-    client.once(event.name, (...args) => event.execute(...args));
+    client.once(event.name, (...args: unknown[]) =>
+      (event.execute as (...eventArgs: unknown[]) => unknown)(...args)
+    );
   } else {
-    client.on(event.name, (...args) => event.execute(...args));
+    client.on(event.name, (...args: unknown[]) =>
+      (event.execute as (...eventArgs: unknown[]) => unknown)(...args)
+    );
   }
-});
+}
 
 client.login(env.DISCORD_TOKEN).catch((err) => {
   logger.error('Login failed:', err);

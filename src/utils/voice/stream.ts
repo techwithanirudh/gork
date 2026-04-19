@@ -7,7 +7,9 @@ import type { User } from 'discord.js';
 import { voice } from '@/config';
 import { env } from '@/env';
 import { createLogger } from '@/lib/logger';
-import { deepgram, getAIResponse, playAudio, speak } from './helpers';
+import { getAIResponse } from './helpers/ai';
+import { playAudio } from './helpers/audio';
+import { deepgram, speak } from './helpers/deepgram';
 
 const logger = createLogger('voice:stream');
 
@@ -80,8 +82,11 @@ export async function createListeningStream(
     });
 
     opusStream.on('readable', () => {
-      let chunk;
-      while ((chunk = opusStream.read()) !== null) {
+      for (;;) {
+        const chunk = opusStream.read();
+        if (chunk === null) {
+          break;
+        }
         stt.sendMedia(chunk);
       }
     });

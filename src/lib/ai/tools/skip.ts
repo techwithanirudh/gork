@@ -14,7 +14,7 @@ export const skip = ({ message }: { message: Message }) =>
         .optional()
         .describe('Optional short reason for skipping'),
     }),
-    execute: async ({ reason }) => {
+    execute: ({ reason }) => {
       const { author, content } = message;
       if (reason) {
         logger.info(

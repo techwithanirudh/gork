@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import type { Message } from 'discord.js';
+import type { Message, User } from 'discord.js';
 import { z } from 'zod/v4';
 import { createLogger } from '@/lib/logger';
 
@@ -16,7 +16,7 @@ export const getUserInfo = ({ message }: { message: Message }) =>
     }),
     execute: async ({ userId }) => {
       try {
-        let user;
+        let user: User | undefined;
 
         try {
           user = await message.client.users.fetch(userId);

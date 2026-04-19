@@ -6,7 +6,7 @@ import {
   entersState,
 } from '@discordjs/voice';
 
-export async function playAudio(player: AudioPlayer, audio: string | Readable) {
+export function playAudio(player: AudioPlayer, audio: string | Readable) {
   /**
    * Here we are creating an audio resource using a sample song freely available online
    * (see https://www.soundhelix.com/audio-examples)

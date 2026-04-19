@@ -66,24 +66,26 @@ export function guildInfoFromMessage(message: Message): GuildInfo {
 }
 
 export function channelInfoFromMessage(message: Message): ChannelInfo {
-  const type =
-    message.channel.type === ChannelType.DM
-      ? 'dm'
-      : message.channel.type === ChannelType.GuildText
-        ? 'text'
-        : message.channel.type === ChannelType.GuildVoice
-          ? 'voice'
-          : message.channel.type === ChannelType.PublicThread ||
-              message.channel.type === ChannelType.PrivateThread
-            ? 'thread'
-            : 'unknown';
+  let type: ChannelInfo['type'] = 'unknown';
+  if (message.channel.type === ChannelType.DM) {
+    type = 'dm';
+  } else if (message.channel.type === ChannelType.GuildText) {
+    type = 'text';
+  } else if (message.channel.type === ChannelType.GuildVoice) {
+    type = 'voice';
+  } else if (
+    message.channel.type === ChannelType.PublicThread ||
+    message.channel.type === ChannelType.PrivateThread
+  ) {
+    type = 'thread';
+  }
 
-  const name =
-    message.channel.type === ChannelType.DM
-      ? dmDisplayName(message.channel as DMChannel, message.author)
-      : 'name' in message.channel
-        ? ((message.channel as GuildTextBasedChannel).name ?? '')
-        : '';
+  let name = '';
+  if (message.channel.type === ChannelType.DM) {
+    name = dmDisplayName(message.channel as DMChannel, message.author);
+  } else if ('name' in message.channel) {
+    name = (message.channel as GuildTextBasedChannel).name ?? '';
+  }
 
   return {
     id: message.channel.id,
@@ -212,7 +214,7 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
   return addMemory(transcript, metadata);
 }
 
-export async function saveToolMemory(
+export function saveToolMemory(
   message: Message,
   toolName: string,
   result: unknown

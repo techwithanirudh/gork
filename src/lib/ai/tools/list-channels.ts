@@ -27,7 +27,7 @@ export const listChannels = ({ message }: { message: Message }) =>
           'Optional max number of channels to return (default all up to 50).'
         ),
     }),
-    execute: async ({ guildId, query, type, limit }) => {
+    execute: ({ guildId, query, type, limit }) => {
       const guild = message.client.guilds.cache.get(guildId);
       if (!guild) {
         return [];

@@ -2,11 +2,11 @@ import type { Message } from 'discord.js';
 
 export type TriggerType = 'ping' | 'keyword' | 'dm' | null;
 
-export async function getTrigger(
+export function getTrigger(
   message: Message,
   keywords: string[],
   botId?: string
-): Promise<{ type: TriggerType; info: string | string[] | null }> {
+): { type: TriggerType; info: string | string[] | null } {
   if (botId && message.mentions.users.has(botId)) {
     return {
       type: 'ping',

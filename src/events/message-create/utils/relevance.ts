@@ -2,7 +2,7 @@ import type { ModelMessage } from 'ai';
 import type { Message } from 'discord.js';
 import { relevanceAgent } from '@/lib/ai/agents/relevance';
 import { createLogger } from '@/lib/logger';
-import type { Probability } from '@/lib/validators';
+import type { Probability } from '@/lib/validators/probability';
 import type { RequestHints } from '@/types';
 
 const logger = createLogger('events:message:relevance');

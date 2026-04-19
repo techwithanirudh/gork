@@ -121,7 +121,7 @@ export async function convertToModelMessages(
         role: 'user' as const,
         content: [
           { type: 'text' as const, text: structuredText },
-          ...(await processAttachments(msg.attachments)),
+          ...processAttachments(msg.attachments),
         ],
         createdAt: msg.createdAt,
         name: msg.author.username,
@@ -130,9 +130,9 @@ export async function convertToModelMessages(
   );
 }
 
-export async function processAttachments(
+export function processAttachments(
   attachments: Collection<string, DiscordAttachment>
-): Promise<FilePart[]> {
+): FilePart[] {
   const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
   const validAttachments = Array.from(attachments.values()).filter(

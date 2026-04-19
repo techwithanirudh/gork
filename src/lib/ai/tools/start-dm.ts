@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import type { Message } from 'discord.js';
+import type { Message, User } from 'discord.js';
 import { z } from 'zod';
 import { createLogger } from '@/lib/logger';
 
@@ -16,7 +16,7 @@ export const startDM = ({ message }: { message: Message }) =>
     }),
     execute: async ({ userId, content }) => {
       try {
-        let user;
+        let user: User | undefined;
 
         try {
           user = await message.client.users.fetch(userId);

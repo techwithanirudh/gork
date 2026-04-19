@@ -126,8 +126,7 @@ export async function buildChatContext(
     const combined: ScoredPineconeRecord<PineconeMetadataOutput>[] = [];
     const seen = new Set<string>();
     for (let i = 0; i < memoriesConfig.eachLimit; i++) {
-      for (let j = 0; j < memoryLists.length; j++) {
-        const list = memoryLists[j] ?? [];
+      for (const list of memoryLists) {
         if (i < list.length && combined.length < memoriesConfig.maxMemories) {
           const mem = list[i];
           if (!mem) {
