@@ -1,15 +1,11 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { PineconeMetadataOutput } from '@/types';
-
-type GuildInfo = { id?: string | null; name?: string | null } | null;
-type ChannelInfo = { id: string; name: string; type?: string } | null;
-interface EntityRef {
-  display?: string;
-  handle?: string;
-  id: string;
-  kind: string;
-  platform?: string;
-}
+import {
+  type Channel,
+  expandMetadata,
+  type Guild,
+  type Participant,
+  type PineconeMetadataOutput,
+} from '@/types';
 
 export function formatMemories(
   memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
@@ -25,49 +21,55 @@ export function formatMemories(
         return null;
       }
 
-      const guild = parseJson<GuildInfo>(metadata.guild);
-      const channel = parseJson<ChannelInfo>(metadata.channel);
-      const createdAt = metadata.createdAt
+      const structured = expandMetadata(metadata);
+      if (structured.version && structured.version !== 2) {
+        return null;
+      }
+
+      const guild = structured.guild ?? null;
+      const channel = structured.channel ?? null;
+      const participants = structured.participants ?? [];
+      const createdAt = structured.createdAt
         ? new Date(metadata.createdAt).toISOString()
         : 'unknown';
 
-      if (metadata.type === 'chat') {
-        return formatChatMemory({
-          createdAt,
-          guild,
-          channel,
-          context: metadata.context,
-        });
+      switch (structured.type) {
+        case 'chat':
+          return formatChatMemory({
+            createdAt,
+            guild,
+            channel,
+            participants,
+            context: structured.context,
+            sessionId: structured.sessionId,
+          });
+        case 'tool':
+          return formatToolMemory({
+            createdAt,
+            guild,
+            channel,
+            participants,
+            name: structured.name,
+            response: structured.response,
+            sessionId: structured.sessionId,
+          });
+        case 'summary':
+          return formatSummaryMemory({
+            createdAt,
+            sessionId: structured.sessionId,
+            summary: structured.summary,
+          });
+        case 'entity': {
+          const entities = structured.entities ?? structured.participants ?? [];
+          return formatEntityMemory({
+            createdAt,
+            summary: structured.summary,
+            entities,
+          });
+        }
+        default:
+          return null;
       }
-
-      if (metadata.type === 'tool') {
-        return formatToolMemory({
-          createdAt,
-          guild,
-          channel,
-          name: metadata.name,
-          response: metadata.response,
-        });
-      }
-
-      if (metadata.type === 'summary' && 'summary' in metadata) {
-        return formatSummaryMemory({
-          createdAt,
-          sessionId: metadata.sessionId,
-          summary: metadata.summary,
-        });
-      }
-
-      if (metadata.type === 'entity' && 'summary' in metadata) {
-        const entities = parseJson<EntityRef[]>(metadata.entities) ?? [];
-        return formatEntityMemory({
-          createdAt,
-          summary: metadata.summary,
-          entities,
-        });
-      }
-
-      return null;
     })
     .filter(Boolean) as string[];
 
@@ -75,19 +77,23 @@ export function formatMemories(
     return '';
   }
 
-  return ['[memory-pack]', ...sections, '[/memory-pack]'].join('\n');
+  return ['[memory]', ...sections, '[/memory]'].join('\n');
 }
 
 function formatChatMemory({
   createdAt,
   guild,
   channel,
+  participants,
   context,
+  sessionId,
 }: {
   createdAt: string;
-  guild: GuildInfo;
-  channel: ChannelInfo;
+  guild: Guild | null;
+  channel: Channel | null;
+  participants: Participant[];
   context: string;
+  sessionId: string;
 }) {
   const location = formatLocation(guild, channel);
   const snippet = sanitizeMultiline(context);
@@ -96,7 +102,9 @@ function formatChatMemory({
     '- entry:',
     '    type: chat',
     `    when: ${createdAt}`,
+    `    session: ${sessionId}`,
     `    where: ${location}`,
+    `    participants: ${formatParticipants(participants)}`,
     '    transcript: |',
     ...snippet.map((line) => `      ${line}`),
   ].join('\n');
@@ -106,14 +114,18 @@ function formatToolMemory({
   createdAt,
   guild,
   channel,
+  participants,
   name,
   response,
+  sessionId,
 }: {
   createdAt: string;
-  guild: GuildInfo;
-  channel: ChannelInfo;
+  guild: Guild | null;
+  channel: Channel | null;
+  participants: Participant[];
   name: string;
   response: unknown;
+  sessionId: string;
 }) {
   const location = formatLocation(guild, channel);
   const payload =
@@ -125,7 +137,9 @@ function formatToolMemory({
     '- entry:',
     '    type: tool',
     `    when: ${createdAt}`,
+    `    session: ${sessionId}`,
     `    where: ${location}`,
+    `    participants: ${formatParticipants(participants)}`,
     `    tool: ${name ?? 'unknown'}`,
     '    output: |',
     ...payload.map((line) => `      ${line}`),
@@ -160,41 +174,39 @@ function formatEntityMemory({
 }: {
   createdAt: string;
   summary: string;
-  entities: EntityRef[];
+  entities: Participant[];
 }) {
-  const names = entities
-    .map((entity) => entity.display || entity.handle || entity.id)
-    .filter(Boolean)
-    .join(', ');
-
   const snippet = sanitizeMultiline(summary);
 
   return [
     '- entry:',
     '    type: entity',
     `    when: ${createdAt}`,
-    `    subjects: ${names || 'unknown'}`,
+    `    subjects: ${formatParticipants(entities)}`,
     '    card: |',
     ...snippet.map((line) => `      ${line}`),
   ].join('\n');
 }
 
-function parseJson<T>(value: unknown): T | null {
-  if (typeof value !== 'string') {
-    return (value as T) ?? null;
+function formatParticipants(participants?: Participant[]) {
+  if (!participants?.length) {
+    return 'unknown';
   }
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return null;
-  }
+
+  return participants
+    .map(
+      (participant) =>
+        participant.display || participant.handle || participant.id
+    )
+    .filter(Boolean)
+    .join(', ');
 }
 
-function formatLocation(guild: GuildInfo, channel: ChannelInfo) {
+function formatLocation(guild: Guild | null, channel: Channel | null) {
   const guildName = guild?.name ?? 'DM';
   const channelName = channel?.name ?? 'private';
   const channelType = channel?.type ? ` (${channel.type})` : '';
-  return `${guildName} › ${channelName}${channelType}`;
+  return `${guildName} > ${channelName}${channelType}`;
 }
 
 function sanitizeMultiline(value: string) {
@@ -202,5 +214,5 @@ function sanitizeMultiline(value: string) {
     .split('\n')
     .map((line) => line.trimEnd())
     .filter((line, index, arr) => !(line === '' && arr[index - 1] === ''))
-    .slice(0, 40); // keep prompt compact
+    .slice(0, 40);
 }

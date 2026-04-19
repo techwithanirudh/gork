@@ -52,7 +52,7 @@ export const provider = customProvider({
     'agent-model': hackclub('moonshotai/kimi-k2-thinking'),
   },
   imageModels: {
-    // 'small-model': openai.imageModel('dall-e-2'),
+    'image-model': hackclub.imageModel('google/gemini-3.1-flash-image-preview'),
   },
   embeddingModels: {
     'small-model': openai.embedding('text-embedding-3-small'),

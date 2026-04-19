@@ -5,6 +5,8 @@ import {
   type Message,
   type User,
 } from 'discord.js';
+import { redis, redisKeys } from '@/lib/kv';
+import { createLogger } from '@/lib/logger';
 import { addMemory } from '@/lib/pinecone/queries';
 import { getMessagesByChannel } from '@/lib/queries';
 import type { PineconeMetadataInput } from '@/types';
@@ -36,14 +38,16 @@ interface EntityRef {
   platform: 'discord';
 }
 
+const logger = createLogger('memory:ingest');
+
 type ChatMetadataPayload = Omit<
   Extract<PineconeMetadataInput, { type: 'chat' }>,
-  'hash'
+  never
 >;
 
 type ToolMetadataPayload = Omit<
   Extract<PineconeMetadataInput, { type: 'tool' }>,
-  'hash'
+  never
 >;
 
 const IMPORTANT_KEYWORDS =
@@ -142,6 +146,18 @@ function participantsFromMessage(
   return participants;
 }
 
+async function trackSession(sessionId: string) {
+  if (!(redis?.isOpen && sessionId)) {
+    return;
+  }
+
+  try {
+    await redis.sAdd(redisKeys.memorySessions(), sessionId);
+  } catch (error) {
+    logger.warn({ sessionId, error }, 'Failed to track session for memory');
+  }
+}
+
 function shouldStoreChat(context: string): StoreGateResult {
   const trimmed = context.trim();
   if (!trimmed) {
@@ -201,20 +217,23 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
     type: 'chat',
     createdAt: now,
     lastRetrievalTime: now,
+    version: 2,
     sessionId,
+    sessionType: message.guild ? 'guild' : 'dm',
     guild,
     channel,
     participants,
-    entities: [],
     context: transcript,
-    importance: gate.importance,
-    confidence: gate.importance === 'high' ? 0.9 : 0.82,
   };
 
-  return addMemory(transcript, metadata);
+  await trackSession(sessionId);
+  return addMemory(transcript, metadata).catch((error) => {
+    logger.warn({ error }, 'Failed to save chat memory — skipping');
+    return null;
+  });
 }
 
-export function saveToolMemory(
+export async function saveToolMemory(
   message: Message,
   toolName: string,
   result: unknown
@@ -231,16 +250,19 @@ export function saveToolMemory(
     type: 'tool',
     createdAt: now,
     lastRetrievalTime: now,
+    version: 2,
     sessionId,
+    sessionType: message.guild ? 'guild' : 'dm',
     guild,
     channel,
     participants,
-    entities: [],
     name: toolName,
     response: result,
-    importance: 'med',
-    confidence: 0.85,
   };
 
-  return addMemory(payload, metadata);
+  await trackSession(sessionId);
+  return addMemory(payload, metadata).catch((error) => {
+    logger.warn({ error }, 'Failed to save tool memory — skipping');
+    return null;
+  });
 }
