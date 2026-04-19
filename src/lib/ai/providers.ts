@@ -1,67 +1,60 @@
-import { customProvider } from 'ai';
-
-import { env } from '@/env';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { customProvider } from 'ai';
+import { createRetryable } from 'ai-retry';
+import { env } from '@/env';
+import logger from '@/lib/logger';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { openai } from '@ai-sdk/openai';
-import { createFallback } from 'ai-fallback';
-import { createLogger } from '../logger';
-// import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-// import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { cohere } from '@ai-sdk/cohere';
 
-const logger = createLogger('ai:providers');
-
-// const hackclub = createOpenAICompatible({
-//   name: 'hackclub',
-//   apiKey: env.HACKCLUB_API_KEY,
-//   baseURL: 'https://ai.hackclub.com',
-// });
-
-// const openrouter = createOpenRouter({
-//   apiKey: env.OPENROUTER_API_KEY!,
-// });
+const hackclub = createOpenRouter({
+  apiKey: env.HACKCLUB_API_KEY,
+  baseURL: 'https://ai.hackclub.com/proxy/v1',
+});
 
 const google = createGoogleGenerativeAI({
   apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY ?? '',
 });
 
-const chatModel = createFallback({
-  models: [
+const chatModel = createRetryable({
+  model: hackclub('google/gemini-3-flash-preview'),
+  retries: [
+    hackclub('google/gemini-2.5-flash'),
+    hackclub('openai/gpt-5-mini'),
     google('gemini-2.5-flash'),
     google('gemini-2.0-flash'),
-    cohere('command-a-03-2025'),
-    // hackclub('qwen/qwen3-32b')
-    // openai('gpt-4.1'),
   ],
-  onError: (error, modelId) => {
-    logger.error(`error with model ${modelId}, switching to next model`);
+  onError: (context) => {
+    const { model } = context.current;
+    logger.error(
+      `error with model ${model.provider}/${model.modelId}, switching to next model`,
+    );
   },
-  modelResetInterval: 60000,
 });
 
-const relevanceModel = createFallback({
-  models: [google('gemini-2.5-flash-lite'), google('gemini-2.0-flash-lite')],
-  onError: (error, modelId) => {
-    logger.error(`error with model ${modelId}, switching to next model`);
+const relevanceModel = createRetryable({
+  model: hackclub('openai/gpt-5-mini'),
+  retries: [
+    hackclub('google/gemini-2.5-flash'),
+    google('gemini-2.5-flash-lite'),
+  ],
+  onError: (context) => {
+    const { model } = context.current;
+    logger.error(
+      `error with model ${model.provider}/${model.modelId}, switching to next model`,
+    );
   },
-  modelResetInterval: 60000,
 });
 
 export const provider = customProvider({
   languageModels: {
-    // "chat-model": hackclub("llama-3.3-70b-versatile"),
-    // 'chat-model': openai.responses('gpt-4.1-mini'),
     'chat-model': chatModel,
-    'reasoning-model': google('gemini-2.5-flash'),
-    'agent-model': openai('gpt-4.1'),
-    // 'relevance-model': openai.responses('gpt-4.1-nano'),
     'relevance-model': relevanceModel,
+    'agent-model': hackclub('moonshotai/kimi-k2-thinking'),
   },
   imageModels: {
     // 'small-model': openai.imageModel('dall-e-2'),
   },
   textEmbeddingModels: {
-    'small-model': openai.embedding('text-embedding-3-small'),
-    'large-model': openai.embedding('text-embedding-3-large'),
+    'small-model': openai.embedding('text-embedding-3-small')
   },
 });

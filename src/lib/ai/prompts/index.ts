@@ -1,9 +1,7 @@
-import type { PineconeMetadataOutput, RequestHints } from '@/types';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { RequestHints } from '@/types';
 import type { Message } from 'discord.js';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
-import { memoryPrompt } from './tasks';
 import { personalityPrompt } from './personality';
 import { relevancePrompt, replyPrompt } from './tasks';
 import { toolsPrompt } from './tools';
@@ -51,15 +49,6 @@ export const systemPrompt = ({
       examplesPrompt,
       requestPrompt,
       relevancePrompt(message),
-    ]
-      .filter(Boolean)
-      .join('\n\n')
-      .trim();
-  } else if (agent === 'memory') {
-    return [
-      corePrompt,
-      memoryPrompt,
-      requestPrompt,
     ]
       .filter(Boolean)
       .join('\n\n')

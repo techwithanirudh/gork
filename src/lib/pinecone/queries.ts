@@ -22,7 +22,7 @@ export const searchMemories = async (
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   try {
     const { embedding } = await embed({
-      model: provider.textEmbeddingModel('small-model'),
+      model: provider.embeddingModel('small-model'),
       value: query,
     });
 
@@ -79,7 +79,7 @@ export const addMemory = async (
     }
 
     const { embedding } = await embed({
-      model: provider.textEmbeddingModel('small-model'),
+      model: provider.embeddingModel('small-model'),
       value: text,
     });
 
