@@ -11,7 +11,7 @@ export function logReply(
   if (result.success && result.response) {
     const shortResponse =
       result.response.length > 100
-        ? result.response.substring(0, 100) + '...'
+        ? `${result.response.substring(0, 100)}...`
         : result.response;
 
     logger.info(

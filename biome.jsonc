@@ -15,6 +15,7 @@
   "files": {
     "ignoreUnknown": true,
     "includes": [
+      "**",
       "!node_modules",
       "!**/dist",
       "!**/public",
@@ -59,7 +60,7 @@
   },
   "overrides": [
     {
-      "includes": ["server/types/index.ts"],
+      "includes": ["src/types/index.ts"],
       "linter": {
         "rules": {
           "performance": {

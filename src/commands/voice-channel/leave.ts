@@ -1,5 +1,5 @@
 import { getVoiceConnection } from '@discordjs/voice';
-import { MessageFlags, type ChatInputCommandInteraction } from 'discord.js';
+import { type ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 
 // export const data = new SlashCommandBuilder()
 //   .setName('leave')

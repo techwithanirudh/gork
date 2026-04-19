@@ -1,21 +1,21 @@
-import { createLogger } from '@/lib/logger';
-import { buildUserMap, type UserMapEntry } from '@/utils/users';
 import type { FilePart, ModelMessage } from 'ai';
 import {
-  Message as DiscordMessage,
   type Collection,
   type Attachment as DiscordAttachment,
+  Message as DiscordMessage,
 } from 'discord.js';
+import { createLogger } from '@/lib/logger';
+import { buildUserMap, type UserMapEntry } from '@/utils/users';
 
 const logger = createLogger('utils:messages');
 
 interface MessageFormatOptions {
+  replacePings?: boolean;
   withAuthor?: boolean;
   withContext?: boolean;
+  withId?: boolean;
   withReactions?: boolean;
   withTimestamp?: boolean;
-  withId?: boolean;
-  replacePings?: boolean;
 }
 
 export function formatDiscordMessage(
@@ -84,7 +84,7 @@ export function formatDiscordMessage(
 
 export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>
-): Promise<Array<ModelMessage>> {
+): Promise<ModelMessage[]> {
   const userMap = buildUserMap(messages);
 
   return await Promise.all(
@@ -140,7 +140,7 @@ export async function processAttachments(
   );
 
   const invalidNames = attachments
-    .filter((a) => !a.contentType || !validTypes.includes(a.contentType))
+    .filter((a) => !(a.contentType && validTypes.includes(a.contentType)))
     .map((a) => a.name);
 
   if (invalidNames.length > 0) {

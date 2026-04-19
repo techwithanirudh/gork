@@ -1,7 +1,7 @@
-import { orchestratorAgent } from '@/lib/ai/agents/orchestrator';
-import type { RequestHints } from '@/types';
 import type { ModelMessage } from 'ai';
 import type { Message } from 'discord.js';
+import { orchestratorAgent } from '@/lib/ai/agents/orchestrator';
+import type { RequestHints } from '@/types';
 
 export async function generateResponse(
   msg: Message,
@@ -15,7 +15,7 @@ export async function generateResponse(
         ...messages,
         {
           role: 'user',
-          content: 'You are replying to the following message: ' + msg.content,
+          content: `You are replying to the following message: ${msg.content}`,
         },
       ],
     });

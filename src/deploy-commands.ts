@@ -1,5 +1,5 @@
-import { env } from '@/env';
 import { REST, Routes } from 'discord.js';
+import { env } from '@/env';
 import { commands } from './commands';
 import { createLogger } from './lib/logger';
 
@@ -9,9 +9,9 @@ const commandsData = Object.values(commands).map((command) => command.data);
 
 const rest = new REST({ version: '10' }).setToken(env.DISCORD_TOKEN);
 
-type DeployCommandsProps = {
+interface DeployCommandsProps {
   guildId: string;
-};
+}
 
 export async function deployCommands({ guildId }: DeployCommandsProps) {
   try {

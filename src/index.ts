@@ -1,10 +1,10 @@
+import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { commands } from '@/commands';
 import { deployCommands } from '@/deploy-commands';
 import { env } from '@/env';
 import { events } from '@/events';
 import { createLogger } from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
-import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 
 const logger = createLogger('core');
 export const client = new Client({
@@ -25,7 +25,9 @@ export const client = new Client({
 });
 
 client.once(Events.ClientReady, (client) => {
-  if (!client.user) return;
+  if (!client.user) {
+    return;
+  }
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info('Bot is ready!');
 
@@ -52,7 +54,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-Object.keys(events).forEach(function (key) {
+Object.keys(events).forEach((key) => {
   const event = events[key as keyof typeof events];
 
   if (event?.once) {

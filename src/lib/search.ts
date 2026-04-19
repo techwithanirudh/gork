@@ -1,5 +1,5 @@
-import { env } from '@/env';
 import { Exa } from 'exa-js';
+import { env } from '@/env';
 
 /**
  * Exa is a powerful search engine that allows you to search the web, images, and more.

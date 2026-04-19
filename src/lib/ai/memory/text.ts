@@ -1,25 +1,29 @@
-import type { PineconeMetadataOutput } from '@/types';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { PineconeMetadataOutput } from '@/types';
 
 type GuildInfo = { id?: string | null; name?: string | null } | null;
 type ChannelInfo = { id: string; name: string; type?: string } | null;
-type EntityRef = {
+interface EntityRef {
+  display?: string;
+  handle?: string;
   id: string;
   kind: string;
-  handle?: string;
-  display?: string;
   platform?: string;
-};
+}
 
 export function formatMemories(
   memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ): string {
-  if (memories.length === 0) return '';
+  if (memories.length === 0) {
+    return '';
+  }
 
   const sections = memories
     .map((memory) => {
       const { metadata } = memory;
-      if (!metadata) return null;
+      if (!metadata) {
+        return null;
+      }
 
       const guild = parseJson<GuildInfo>(metadata.guild);
       const channel = parseJson<ChannelInfo>(metadata.channel);
@@ -67,7 +71,9 @@ export function formatMemories(
     })
     .filter(Boolean) as string[];
 
-  if (!sections.length) return '';
+  if (!sections.length) {
+    return '';
+  }
 
   return ['[memory-pack]', ...sections, '[/memory-pack]'].join('\n');
 }
@@ -88,10 +94,10 @@ function formatChatMemory({
 
   return [
     '- entry:',
-    `    type: chat`,
+    '    type: chat',
     `    when: ${createdAt}`,
     `    where: ${location}`,
-    `    transcript: |`,
+    '    transcript: |',
     ...snippet.map((line) => `      ${line}`),
   ].join('\n');
 }
@@ -117,11 +123,11 @@ function formatToolMemory({
 
   return [
     '- entry:',
-    `    type: tool`,
+    '    type: tool',
     `    when: ${createdAt}`,
     `    where: ${location}`,
     `    tool: ${name ?? 'unknown'}`,
-    `    output: |`,
+    '    output: |',
     ...payload.map((line) => `      ${line}`),
   ].join('\n');
 }
@@ -139,10 +145,10 @@ function formatSummaryMemory({
 
   return [
     '- entry:',
-    `    type: summary`,
+    '    type: summary',
     `    when: ${createdAt}`,
     `    session: ${sessionId}`,
-    `    recap: |`,
+    '    recap: |',
     ...snippet.map((line) => `      ${line}`),
   ].join('\n');
 }
@@ -165,16 +171,18 @@ function formatEntityMemory({
 
   return [
     '- entry:',
-    `    type: entity`,
+    '    type: entity',
     `    when: ${createdAt}`,
     `    subjects: ${names || 'unknown'}`,
-    `    card: |`,
+    '    card: |',
     ...snippet.map((line) => `      ${line}`),
   ].join('\n');
 }
 
 function parseJson<T>(value: unknown): T | null {
-  if (typeof value !== 'string') return (value as T) ?? null;
+  if (typeof value !== 'string') {
+    return (value as T) ?? null;
+  }
   try {
     return JSON.parse(value) as T;
   } catch {

@@ -1,6 +1,3 @@
-import { addMemory } from '@/lib/pinecone/queries';
-import { getMessagesByChannel } from '@/lib/queries';
-import type { PineconeMetadataInput } from '@/types';
 import {
   ChannelType,
   type DMChannel,
@@ -8,13 +5,16 @@ import {
   type Message,
   type User,
 } from 'discord.js';
+import { addMemory } from '@/lib/pinecone/queries';
+import { getMessagesByChannel } from '@/lib/queries';
+import type { PineconeMetadataInput } from '@/types';
 
 type Importance = 'low' | 'med' | 'high';
 
 interface StoreGateResult {
-  store: boolean;
   importance: Importance;
   reason: string;
+  store: boolean;
 }
 
 interface GuildInfo {
@@ -29,10 +29,10 @@ interface ChannelInfo {
 }
 
 interface EntityRef {
+  display?: string;
+  handle?: string;
   id: string;
   kind: 'user' | 'bot' | 'guild' | 'channel';
-  handle?: string;
-  display?: string;
   platform: 'discord';
 }
 
@@ -70,20 +70,20 @@ export function channelInfoFromMessage(message: Message): ChannelInfo {
     message.channel.type === ChannelType.DM
       ? 'dm'
       : message.channel.type === ChannelType.GuildText
-      ? 'text'
-      : message.channel.type === ChannelType.GuildVoice
-      ? 'voice'
-      : message.channel.type === ChannelType.PublicThread ||
-        message.channel.type === ChannelType.PrivateThread
-      ? 'thread'
-      : 'unknown';
+        ? 'text'
+        : message.channel.type === ChannelType.GuildVoice
+          ? 'voice'
+          : message.channel.type === ChannelType.PublicThread ||
+              message.channel.type === ChannelType.PrivateThread
+            ? 'thread'
+            : 'unknown';
 
   const name =
     message.channel.type === ChannelType.DM
       ? dmDisplayName(message.channel as DMChannel, message.author)
       : 'name' in message.channel
-      ? ((message.channel as GuildTextBasedChannel).name ?? '')
-      : '';
+        ? ((message.channel as GuildTextBasedChannel).name ?? '')
+        : '';
 
   return {
     id: message.channel.id,
@@ -97,7 +97,10 @@ function dmDisplayName(dm: DMChannel, author: User): string {
   return other?.username ?? 'Direct Message';
 }
 
-function participantsFromMessage(message: Message, channel: ChannelInfo): EntityRef[] {
+function participantsFromMessage(
+  message: Message,
+  channel: ChannelInfo
+): EntityRef[] {
   const participants: EntityRef[] = [
     {
       id: message.author.id,
@@ -203,7 +206,7 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
     entities: [],
     context: transcript,
     importance: gate.importance,
-    confidence: gate.importance === 'high' ? 0.9 : 0.82
+    confidence: gate.importance === 'high' ? 0.9 : 0.82,
   };
 
   return addMemory(transcript, metadata);
@@ -234,7 +237,7 @@ export async function saveToolMemory(
     name: toolName,
     response: result,
     importance: 'med',
-    confidence: 0.85
+    confidence: 0.85,
   };
 
   return addMemory(payload, metadata);

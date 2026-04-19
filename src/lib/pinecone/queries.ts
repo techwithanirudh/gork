@@ -1,19 +1,18 @@
-import { createLogger } from '@/lib/logger';
-
-import { PineconeMetadataSchema } from '@/lib/validators/pinecone';
-import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
-import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { embed } from 'ai';
 import { MD5 } from 'bun';
+import { createLogger } from '@/lib/logger';
+import { PineconeMetadataSchema } from '@/lib/validators/pinecone';
+import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
 import { provider } from '../ai/providers';
 import { getIndex } from './index';
 
 const logger = createLogger('pinecone:queries');
 
 export interface MemorySearchOptions {
+  filter?: Record<string, unknown>;
   namespace?: string;
   topK?: number;
-  filter?: Record<string, unknown>;
 }
 
 export const searchMemories = async (
@@ -84,13 +83,15 @@ export const addMemory = async (
     });
 
     const index = (await getIndex()).namespace(namespace);
-    await index.upsert({ records: [
-      {
-        id,
-        values: embedding,
-        metadata: parsed.data,
-      },
-    ]});
+    await index.upsert({
+      records: [
+        {
+          id,
+          values: embedding,
+          metadata: parsed.data,
+        },
+      ],
+    });
 
     logger.debug(
       { id, type: metadata.type, sessionId: metadata.sessionId },

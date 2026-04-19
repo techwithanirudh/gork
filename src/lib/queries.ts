@@ -1,11 +1,11 @@
 import {
+  type Channel,
+  type Message as DiscordMessage,
   NewsChannel,
   StageChannel,
   TextChannel,
   ThreadChannel,
   VoiceChannel,
-  type Channel,
-  type Message as DiscordMessage,
 } from 'discord.js';
 
 export async function getMessagesByChannel({
@@ -20,7 +20,7 @@ export async function getMessagesByChannel({
   try {
     const messages = await channel.messages.fetch({
       limit: limit ?? 100,
-      before: before,
+      before,
     });
     const sorted = messages.sort(
       (a, b) => a.createdTimestamp - b.createdTimestamp

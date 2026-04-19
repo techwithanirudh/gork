@@ -1,5 +1,5 @@
-import type { RequestHints } from '@/types';
 import type { Message } from 'discord.js';
+import type { RequestHints } from '@/types';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
@@ -42,7 +42,8 @@ export const systemPrompt = ({
       .filter(Boolean)
       .join('\n\n')
       .trim();
-  } else if (agent === 'relevance') {
+  }
+  if (agent === 'relevance') {
     return [
       corePrompt,
       personalityPrompt,

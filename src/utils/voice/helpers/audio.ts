@@ -1,10 +1,10 @@
+import type { Readable } from 'node:stream';
 import {
-  AudioPlayer,
+  type AudioPlayer,
   AudioPlayerStatus,
   createAudioResource,
   entersState,
 } from '@discordjs/voice';
-import type { Readable } from 'node:stream';
 
 export async function playAudio(player: AudioPlayer, audio: string | Readable) {
   /**
@@ -32,5 +32,5 @@ export async function playAudio(player: AudioPlayer, audio: string | Readable) {
    * Here we are using a helper function. It will resolve if the player enters the Playing
    * state within 5 seconds, otherwise it will reject with an error.
    */
-  return entersState(player, AudioPlayerStatus.Playing, 5_000);
+  return entersState(player, AudioPlayerStatus.Playing, 5000);
 }

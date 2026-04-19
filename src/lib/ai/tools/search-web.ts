@@ -1,7 +1,7 @@
-import { createLogger } from '@/lib/logger';
-import { exa } from '@/lib/search';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
+import { createLogger } from '@/lib/logger';
+import { exa } from '@/lib/search';
 
 const logger = createLogger('tools:search-web');
 
@@ -29,7 +29,7 @@ export const searchWeb = tool({
       results: results.map((result) => ({
         title: result.title,
         url: result.url,
-        snippet: result.text.slice(0, 1000),
+        snippet: (result as { text?: string }).text?.slice(0, 1000) ?? '',
       })),
     };
   },

@@ -1,8 +1,8 @@
-import { Message as DiscordMessage, type Collection } from 'discord.js';
+import type { Collection, Message as DiscordMessage } from 'discord.js';
 
 export interface UserMapEntry {
-  username: string;
   displayName: string;
+  username: string;
 }
 
 export function buildUserMap(

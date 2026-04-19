@@ -1,12 +1,12 @@
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { ModelMessage } from 'ai';
+import type { Message } from 'discord.js';
 import { city, country, memories as memoriesConfig, timezone } from '@/config';
 import { queryMemories } from '@/lib/pinecone/operations';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';
 import type { PineconeMetadataOutput, RequestHints } from '@/types';
 import { convertToModelMessages, formatDiscordMessage } from '@/utils/messages';
 import { getTimeInCity } from '@/utils/time';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { ModelMessage } from 'ai';
-import { Message } from 'discord.js';
 import { buildUserMap, type UserMapEntry } from './users';
 
 export async function buildChatContext(
@@ -130,9 +130,13 @@ export async function buildChatContext(
         const list = memoryLists[j] ?? [];
         if (i < list.length && combined.length < memoriesConfig.maxMemories) {
           const mem = list[i];
-          if (!mem) continue;
+          if (!mem) {
+            continue;
+          }
           const id = mem.id ?? '';
-          if (!id) continue;
+          if (!id) {
+            continue;
+          }
           if (!seen.has(id)) {
             seen.add(id);
             combined.push(mem);
@@ -142,7 +146,9 @@ export async function buildChatContext(
           }
         }
       }
-      if (combined.length === memoriesConfig.maxMemories) break;
+      if (combined.length === memoriesConfig.maxMemories) {
+        break;
+      }
     }
 
     memories = combined;

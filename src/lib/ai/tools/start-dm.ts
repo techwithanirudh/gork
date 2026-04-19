@@ -1,7 +1,7 @@
-import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('tools:start-dm');
 

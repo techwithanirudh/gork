@@ -1,19 +1,25 @@
+import type { Client } from 'discord.js';
 import { activities, statuses } from '@/config';
 import { createLogger } from '@/lib/logger';
-import { Client } from 'discord.js';
 
 const logger = createLogger('presence');
 
 const getRandomItem = <T>(arr: readonly T[]): T => {
-  if (arr.length === 0) throw new Error('Array must not be empty');
+  if (arr.length === 0) {
+    throw new Error('Array must not be empty');
+  }
   const randomIndex = Math.floor(Math.random() * arr.length);
   const item = arr[randomIndex];
-  if (item === undefined) throw new Error('Selected item is undefined');
+  if (item === undefined) {
+    throw new Error('Selected item is undefined');
+  }
   return item;
 };
 
 const updateStatus = (client: Client): void => {
-  if (!client.user) return;
+  if (!client.user) {
+    return;
+  }
 
   const status = getRandomItem(statuses);
   const activity = getRandomItem(activities);

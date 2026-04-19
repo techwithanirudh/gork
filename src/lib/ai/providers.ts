@@ -1,10 +1,10 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { customProvider } from 'ai';
 import { createRetryable } from 'ai-retry';
 import { env } from '@/env';
 import logger from '@/lib/logger';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { openai } from '@ai-sdk/openai';
 
 const hackclub = createOpenRouter({
   apiKey: env.HACKCLUB_API_KEY,
@@ -26,7 +26,7 @@ const chatModel = createRetryable({
   onError: (context) => {
     const { model } = context.current;
     logger.error(
-      `error with model ${model.provider}/${model.modelId}, switching to next model`,
+      `error with model ${model.provider}/${model.modelId}, switching to next model`
     );
   },
 });
@@ -40,7 +40,7 @@ const relevanceModel = createRetryable({
   onError: (context) => {
     const { model } = context.current;
     logger.error(
-      `error with model ${model.provider}/${model.modelId}, switching to next model`,
+      `error with model ${model.provider}/${model.modelId}, switching to next model`
     );
   },
 });
@@ -55,6 +55,6 @@ export const provider = customProvider({
     // 'small-model': openai.imageModel('dall-e-2'),
   },
   embeddingModels: {
-    'small-model': openai.embedding('text-embedding-3-small')
+    'small-model': openai.embedding('text-embedding-3-small'),
   },
 });

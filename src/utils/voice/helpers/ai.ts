@@ -1,8 +1,6 @@
+import { generateText } from 'ai';
 import { systemPrompt } from '@/lib/ai/prompts';
 import { provider } from '@/lib/ai/providers';
-import type { PineconeMetadataOutput } from '@/types';
-import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import { generateText } from 'ai';
 
 // TODO: Add Memories, and other tools available in the AI provider
 // TODO: Add History from the VC Chat Channel
@@ -22,8 +20,6 @@ export async function getAIResponse(prompt: string): Promise<string> {
           status: 'online',
           activity: 'voice',
         },
-        memories:
-          [] as unknown as ScoredPineconeRecord<PineconeMetadataOutput>[],
         message: undefined,
       }) +
       '\n\nYou are talking to a person through a call, do not use markdown formatting, or emojis.',

@@ -42,7 +42,6 @@ export async function handleMessageCount(
   if (willReply) {
     await redis.del(key);
     return 0;
-  } else {
-    return await incrementMessageCount(ctxId);
   }
+  return await incrementMessageCount(ctxId);
 }

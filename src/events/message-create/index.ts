@@ -1,20 +1,18 @@
+import type { Message } from 'discord.js';
 import { keywords, messageThreshold } from '@/config';
 import { ratelimit, redisKeys } from '@/lib/kv';
+import { createLogger } from '@/lib/logger';
 import { saveChatMemory } from '@/lib/memory';
 import { buildChatContext } from '@/utils/context';
+import { logReply } from '@/utils/log';
 import {
   checkMessageQuota,
   handleMessageCount,
   resetMessageCount,
 } from '@/utils/message-rate-limiter';
-import { Message } from 'discord.js';
+import { getTrigger } from '@/utils/triggers';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
-
-import { createLogger } from '@/lib/logger';
-
-import { logReply } from '@/utils/log';
-import { getTrigger } from '@/utils/triggers';
 
 const logger = createLogger('events:message');
 
@@ -34,19 +32,25 @@ async function onSuccess(message: Message) {
 }
 
 export async function execute(message: Message) {
-  if (message.author.bot) return;
-  if (message.author.id === message.client.user?.id) return;
+  if (message.author.bot) {
+    return;
+  }
+  if (message.author.id === message.client.user?.id) {
+    return;
+  }
 
   const { content, client, guild, author } = message;
   const isDM = !guild;
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
-  if (!(await canReply(ctxId))) return;
+  if (!(await canReply(ctxId))) {
+    return;
+  }
 
   const botId = client.user?.id;
   const trigger = await getTrigger(message, keywords, botId);
 
-  const { messages, hints, memories } = await buildChatContext(message);
+  const { messages, hints } = await buildChatContext(message);
 
   if (trigger.type) {
     await resetMessageCount(ctxId);
@@ -61,7 +65,7 @@ export async function execute(message: Message) {
       `[${ctxId}] Triggered by ${trigger.type}`
     );
 
-    const result = await generateResponse(message, messages, hints, memories);
+    const result = await generateResponse(message, messages, hints);
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
       await onSuccess(message);
@@ -81,8 +85,7 @@ export async function execute(message: Message) {
   const { probability, reason } = await assessRelevance(
     message,
     messages,
-    hints,
-    memories
+    hints
   );
   logger.info(
     { reason, probability, message: `${author.username}: ${content}` },
@@ -101,7 +104,7 @@ export async function execute(message: Message) {
     await message.channel.sendTyping();
   }
   logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
-  const result = await generateResponse(message, messages, hints, memories);
+  const result = await generateResponse(message, messages, hints);
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
     await onSuccess(message);

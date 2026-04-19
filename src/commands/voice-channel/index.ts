@@ -1,5 +1,5 @@
 import {
-  ChatInputCommandInteraction,
+  type ChatInputCommandInteraction,
   MessageFlags,
   SlashCommandBuilder,
 } from 'discord.js';

@@ -1,8 +1,8 @@
+import { tool } from 'ai';
+import { z } from 'zod/v4';
 import { formatMemories } from '@/lib/ai/memory/text';
 import { createLogger } from '@/lib/logger';
 import { queryMemories } from '@/lib/pinecone/operations';
-import { tool } from 'ai';
-import { z } from 'zod/v4';
 
 const logger = createLogger('tools:search-memories');
 

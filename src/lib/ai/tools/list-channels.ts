@@ -1,7 +1,7 @@
 import { tool } from 'ai';
 import type { Message } from 'discord.js';
 import { z } from 'zod';
-import { createFuzzySearch } from '../../utils/fuzzy';
+import { createFuzzySearch } from '../utils/fuzzy';
 
 export const listChannels = ({ message }: { message: Message }) =>
   tool({

@@ -1,10 +1,9 @@
+import type { ModelMessage } from 'ai';
+import type { Message } from 'discord.js';
 import { relevanceAgent } from '@/lib/ai/agents/relevance';
 import { createLogger } from '@/lib/logger';
-
-import { type Probability } from '@/lib/validators';
+import type { Probability } from '@/lib/validators';
 import type { RequestHints } from '@/types';
-import { type ModelMessage } from 'ai';
-import type { Message } from 'discord.js';
 
 const logger = createLogger('events:message:relevance');
 

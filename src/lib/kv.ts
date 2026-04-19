@@ -1,6 +1,6 @@
-import { env } from '@/env';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { env } from '@/env';
 
 const PREFIX = env.NODE_ENV === 'development' ? 'beta:discord' : 'discord';
 

@@ -1,7 +1,7 @@
-import { probabilitySchema } from '@/lib/validators';
-import type { RequestHints } from '@/types/request';
 import { Experimental_Agent as Agent, tool } from 'ai';
 import type { Message } from 'discord.js';
+import { probabilitySchema } from '@/lib/validators';
+import type { RequestHints } from '@/types/request';
 import { systemPrompt } from '../prompts';
 import { provider } from '../providers';
 
@@ -14,7 +14,7 @@ export const relevanceAgent = ({
 }) =>
   new Agent({
     model: provider.languageModel('relevance-model'),
-    system: systemPrompt({
+    instructions: systemPrompt({
       agent: 'relevance',
       message,
       requestHints: hints,
