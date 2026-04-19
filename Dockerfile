@@ -12,7 +12,7 @@ RUN apt-get update \
 # this will cache them and speed up future builds
 FROM base AS install
 COPY package.json bun.lock* ./
-RUN bun install --production --ignore-scripts --frozen-lockfile
+RUN bun install --ignore-scripts --frozen-lockfile
 
 # copy production dependencies and source code into final image
 FROM base AS release

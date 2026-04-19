@@ -39,6 +39,7 @@
     "@elevenlabs/elevenlabs-js": "^2.33.0",
     "@neondatabase/serverless": "^1.0.2",
     "@openrouter/ai-sdk-provider": "^2.1.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.73.0",
     "@pinecone-database/pinecone": "^7.0.0",
     "@snazzah/davey": "^0.1.9",
     "@t3-oss/env-core": "^0.13.10",
