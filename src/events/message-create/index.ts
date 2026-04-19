@@ -1,4 +1,4 @@
-import type { Message } from 'discord.js';
+import { type Message, PermissionsBitField } from 'discord.js';
 import { keywords, messageThreshold } from '@/config';
 import { ratelimit, redisKeys } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
@@ -19,12 +19,48 @@ const logger = createLogger('events:message');
 export const name = 'messageCreate';
 export const once = false;
 
-async function canReply(ctxId: string): Promise<boolean> {
+async function canReply(message: Message): Promise<boolean> {
+  const { guild, author } = message;
+  const isDM = !guild;
+  const ctxId = isDM ? `dm:${author.id}` : guild.id;
+
   const { success } = await ratelimit.limit(redisKeys.channelCount(ctxId));
   if (!success) {
     logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
+    return false;
   }
-  return success;
+
+  if (guild) {
+    const botMember = guild.members.me;
+    if (!botMember) {
+      return false;
+    }
+
+    const channel = message.channel;
+    if (!channel.isTextBased()) {
+      return false;
+    }
+
+    if (!channel.isDMBased() && 'guild' in channel) {
+      const permissions = botMember.permissionsIn(channel);
+      const hasReadPermission = permissions.has(
+        PermissionsBitField.Flags.ViewChannel
+      );
+      const hasSendPermission = permissions.has(
+        PermissionsBitField.Flags.SendMessages
+      );
+
+      if (!(hasReadPermission && hasSendPermission)) {
+        logger.debug(
+          { read: hasReadPermission, send: hasSendPermission },
+          `[${guild.id}] Missing permissions in channel ${channel.id}`
+        );
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 async function onSuccess(message: Message) {
@@ -43,7 +79,7 @@ export async function execute(message: Message) {
   const isDM = !guild;
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
-  if (!(await canReply(ctxId))) {
+  if (!(await canReply(message))) {
     return;
   }
 

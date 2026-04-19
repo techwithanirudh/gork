@@ -14,7 +14,6 @@ export const env = createEnv({
     // AI
     OPENAI_API_KEY: z.string().optional(),
     HACKCLUB_API_KEY: z.string().optional(),
-    OPENROUTER_API_KEY: z.string().optional(),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
     // Logging
     LOG_DIRECTORY: z.string().optional().default('logs'),
@@ -22,9 +21,8 @@ export const env = createEnv({
       .enum(['debug', 'info', 'warn', 'error'])
       .optional()
       .default('info'),
-    // Redis
-    UPSTASH_REDIS_REST_URL: z.url().min(1),
-    UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+    // Redis (standard Redis URL, e.g. redis://:password@host:6379/0)
+    REDIS_URL: z.url().min(1).optional(),
     // AssemblyAI
     DEEPGRAM_API_KEY: z.string().min(1),
     // Exa

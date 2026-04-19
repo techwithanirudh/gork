@@ -20,6 +20,7 @@ export const searchWeb = tool({
     const { results } = await exa.searchAndContents(query, {
       livecrawl: 'always',
       numResults: 3,
+      text: true,
       includeDomains: specificDomain ? [specificDomain] : undefined,
     });
 
@@ -29,7 +30,7 @@ export const searchWeb = tool({
       results: results.map((result) => ({
         title: result.title,
         url: result.url,
-        snippet: (result as { text?: string }).text?.slice(0, 1000) ?? '',
+        snippet: result.text.slice(0, 1000),
       })),
     };
   },

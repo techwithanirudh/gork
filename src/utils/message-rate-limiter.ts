@@ -2,23 +2,31 @@ import { messageThreshold } from '@/config';
 import { redis, redisKeys } from '@/lib/kv';
 
 async function getMessageCount(ctxId: string): Promise<number> {
+  if (!redis) {
+    return 0;
+  }
+
   const key = redisKeys.messageCount(ctxId);
   const n = await redis.get(key);
   return n ? Number(n) : 0;
 }
 
 async function incrementMessageCount(ctxId: string): Promise<number> {
-  const key = redisKeys.messageCount(ctxId);
-  const pipeline = redis.pipeline();
-  pipeline.incr(key);
-  pipeline.expire(key, 3600);
+  if (!redis) {
+    return 1;
+  }
 
-  const results = await pipeline.exec();
-  const n = (results?.[0] as [unknown, number])?.[1];
+  const key = redisKeys.messageCount(ctxId);
+  const results = await redis.multi().incr(key).expire(key, 3600).exec();
+  const n = Number(results?.[0] ?? 1);
   return n || 1;
 }
 
 export async function resetMessageCount(ctxId: string): Promise<void> {
+  if (!redis) {
+    return;
+  }
+
   await redis.del(redisKeys.messageCount(ctxId));
 }
 
@@ -40,7 +48,9 @@ export async function handleMessageCount(
   const key = redisKeys.messageCount(ctxId);
 
   if (willReply) {
-    await redis.del(key);
+    if (redis) {
+      await redis.del(key);
+    }
     return 0;
   }
   return await incrementMessageCount(ctxId);
