@@ -4,8 +4,10 @@ logs
 .gitignore
 .vscode
 Dockerfile*
+docker-compose*
 README.md
 bun.lockb
+.env
 **/*.log
 **/.DS_Store
 **/Thumbs.db

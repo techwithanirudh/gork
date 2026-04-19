@@ -5,8 +5,9 @@
 1. 🤖 [Introduction](#introduction)
 2. 🚀 [Tech Stack](#tech-stack)
 3. 📚 [Getting Started](#getting-started)
-4. 🧠 [Memory](#memory)
-5. 📝 [License](#license)
+4. 🐳 [Running with Docker](#running-with-docker)
+5. 🧠 [Memory](#memory)
+6. 📝 [License](#license)
 
 ## <a name="introduction">🤖 Introduction</a>
 
@@ -19,49 +20,68 @@ This project was developed with the following technologies:
 - [Vercel AI SDK][ai-sdk]
 - [Exa AI][exa]
 - [discord.js][discord.js]
+- [Redis][redis]
 - [TypeScript][ts]
 - [Bun][bun]
-- [ESLint][eslint]
-- [Prettier][prettier]
+- [Biome][biome]
 
 ## <a name="getting-started">📚 Getting Started</a>
 
-To clone and run this application, first you need to create a [Discord Bot](https://www.androidpolice.com/how-to-make-discord-bot/). Afterwards, you will need [Git][git] and [Bun][bun] installed on your computer.
-
-From your command line:
+First, create a [Discord Bot](https://discord.com/developers/applications). You will also need [Git][git], [Bun][bun], and a running [Redis][redis] instance.
 
 ```bash
 # Clone this repository
-$ git clone https://github.com/techwithanirudh/discord-ai-bot.git
+$ git clone https://github.com/techwithanirudh/gork.git
 
 # Install dependencies
 $ bun install
-```
 
-Next, copy the .env.example file, rename it to .env, and add your environment variables.  
-The app now expects a standard Redis connection string via `REDIS_URL` (defaults to `redis://localhost:6379/0`) and uses the official `node-redis` client, so make sure you have a Redis instance running or update the URL accordingly.
-Great! Now you just need to start the development server.
+# Copy and fill in your environment variables
+$ cp .env.example .env
+```
 
 ```bash
-# Start server
+# Start in development (watch mode)
 $ bun run dev
+
+# Start in production
+$ bun run start
 ```
+
+## <a name="running-with-docker">🐳 Running with Docker</a>
+
+Docker bundles the bot and Redis together — no separate Redis setup needed.
+
+```bash
+# Clone and enter the repo
+$ git clone https://github.com/techwithanirudh/gork.git && cd gork
+
+# Copy and fill in your environment variables
+$ cp .env.example .env
+
+# Build and start
+$ docker compose up -d
+
+# View logs
+$ docker compose logs -f gork
+
+# Stop
+$ docker compose down
+```
+
+> **Note:** When running with Docker, set `REDIS_URL=redis://redis:6379/0` in your `.env`.
 
 ## <a name="memory">🧠 Memory</a>
 
-This bot uses Pinecone to store memory. You can set the `PINECONE_INDEX` environment variable to the name of your Pinecone index.
+This bot uses Pinecone to store memory. Create a Pinecone index with the following spec:
 
-Set the `PINECONE_API_KEY` environment variable to your Pinecone API key.
-
-Then, create a Pinecone index and set the `PINECONE_INDEX` environment variable to the name of your Pinecone index.
-
-Spec:
-
-- Pinecone index should be dense
+- Type: dense
 - Dimension: 1536
 - Metric: dotproduct
-- Spec: aws, us-east-1
+- Cloud: aws, us-east-1
 - Namespace: `default`
+
+Set `PINECONE_API_KEY` and `PINECONE_INDEX` in your `.env` accordingly.
 
 ## <a name="license">📝 License</a>
 
@@ -69,13 +89,11 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 
 > Credit to Fellipe Utaka for the [Discord Bot Template](https://github.com/fellipeutaka/discord-bot-template)
 
-[pr]: https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request
 [git]: https://git-scm.com
-[node]: https://nodejs.org/
 [ts]: https://www.typescriptlang.org/
 [discord.js]: https://discord.js.org/
-[eslint]: https://eslint.org/
-[prettier]: https://prettier.io/
+[biome]: https://biomejs.dev/
 [ai-sdk]: https://ai-sdk.dev/
 [bun]: https://bun.sh/
 [exa]: https://exa.ai/
+[redis]: https://redis.io/
