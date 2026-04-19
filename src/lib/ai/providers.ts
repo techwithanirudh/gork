@@ -54,7 +54,7 @@ export const provider = customProvider({
   imageModels: {
     // 'small-model': openai.imageModel('dall-e-2'),
   },
-  textEmbeddingModels: {
+  embeddingModels: {
     'small-model': openai.embedding('text-embedding-3-small')
   },
 });
