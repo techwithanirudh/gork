@@ -1,6 +1,6 @@
 import { saveToolMemory } from '@/lib/memory';
 import type { RequestHints } from '@/types/request';
-import { Experimental_Agent as Agent, stepCountIs } from 'ai';
+import { ToolLoopAgent, stepCountIs } from 'ai';
 import type { Message } from 'discord.js';
 import { systemPrompt } from '../prompts';
 import { provider } from '../providers';
@@ -14,9 +14,9 @@ export const orchestratorAgent = ({
   message: Message;
   hints: RequestHints;
 }) =>
-  new Agent({
+  new ToolLoopAgent({
     model: provider.languageModel('chat-model'),
-    system: systemPrompt({
+    instructions: systemPrompt({
       agent: 'chat',
       message,
       requestHints: hints,
@@ -28,7 +28,7 @@ export const orchestratorAgent = ({
       successToolCall('skip'),
     ],
     toolChoice: 'required',
-    tools: createToolset({ message, hints }),
+    tools: createToolset({ message }),
     temperature: 0,
     onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
       if (!toolCalls.length) return;

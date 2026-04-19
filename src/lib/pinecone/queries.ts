@@ -84,13 +84,13 @@ export const addMemory = async (
     });
 
     const index = (await getIndex()).namespace(namespace);
-    await index.upsert([
+    await index.upsert({ records: [
       {
         id,
         values: embedding,
         metadata: parsed.data,
       },
-    ]);
+    ]});
 
     logger.debug(
       { id, type: metadata.type, sessionId: metadata.sessionId },
@@ -109,7 +109,7 @@ export const deleteMemory = async (
 ): Promise<void> => {
   try {
     const index = (await getIndex()).namespace(namespace);
-    await index.deleteOne(id);
+    await index.deleteOne({ id });
     logger.debug({ id }, 'Deleted memory');
   } catch (error) {
     logger.error({ error }, 'Error deleting memory');
