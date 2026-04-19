@@ -28,7 +28,7 @@ const StructuredBaseSchema = z.object({
   type: z.enum(['chat', 'tool', 'summary', 'entity']),
   createdAt: z.number().int(),
   lastRetrievalTime: z.number().optional(),
-  sessionId: z.string(),
+  sessionId: z.string().default('legacy'),
   sessionType: z.enum(['dm', 'guild']).optional(),
   guild: GuildObjectSchema.nullable().optional(),
   channel: ChannelObjectSchema.nullable().optional(),
@@ -68,11 +68,11 @@ export type PineconeMetadataInput = z.infer<typeof StructuredMetadataSchema>;
 
 const StorageBaseSchema = z.object({
   hash: z.string().optional(),
-  version: z.union([z.literal(1), z.literal(2)]),
+  version: z.union([z.literal(1), z.literal(2)]).default(1),
   type: z.enum(['chat', 'tool', 'summary', 'entity']),
   createdAt: z.number().int(),
   lastRetrievalTime: z.number().optional(),
-  sessionId: z.string(),
+  sessionId: z.string().default('legacy'),
   sessionType: z.enum(['dm', 'guild']).optional(),
   guild: z.string().optional(),
   channel: z.string().optional(),
