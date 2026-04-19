@@ -178,7 +178,9 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
   };
 
   await trackSession(sessionId);
-  return addMemory(transcript, metadata);
+  return addMemory(transcript, metadata).catch((err) => {
+    logger.warn({ err }, 'Failed to save chat memory — skipping');
+  });
 }
 
 export async function saveToolMemory(
@@ -209,5 +211,7 @@ export async function saveToolMemory(
   };
 
   await trackSession(sessionId);
-  return addMemory(payload, metadata);
+  return addMemory(payload, metadata).catch((err) => {
+    logger.warn({ err }, 'Failed to save tool memory — skipping');
+  });
 }
