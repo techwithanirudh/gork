@@ -14,7 +14,7 @@ export const relevanceAgent = ({
 }) =>
   new Agent({
     model: provider.languageModel('relevance-model'),
-    system: systemPrompt({
+    instructions: systemPrompt({
       agent: 'relevance',
       message,
       requestHints: hints,

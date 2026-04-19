@@ -21,7 +21,7 @@ export const orchestratorAgent = ({
 }) =>
   new Agent({
     model: provider.languageModel('chat-model'),
-    system: systemPrompt({
+    instructions: systemPrompt({
       agent: 'chat',
       message,
       requestHints: hints,
