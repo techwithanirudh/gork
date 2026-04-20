@@ -25,17 +25,44 @@ function getFileExtension(mediaType: string): string {
   return MIME_TYPE_TO_EXTENSION[mediaType] ?? 'png';
 }
 
-function getSourceImages(
+async function fetchDiscordImageAsBuffer(
+  attachment: DiscordAttachment
+): Promise<{ data: Buffer; mimeType: string } | null> {
+  const url = attachment.url;
+  const mimeType = attachment.contentType ?? 'image/jpeg';
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      logger.warn(
+        { status: response.status, url },
+        'Failed to fetch Discord attachment'
+      );
+      return null;
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return { data: Buffer.from(arrayBuffer), mimeType };
+  } catch (error) {
+    logger.warn({ error, url }, 'Error fetching Discord attachment');
+    return null;
+  }
+}
+
+async function getSourceImages(
   attachments: Collection<string, DiscordAttachment>
-): string[] {
-  return Array.from(attachments.values())
-    .filter(
-      (attachment) =>
-        attachment.contentType &&
-        SUPPORTED_IMAGE_TYPES.has(attachment.contentType) &&
-        typeof attachment.url === 'string'
-    )
-    .map((attachment) => attachment.url);
+): Promise<Buffer[]> {
+  const imageAttachments = Array.from(attachments.values()).filter(
+    (attachment) =>
+      attachment.contentType &&
+      SUPPORTED_IMAGE_TYPES.has(attachment.contentType) &&
+      typeof attachment.url === 'string'
+  );
+
+  const results = await Promise.all(
+    imageAttachments.map((a) => fetchDiscordImageAsBuffer(a))
+  );
+  return results
+    .filter((r): r is { data: Buffer; mimeType: string } => r !== null)
+    .map((r) => r.data);
 }
 
 export const generateImageTool = ({ message }: { message: Message }) =>
@@ -94,7 +121,7 @@ export const generateImageTool = ({ message }: { message: Message }) =>
       try {
         statusMessage = await channel.send(status);
 
-        const sourceImages = getSourceImages(message.attachments);
+        const sourceImages = await getSourceImages(message.attachments);
         const imagePrompt =
           sourceImages.length > 0
             ? { text: prompt, images: sourceImages }
