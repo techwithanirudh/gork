@@ -41,17 +41,15 @@ export const orchestratorAgent = ({
           if (!(call && result)) {
             return;
           }
-          if (
-            call.toolName === 'memories' ||
-            call.toolName === 'searchMemories'
-          ) {
-            return;
-          }
-          if (
-            call.toolName === 'reply' ||
-            call.toolName === 'skip' ||
-            call.toolName === 'react'
-          ) {
+          const skipTools = new Set([
+            'memories',
+            'searchMemories',
+            'searchWeb',
+            'reply',
+            'skip',
+            'react',
+          ]);
+          if (skipTools.has(call.toolName)) {
             return;
           }
 

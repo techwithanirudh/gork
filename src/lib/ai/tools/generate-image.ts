@@ -1,13 +1,9 @@
 import { generateImage, tool } from 'ai';
-import {
-  AttachmentBuilder,
-  type Collection,
-  type Attachment as DiscordAttachment,
-  type Message,
-} from 'discord.js';
+import { AttachmentBuilder, type Message } from 'discord.js';
 import { z } from 'zod';
 import { provider } from '@/lib/ai/providers';
 import { createLogger } from '@/lib/logger';
+import { getSourceImages } from '@/utils/images';
 
 const logger = createLogger('tools:generate-image');
 
@@ -19,50 +15,9 @@ const MIME_TYPE_TO_EXTENSION: Record<string, string> = {
 };
 const SIZE_PATTERN = /^\d+x\d+$/;
 const ASPECT_RATIO_PATTERN = /^\d+:\d+$/;
-const SUPPORTED_IMAGE_TYPES = new Set(Object.keys(MIME_TYPE_TO_EXTENSION));
 
 function getFileExtension(mediaType: string): string {
   return MIME_TYPE_TO_EXTENSION[mediaType] ?? 'png';
-}
-
-async function fetchDiscordImageAsBuffer(
-  attachment: DiscordAttachment
-): Promise<{ data: Buffer; mimeType: string } | null> {
-  const url = attachment.url;
-  const mimeType = attachment.contentType ?? 'image/jpeg';
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      logger.warn(
-        { status: response.status, url },
-        'Failed to fetch Discord attachment'
-      );
-      return null;
-    }
-    const arrayBuffer = await response.arrayBuffer();
-    return { data: Buffer.from(arrayBuffer), mimeType };
-  } catch (error) {
-    logger.warn({ error, url }, 'Error fetching Discord attachment');
-    return null;
-  }
-}
-
-async function getSourceImages(
-  attachments: Collection<string, DiscordAttachment>
-): Promise<Buffer[]> {
-  const imageAttachments = Array.from(attachments.values()).filter(
-    (attachment) =>
-      attachment.contentType &&
-      SUPPORTED_IMAGE_TYPES.has(attachment.contentType) &&
-      typeof attachment.url === 'string'
-  );
-
-  const results = await Promise.all(
-    imageAttachments.map((a) => fetchDiscordImageAsBuffer(a))
-  );
-  return results
-    .filter((r): r is { data: Buffer; mimeType: string } => r !== null)
-    .map((r) => r.data);
 }
 
 export const generateImageTool = ({ message }: { message: Message }) =>
