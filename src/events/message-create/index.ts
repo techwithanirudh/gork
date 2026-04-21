@@ -1,6 +1,6 @@
 import { type Message, PermissionsBitField } from 'discord.js';
 import { keywords, messageThreshold } from '@/config';
-import { isSilenced, ratelimit, redisKeys } from '@/lib/kv';
+import { isSilenced, ratelimit, redisKeys, unsetSilenced } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { saveChatMemory } from '@/lib/memory';
 import { buildChatContext } from '@/utils/context';
@@ -99,17 +99,23 @@ export async function execute(message: Message) {
     return;
   }
 
-  if (await isSilenced(isDM ? `dm:${author.id}` : message.channelId)) {
+  const botId = client.user?.id;
+  const trigger = getTrigger(message, keywords, botId);
+
+  if (
+    trigger.type !== 'ping' &&
+    (await isSilenced(isDM ? `dm:${author.id}` : message.channelId))
+  ) {
     logger.debug({ ctxId }, 'Silenced — skipping');
     return;
   }
 
-  const botId = client.user?.id;
-  const trigger = getTrigger(message, keywords, botId);
-
   const { messages, hints } = await buildChatContext(message);
 
   if (trigger.type) {
+    if (trigger.type === 'ping') {
+      await unsetSilenced(isDM ? `dm:${author.id}` : message.channelId);
+    }
     await resetMessageCount(ctxId);
     const stopTyping = startTyping(message.channel);
 

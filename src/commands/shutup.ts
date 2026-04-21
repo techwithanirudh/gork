@@ -11,9 +11,13 @@ export async function execute(interaction: CommandInteraction) {
     await unsetSilenced(ctxId);
     return interaction.reply({
       content: 'fine ill talk again',
-      ephemeral: true,
+      ephemeral: false,
     });
   }
   await setSilenced(ctxId);
-  return interaction.reply({ content: 'aight ill shut up', ephemeral: true });
+  return interaction.reply({
+    content:
+      'aight ill shut up. ping me or run /shutup again if u want me back',
+    ephemeral: false,
+  });
 }
