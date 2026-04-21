@@ -3,6 +3,10 @@ import { NodeSDK } from '@opentelemetry/sdk-node';
 import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { LangfuseExporter } from 'langfuse-vercel';
 import { commands } from '@/commands';
+import {
+  handleModePanelButton,
+  handleModePanelSelect,
+} from '@/commands/mode-panel';
 import { deployCommands } from '@/deploy-commands';
 import { env } from '@/env';
 import { events } from '@/events';
@@ -96,17 +100,33 @@ client.on(Events.GuildDelete, async (guild) => {
 });
 
 client.on(Events.InteractionCreate, (interaction) => {
-  if (!interaction.isChatInputCommand()) {
+  if (interaction.isChatInputCommand()) {
+    const { commandName } = interaction;
+    if (commands[commandName as keyof typeof commands]) {
+      commands[commandName as keyof typeof commands]
+        // biome-ignore lint/suspicious/noExplicitAny: command execute signatures vary by command
+        .execute(interaction as any)
+        .catch((error: unknown) => {
+          logger.error({ error }, 'Command execution failed');
+        });
+    }
     return;
   }
-  const { commandName } = interaction;
-  if (commands[commandName as keyof typeof commands]) {
-    commands[commandName as keyof typeof commands]
-      // biome-ignore lint/suspicious/noExplicitAny: command execute signatures vary by command
-      .execute(interaction as any)
-      .catch((error: unknown) => {
-        logger.error({ error }, 'Command execution failed');
-      });
+
+  if (interaction.isButton() && interaction.customId.startsWith('modepanel:')) {
+    handleModePanelButton(interaction).catch((error: unknown) => {
+      logger.error({ error }, 'Mode panel button failed');
+    });
+    return;
+  }
+
+  if (
+    interaction.isStringSelectMenu() &&
+    interaction.customId.startsWith('modepanel:')
+  ) {
+    handleModePanelSelect(interaction).catch((error: unknown) => {
+      logger.error({ error }, 'Mode panel select failed');
+    });
   }
 });
 

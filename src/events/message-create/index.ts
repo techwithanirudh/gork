@@ -1,6 +1,12 @@
 import { type Message, PermissionsBitField } from 'discord.js';
 import { keywords, messageThreshold } from '@/config';
-import { isSilenced, ratelimit, redisKeys, unsetSilenced } from '@/lib/kv';
+import {
+  getResponseMode,
+  isSilenced,
+  ratelimit,
+  redisKeys,
+  unsetSilenced,
+} from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { saveChatMemory } from '@/lib/memory';
 import { buildChatContext } from '@/utils/context';
@@ -94,13 +100,23 @@ export async function execute(message: Message) {
     );
   }
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
+  const responseMode = isDM
+    ? 'relevance'
+    : await getResponseMode({
+        guildId: guild.id,
+        channelId: message.channelId,
+      });
 
   if (!(await canReply(message))) {
     return;
   }
 
   const botId = client.user?.id;
-  const trigger = getTrigger(message, keywords, botId);
+  const trigger = getTrigger(
+    message,
+    responseMode === 'ping+keyword' ? keywords : [],
+    botId
+  );
 
   if (
     trigger.type !== 'ping' &&
@@ -110,9 +126,9 @@ export async function execute(message: Message) {
     return;
   }
 
-  const { messages, hints } = await buildChatContext(message);
-
   if (trigger.type) {
+    const { messages, hints } = await buildChatContext(message);
+
     if (trigger.type === 'ping') {
       await unsetSilenced(isDM ? `dm:${author.id}` : message.channelId);
     }
@@ -132,6 +148,13 @@ export async function execute(message: Message) {
     }
     return;
   }
+
+  if (responseMode !== 'relevance') {
+    logger.debug({ ctxId, responseMode }, 'Mode does not use relevance checks');
+    return;
+  }
+
+  const { messages, hints } = await buildChatContext(message);
 
   const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
 
