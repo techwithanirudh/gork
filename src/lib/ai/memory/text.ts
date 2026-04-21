@@ -22,45 +22,44 @@ export function formatMemories(
       }
 
       const structured = expandMetadata(metadata);
-      if (structured.version && ![1, 2].includes(structured.version)) {
-        return null;
-      }
-
       const guild = structured.guild ?? null;
       const channel = structured.channel ?? null;
       const participants = structured.participants ?? [];
       const createdAt = structured.createdAt
-        ? new Date(metadata.createdAt).toISOString()
+        ? new Date(structured.createdAt).toISOString()
         : 'unknown';
+      const sessionId = structured.sessionId ?? 'legacy';
 
       switch (structured.type) {
         case 'chat':
           return formatChatMemory({
             createdAt,
+            sessionId,
             guild,
             channel,
             participants,
             context: structured.context,
-            sessionId: structured.sessionId,
           });
         case 'tool':
           return formatToolMemory({
             createdAt,
+            sessionId,
             guild,
             channel,
             participants,
             name: structured.name,
             response: structured.response,
-            sessionId: structured.sessionId,
           });
         case 'summary':
           return formatSummaryMemory({
             createdAt,
-            sessionId: structured.sessionId,
+            sessionId,
             summary: structured.summary,
           });
         case 'entity': {
-          const entities = structured.entities ?? structured.participants ?? [];
+          const entities =
+            (structured as { entities?: Participant[] }).entities ??
+            participants;
           return formatEntityMemory({
             createdAt,
             summary: structured.summary,
@@ -82,52 +81,48 @@ export function formatMemories(
 
 function formatChatMemory({
   createdAt,
+  sessionId,
   guild,
   channel,
   participants,
   context,
-  sessionId,
 }: {
   createdAt: string;
+  sessionId: string;
   guild: Guild | null;
   channel: Channel | null;
   participants: Participant[];
   context: string;
-  sessionId: string;
 }) {
-  const location = formatLocation(guild, channel);
-  const snippet = sanitizeMultiline(context);
-
   return [
     '- entry:',
     '    type: chat',
     `    when: ${createdAt}`,
     `    session: ${sessionId}`,
-    `    where: ${location}`,
+    `    where: ${formatLocation(guild, channel)}`,
     `    participants: ${formatParticipants(participants)}`,
     '    transcript: |',
-    ...snippet.map((line) => `      ${line}`),
+    ...sanitizeMultiline(context).map((l) => `      ${l}`),
   ].join('\n');
 }
 
 function formatToolMemory({
   createdAt,
+  sessionId,
   guild,
   channel,
   participants,
   name,
   response,
-  sessionId,
 }: {
   createdAt: string;
+  sessionId: string;
   guild: Guild | null;
   channel: Channel | null;
   participants: Participant[];
   name: string;
   response: unknown;
-  sessionId: string;
 }) {
-  const location = formatLocation(guild, channel);
   const payload =
     typeof response === 'string'
       ? sanitizeMultiline(response)
@@ -138,11 +133,11 @@ function formatToolMemory({
     '    type: tool',
     `    when: ${createdAt}`,
     `    session: ${sessionId}`,
-    `    where: ${location}`,
+    `    where: ${formatLocation(guild, channel)}`,
     `    participants: ${formatParticipants(participants)}`,
     `    tool: ${name ?? 'unknown'}`,
     '    output: |',
-    ...payload.map((line) => `      ${line}`),
+    ...payload.map((l) => `      ${l}`),
   ].join('\n');
 }
 
@@ -155,15 +150,13 @@ function formatSummaryMemory({
   sessionId: string;
   summary: string;
 }) {
-  const snippet = sanitizeMultiline(summary);
-
   return [
     '- entry:',
     '    type: summary',
     `    when: ${createdAt}`,
     `    session: ${sessionId}`,
     '    recap: |',
-    ...snippet.map((line) => `      ${line}`),
+    ...sanitizeMultiline(summary).map((l) => `      ${l}`),
   ].join('\n');
 }
 
@@ -176,15 +169,13 @@ function formatEntityMemory({
   summary: string;
   entities: Participant[];
 }) {
-  const snippet = sanitizeMultiline(summary);
-
   return [
     '- entry:',
     '    type: entity',
     `    when: ${createdAt}`,
     `    subjects: ${formatParticipants(entities)}`,
     '    card: |',
-    ...snippet.map((line) => `      ${line}`),
+    ...sanitizeMultiline(summary).map((l) => `      ${l}`),
   ].join('\n');
 }
 
@@ -192,12 +183,8 @@ function formatParticipants(participants?: Participant[]) {
   if (!participants?.length) {
     return 'unknown';
   }
-
   return participants
-    .map(
-      (participant) =>
-        participant.display || participant.handle || participant.id
-    )
+    .map((p) => p.display || p.handle || p.id)
     .filter(Boolean)
     .join(', ');
 }

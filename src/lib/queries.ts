@@ -7,6 +7,9 @@ import {
   ThreadChannel,
   VoiceChannel,
 } from 'discord.js';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('queries');
 
 export async function getMessagesByChannel({
   channel,
@@ -27,7 +30,7 @@ export async function getMessagesByChannel({
     );
     return sorted;
   } catch (error) {
-    console.error('Failed to get messages by chat id from database', error);
+    logger.error({ error }, 'Failed to fetch messages from channel');
     throw error;
   }
 }

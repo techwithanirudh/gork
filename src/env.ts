@@ -11,6 +11,7 @@ export const env = createEnv({
     DISCORD_CLIENT_ID: z.string().min(1),
     DISCORD_OWNER_ID: z.string().min(1),
     DISCORD_DEFAULT_GUILD_ID: z.string().optional(),
+    DISCORD_LOGS_CHANNEL_ID: z.string().optional(),
     // AI
     OPENAI_API_KEY: z.string().optional(),
     HACKCLUB_API_KEY: z.string().optional(),

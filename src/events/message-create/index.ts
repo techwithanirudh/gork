@@ -1,6 +1,6 @@
 import { type Message, PermissionsBitField } from 'discord.js';
 import { keywords, messageThreshold } from '@/config';
-import { ratelimit, redisKeys } from '@/lib/kv';
+import { isSilenced, ratelimit, redisKeys } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { saveChatMemory } from '@/lib/memory';
 import { buildChatContext } from '@/utils/context';
@@ -68,6 +68,16 @@ async function onSuccess(message: Message) {
 }
 
 export async function execute(message: Message) {
+  if (message.partial) {
+    try {
+      // biome-ignore lint/style/noParameterAssign: partial fetch requires reassignment
+      message = await message.fetch();
+    } catch (error) {
+      logger.warn({ error }, 'Failed to fetch partial message');
+      return;
+    }
+  }
+
   if (message.author.bot) {
     return;
   }
@@ -77,31 +87,39 @@ export async function execute(message: Message) {
 
   const { content, client, guild, author } = message;
   const isDM = !guild;
+  if (isDM) {
+    logger.info(
+      { channelId: message.channelId, author: author.username },
+      'DM received'
+    );
+  }
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
   if (!(await canReply(message))) {
     return;
   }
 
+  if (await isSilenced(isDM ? `dm:${author.id}` : message.channelId)) {
+    logger.debug({ ctxId }, 'Silenced — skipping');
+    return;
+  }
+
   const botId = client.user?.id;
-  const trigger = await getTrigger(message, keywords, botId);
+  const trigger = getTrigger(message, keywords, botId);
 
   const { messages, hints } = await buildChatContext(message);
 
   if (trigger.type) {
     await resetMessageCount(ctxId);
-    if ('sendTyping' in message.channel) {
-      await message.channel.sendTyping();
-    }
+    const stopTyping = startTyping(message.channel);
 
     logger.info(
-      {
-        message: `${author.username}: ${content}`,
-      },
+      { message: `${author.username}: ${content}` },
       `[${ctxId}] Triggered by ${trigger.type}`
     );
 
     const result = await generateResponse(message, messages, hints);
+    stopTyping();
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
       await onSuccess(message);
@@ -136,13 +154,30 @@ export async function execute(message: Message) {
     return;
   }
 
-  if ('sendTyping' in message.channel) {
-    await message.channel.sendTyping();
-  }
+  const stopTyping = startTyping(message.channel);
   logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
   const result = await generateResponse(message, messages, hints);
+  stopTyping();
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
     await onSuccess(message);
   }
+}
+
+function startTyping(channel: Message['channel']): () => void {
+  if (!('sendTyping' in channel) || typeof channel.sendTyping !== 'function') {
+    return () => {
+      /* no-op */
+    };
+  }
+  const send = () => {
+    (channel as { sendTyping(): Promise<void> })
+      .sendTyping()
+      .catch((_e: unknown) => {
+        /* ignore */
+      });
+  };
+  send();
+  const interval = setInterval(send, 8000);
+  return () => clearInterval(interval);
 }

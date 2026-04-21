@@ -23,6 +23,8 @@ export type Guild = z.infer<typeof GuildObjectSchema>;
 export type Channel = z.infer<typeof ChannelObjectSchema>;
 export type Participant = z.infer<typeof ParticipantObjectSchema>;
 
+// --- Structured (in-app) schemas — nested objects ---
+
 const StructuredBaseSchema = z.object({
   version: z.union([z.literal(1), z.literal(2)]).default(1),
   type: z.enum(['chat', 'tool', 'summary', 'entity']),
@@ -57,7 +59,7 @@ const StructuredEntitySchema = StructuredBaseSchema.extend({
   entities: z.array(ParticipantObjectSchema).default([]),
 });
 
-const StructuredMetadataSchema = z.union([
+export const StructuredMetadataSchema = z.union([
   StructuredChatSchema,
   StructuredToolSchema,
   StructuredSummarySchema,
@@ -65,6 +67,8 @@ const StructuredMetadataSchema = z.union([
 ]);
 
 export type PineconeMetadataInput = z.infer<typeof StructuredMetadataSchema>;
+
+// --- Storage schemas — flat strings/primitives for Pinecone ---
 
 const StorageBaseSchema = z.object({
   hash: z.string().optional(),
@@ -115,13 +119,11 @@ export const PineconeMetadataSchema = z.union([
   StorageEntitySchema,
 ]);
 
-export type PineconeMetadataStorage = z.infer<typeof PineconeMetadataSchema>;
-export type PineconeMetadataOutput = PineconeMetadataStorage;
-export type PineconeMetadataStructured = PineconeMetadataInput;
+export type PineconeMetadataOutput = z.infer<typeof PineconeMetadataSchema>;
 
 export function flattenMetadata(
   metadata: PineconeMetadataInput
-): Omit<PineconeMetadataStorage, 'hash'> {
+): Omit<PineconeMetadataOutput, 'hash'> {
   const structured = StructuredMetadataSchema.parse(metadata);
   const guild = structured.guild ?? null;
   const channel = structured.channel ?? null;
@@ -131,7 +133,7 @@ export function flattenMetadata(
       ? ((structured as z.infer<typeof StructuredEntitySchema>).entities ?? [])
       : [];
 
-  const flattened = {
+  const flattened: Record<string, unknown> = {
     ...structured,
     guild: guild ? JSON.stringify(guild) : undefined,
     channel: channel ? JSON.stringify(channel) : undefined,
@@ -145,12 +147,12 @@ export function flattenMetadata(
     channelName: channel?.name ?? undefined,
     channelType: channel?.type ?? undefined,
     participantIds: participants
-      .map((participant) => participant.id)
+      .map((p) => p.id)
       .filter((id): id is string => typeof id === 'string' && id.length > 0),
     entityIds: entities
-      .map((entity) => entity.id)
+      .map((p) => p.id)
       .filter((id): id is string => typeof id === 'string' && id.length > 0),
-  } as Record<string, unknown>;
+  };
 
   if (structured.type === 'tool') {
     flattened.response = serializeValue(structured.response);
@@ -160,7 +162,7 @@ export function flattenMetadata(
 }
 
 export function expandMetadata(
-  metadata: PineconeMetadataStorage
+  metadata: PineconeMetadataOutput
 ): PineconeMetadataInput {
   const guild = safeParseJson<Guild | null>(metadata.guild);
   const channel = safeParseJson<Channel | null>(metadata.channel);
@@ -168,12 +170,7 @@ export function expandMetadata(
     safeParseJson<Participant[]>(metadata.participants) ?? [];
   const entities = safeParseJson<Participant[]>(metadata.entities) ?? [];
 
-  const base = {
-    ...metadata,
-    guild,
-    channel,
-    participants,
-  };
+  const base = { ...metadata, guild, channel, participants };
 
   switch (metadata.type) {
     case 'chat':
@@ -187,10 +184,7 @@ export function expandMetadata(
     case 'summary':
       return StructuredSummarySchema.parse(base);
     case 'entity':
-      return StructuredEntitySchema.parse({
-        ...base,
-        entities,
-      });
+      return StructuredEntitySchema.parse({ ...base, entities });
     default:
       return StructuredMetadataSchema.parse(base);
   }
@@ -200,7 +194,6 @@ function safeParseJson<T>(value: unknown): T | null {
   if (typeof value !== 'string') {
     return (value as T) ?? null;
   }
-
   try {
     return JSON.parse(value) as T;
   } catch {
@@ -212,7 +205,6 @@ function serializeValue(value: unknown): string {
   if (typeof value === 'string') {
     return value;
   }
-
   try {
     return JSON.stringify(value);
   } catch {

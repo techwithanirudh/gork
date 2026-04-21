@@ -31,7 +31,7 @@ export const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildVoiceStates,
   ],
-  partials: [Partials.Channel, Partials.Message],
+  partials: [Partials.Channel, Partials.Message, Partials.User],
 });
 
 client.once(Events.ClientReady, async (client) => {
@@ -59,23 +59,51 @@ client.once(Events.ClientReady, async (client) => {
   beginStatusUpdates(client);
 });
 
+async function sendLogsMessage(message: string) {
+  const channelId = env.DISCORD_LOGS_CHANNEL_ID;
+  if (!channelId) {
+    return;
+  }
+  try {
+    const channel = await client.channels.fetch(channelId);
+    if (channel?.isTextBased() && 'send' in channel) {
+      await channel.send(message);
+    }
+  } catch (error) {
+    logger.warn({ error }, 'Failed to send logs channel message');
+  }
+}
+
 client.on(Events.GuildCreate, async (guild) => {
   await deployCommands({ guildId: guild.id });
+  logger.info({ guildId: guild.id, guildName: guild.name }, 'Added to guild');
+  await sendLogsMessage(`added to server: **${guild.name}** (\`${guild.id}\`)`);
 
   const channel = guild.systemChannel;
   if (channel) {
-    await channel.send('hi');
+    await channel.send("yeah i'm here, try not to make it weird");
   }
 });
 
+client.on(Events.GuildDelete, async (guild) => {
+  logger.info(
+    { guildId: guild.id, guildName: guild.name },
+    'Removed from guild'
+  );
+  await sendLogsMessage(
+    `removed from server: **${guild.name}** (\`${guild.id}\`)`
+  );
+});
+
 client.on(Events.InteractionCreate, (interaction) => {
-  if (!(interaction.isChatInputCommand() && interaction.inCachedGuild())) {
+  if (!interaction.isChatInputCommand()) {
     return;
   }
   const { commandName } = interaction;
   if (commands[commandName as keyof typeof commands]) {
     commands[commandName as keyof typeof commands]
-      .execute(interaction)
+      // biome-ignore lint/suspicious/noExplicitAny: command execute signatures vary by command
+      .execute(interaction as any)
       .catch((error: unknown) => {
         logger.error({ error }, 'Command execution failed');
       });
@@ -85,14 +113,21 @@ client.on(Events.InteractionCreate, (interaction) => {
 for (const key of Object.keys(events)) {
   const event = events[key as keyof typeof events];
 
+  const handler = (...args: unknown[]) => {
+    const result = (event.execute as (...eventArgs: unknown[]) => unknown)(
+      ...args
+    );
+    if (result instanceof Promise) {
+      result.catch((error: unknown) =>
+        logger.error({ error }, `Unhandled error in event: ${event.name}`)
+      );
+    }
+  };
+
   if (event?.once) {
-    client.once(event.name, (...args: unknown[]) =>
-      (event.execute as (...eventArgs: unknown[]) => unknown)(...args)
-    );
+    client.once(event.name, handler);
   } else {
-    client.on(event.name, (...args: unknown[]) =>
-      (event.execute as (...eventArgs: unknown[]) => unknown)(...args)
-    );
+    client.on(event.name, handler);
   }
 }
 

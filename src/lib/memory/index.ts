@@ -40,15 +40,8 @@ interface EntityRef {
 
 const logger = createLogger('memory:ingest');
 
-type ChatMetadataPayload = Omit<
-  Extract<PineconeMetadataInput, { type: 'chat' }>,
-  never
->;
-
-type ToolMetadataPayload = Omit<
-  Extract<PineconeMetadataInput, { type: 'tool' }>,
-  never
->;
+type ChatMetadataPayload = Extract<PineconeMetadataInput, { type: 'chat' }>;
+type ToolMetadataPayload = Extract<PineconeMetadataInput, { type: 'tool' }>;
 
 const IMPORTANT_KEYWORDS =
   /\b(decide|decision|deadline|todo|plan|commit|ship|deploy|invite|token|schedule|meeting)\b/i;
@@ -215,9 +208,9 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
 
   const metadata: ChatMetadataPayload = {
     type: 'chat',
+    version: 1,
     createdAt: now,
     lastRetrievalTime: now,
-    version: 1,
     sessionId,
     sessionType: message.guild ? 'guild' : 'dm',
     guild,
@@ -248,9 +241,9 @@ export async function saveToolMemory(
 
   const metadata: ToolMetadataPayload = {
     type: 'tool',
+    version: 1,
     createdAt: now,
     lastRetrievalTime: now,
-    version: 1,
     sessionId,
     sessionType: message.guild ? 'guild' : 'dm',
     guild,

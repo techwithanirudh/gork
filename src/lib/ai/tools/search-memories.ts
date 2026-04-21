@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { formatMemories } from '@/lib/ai/memory/text';
 import { createLogger } from '@/lib/logger';
 import { queryMemories } from '@/lib/pinecone/operations';
