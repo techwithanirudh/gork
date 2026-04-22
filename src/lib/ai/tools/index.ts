@@ -1,6 +1,7 @@
 import type { Message } from 'discord.js';
 import { generateImageTool } from './generate-image';
 import { getUserInfo } from './get-user-info';
+import { getUsers } from './get-users';
 import { getWeather } from './get-weather';
 import { listChannels } from './list-channels';
 import { listGuilds } from './list-guilds';
@@ -22,6 +23,7 @@ export function createToolset({ message }: { message: Message }) {
     generateImage: generateImageTool({ message }),
     searchMemories: searchMemories(),
     getUserInfo: getUserInfo({ message }),
+    getUsers: getUsers({ message }),
     listChannels: listChannels({ message }),
     listGuilds: listGuilds({ message }),
     react: react({ message }),

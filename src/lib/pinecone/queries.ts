@@ -7,6 +7,7 @@ import {
   PineconeMetadataSchema,
 } from '@/lib/validators/pinecone';
 import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
+import { toLogError } from '@/utils/error';
 import { provider } from '../ai/providers';
 import { getIndex } from './index';
 
@@ -54,7 +55,7 @@ export const searchMemories = async (
       };
     });
   } catch (error) {
-    logger.error({ error }, 'Error searching memories');
+    logger.error(toLogError(error), 'Error searching memories');
     throw error;
   }
 };
@@ -103,7 +104,7 @@ export const addMemory = async (
     );
     return id;
   } catch (error) {
-    logger.error({ error }, 'Error adding memory');
+    logger.error(toLogError(error), 'Error adding memory');
     throw error;
   }
 };
@@ -117,7 +118,7 @@ export const deleteMemory = async (
     await index.deleteOne({ id });
     logger.debug({ id }, 'Deleted memory');
   } catch (error) {
-    logger.error({ error }, 'Error deleting memory');
+    logger.error(toLogError(error), 'Error deleting memory');
     throw error;
   }
 };

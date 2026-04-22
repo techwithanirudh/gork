@@ -60,14 +60,10 @@ export function formatDiscordMessage(
   let processedContent = msg.content;
 
   if (replacePings && userMap) {
-    processedContent = processedContent
-      .replace(/<@!?(\d+)>/g, (_, userId) => {
-        const user = userMap.get(userId);
-        return user ? `@${user.username}` : '@unknown';
-      })
-      .replace(/<@&(\d+)>/g, '@role')
-      .replace(/@everyone/g, '@everyone')
-      .replace(/@here/g, '@here');
+    processedContent = applyMentionReplacements(
+      processedContent,
+      (id) => userMap.get(id)?.username
+    );
   }
 
   result += processedContent;
@@ -158,4 +154,32 @@ export function processAttachments(
 
 export function isDiscordMessage(msg: unknown): msg is DiscordMessage {
   return msg instanceof DiscordMessage && typeof msg.reply === 'function';
+}
+
+function applyMentionReplacements(
+  content: string,
+  resolveUser: (id: string) => string | undefined,
+  resolveChannel?: (id: string) => string | undefined
+): string {
+  return content
+    .replace(/<@!?(\d+)>/g, (_, id: string) => {
+      const name = resolveUser(id);
+      return name ? `@${name}` : '@unknown';
+    })
+    .replace(/<@&(\d+)>/g, '@role')
+    .replace(/<#(\d+)>/g, (_, id: string) => {
+      const name = resolveChannel?.(id);
+      return name ? `#${name}` : '#channel';
+    });
+}
+
+export function resolveMentions(msg: DiscordMessage): string {
+  return applyMentionReplacements(
+    msg.content,
+    (id) => msg.mentions.users.get(id)?.username,
+    (id) => {
+      const ch = msg.client.channels.cache.get(id);
+      return ch && 'name' in ch ? (ch as { name: string }).name : undefined;
+    }
+  );
 }

@@ -4,6 +4,7 @@ import { relevanceAgent } from '@/lib/ai/agents/relevance';
 import { createLogger } from '@/lib/logger';
 import type { Probability } from '@/lib/validators/probability';
 import type { RequestHints } from '@/types';
+import { toLogError } from '@/utils/error';
 
 const logger = createLogger('events:message:relevance');
 
@@ -32,7 +33,7 @@ export async function assessRelevance(
 
     return { ...answer };
   } catch (error) {
-    logger.error({ error }, 'Failed to assess relevance');
+    logger.error(toLogError(error), 'Failed to assess relevance');
     return {
       probability: 0.5,
       reason: 'Oops! Something went wrong, please try again later',

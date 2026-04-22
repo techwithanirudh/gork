@@ -8,6 +8,7 @@ import {
   VoiceChannel,
 } from 'discord.js';
 import { createLogger } from '@/lib/logger';
+import { toLogError } from '@/utils/error';
 
 const logger = createLogger('queries');
 
@@ -30,7 +31,7 @@ export async function getMessagesByChannel({
     );
     return sorted;
   } catch (error) {
-    logger.error({ error }, 'Failed to fetch messages from channel');
+    logger.error(toLogError(error), 'Failed to fetch messages from channel');
     throw error;
   }
 }

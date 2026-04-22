@@ -10,6 +10,7 @@ import {
 import { createLogger } from '@/lib/logger';
 import { saveChatMemory } from '@/lib/memory';
 import { buildChatContext } from '@/utils/context';
+import { toLogError } from '@/utils/error';
 import { logReply } from '@/utils/log';
 import {
   checkMessageQuota,
@@ -183,7 +184,7 @@ export async function execute(message: Message) {
       // biome-ignore lint/style/noParameterAssign: partial fetch requires reassignment
       message = await message.fetch();
     } catch (error) {
-      logger.warn({ error }, 'Failed to fetch partial message');
+      logger.warn(toLogError(error), 'Failed to fetch partial message');
       return;
     }
   }
@@ -203,6 +204,6 @@ export async function execute(message: Message) {
   }
 
   handleMessage(message).catch((error: unknown) => {
-    logger.error({ error }, 'Failed to process message');
+    logger.error(toLogError(error), 'Failed to process message');
   });
 }

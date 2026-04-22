@@ -3,6 +3,7 @@ import type { Message } from 'discord.js';
 import { orchestratorAgent } from '@/lib/ai/agents/orchestrator';
 import { getSafetyMode } from '@/lib/kv';
 import type { RequestHints } from '@/types';
+import { resolveMentions } from '@/utils/messages';
 
 export async function generateResponse(
   msg: Message,
@@ -24,7 +25,7 @@ export async function generateResponse(
         ...messages,
         {
           role: 'user',
-          content: `You are replying to the following message: ${msg.content}${attachmentNotice}`,
+          content: `You are replying to the following message: ${resolveMentions(msg)}${attachmentNotice}`,
         },
       ],
     });

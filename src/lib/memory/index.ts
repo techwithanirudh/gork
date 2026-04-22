@@ -10,6 +10,7 @@ import { createLogger } from '@/lib/logger';
 import { addMemory } from '@/lib/pinecone/queries';
 import { getMessagesByChannel } from '@/lib/queries';
 import type { PineconeMetadataInput } from '@/types';
+import { toLogError } from '@/utils/error';
 
 type Importance = 'low' | 'med' | 'high';
 
@@ -221,7 +222,7 @@ export async function saveChatMemory(message: Message, contextLimit = 5) {
 
   await trackSession(sessionId);
   return addMemory(transcript, metadata).catch((error) => {
-    logger.warn({ error }, 'Failed to save chat memory — skipping');
+    logger.warn(toLogError(error), 'Failed to save chat memory — skipping');
     return null;
   });
 }
@@ -255,7 +256,7 @@ export async function saveToolMemory(
 
   await trackSession(sessionId);
   return addMemory(payload, metadata).catch((error) => {
-    logger.warn({ error }, 'Failed to save tool memory — skipping');
+    logger.warn(toLogError(error), 'Failed to save tool memory — skipping');
     return null;
   });
 }

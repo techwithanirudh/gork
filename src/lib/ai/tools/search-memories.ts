@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { formatMemories } from '@/lib/ai/memory/text';
 import { createLogger } from '@/lib/logger';
 import { queryMemories } from '@/lib/pinecone/operations';
+import { toLogError } from '@/utils/error';
 
 const logger = createLogger('tools:search-memories');
 
@@ -67,7 +68,7 @@ export const searchMemories = () =>
           data,
         };
       } catch (error) {
-        logger.error({ error }, 'Error in searchMemories tool');
+        logger.error(toLogError(error), 'Error in searchMemories tool');
         return {
           success: false,
           error: 'Failed to search memories',

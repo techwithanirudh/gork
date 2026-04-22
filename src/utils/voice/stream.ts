@@ -7,6 +7,7 @@ import type { User } from 'discord.js';
 import { voice } from '@/config';
 import { env } from '@/env';
 import { createLogger } from '@/lib/logger';
+import { toLogError } from '@/utils/error';
 import { getAIResponse } from './helpers/ai';
 import { playAudio } from './helpers/audio';
 import { deepgram, speak } from './helpers/deepgram';
@@ -78,7 +79,7 @@ export async function createListeningStream(
     });
 
     stt.on('error', (error) => {
-      logger.error({ error }, '[Deepgram] Error');
+      logger.error(toLogError(error), '[Deepgram] Error');
     });
 
     opusStream.on('readable', () => {

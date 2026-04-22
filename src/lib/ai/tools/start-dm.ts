@@ -2,6 +2,7 @@ import { tool } from 'ai';
 import type { Message, User } from 'discord.js';
 import { z } from 'zod';
 import { createLogger } from '@/lib/logger';
+import { toLogError } from '@/utils/error';
 
 const logger = createLogger('tools:start-dm');
 
@@ -73,7 +74,7 @@ export const startDM = ({ message }: { message: Message }) =>
           messageContent: content,
         };
       } catch (error) {
-        logger.error({ error }, 'Failed to start DM:');
+        logger.error(toLogError(error), 'Failed to start DM:');
         return {
           success: false,
           error: 'Failed to send DM',

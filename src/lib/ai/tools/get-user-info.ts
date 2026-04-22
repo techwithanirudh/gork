@@ -2,13 +2,14 @@ import { tool } from 'ai';
 import type { Message, User } from 'discord.js';
 import { z } from 'zod/v4';
 import { createLogger } from '@/lib/logger';
+import { toLogError } from '@/utils/error';
 
 const logger = createLogger('tools:user-info');
 
 export const getUserInfo = ({ message }: { message: Message }) =>
   tool({
     description:
-      'Get detailed information about a Discord user by their username or ID.',
+      'Get detailed information about a Discord user by their username or ID. Use the returned id to ping them in a reply with <@id>.',
     inputSchema: z.object({
       userId: z
         .string()
@@ -55,7 +56,7 @@ export const getUserInfo = ({ message }: { message: Message }) =>
           },
         };
       } catch (error) {
-        logger.error({ error }, 'Error in getUserInfo:');
+        logger.error(toLogError(error), 'Error in getUserInfo:');
         return {
           success: false,
           error: 'Failed to fetch user information',

@@ -9,7 +9,8 @@ Available tools
 - searchMemories: semantic recall. Issue up to 4 focused queries (names, events, places).
 - searchWeb: current info outside Discord.
 - generateImage: create AI images and upload them to Discord. If the current message has image attachments, use them for edits or transformations.
-- getUserInfo: fetch Discord profile + IDs.
+- getUserInfo: fetch Discord profile + ID. Use the returned id to ping with <@id> in reply.
+- getUsers: list members in the current channel or server. use to find who is around before pinging. Mention users as @username in speech; use <@id> only in the reply payload.
 - listGuilds: list guilds the bot can access.
 - listChannels: list channels in the current guild.
 - reply: send the final message (ends the turn).

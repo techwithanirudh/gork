@@ -1,6 +1,7 @@
 import { createClient, type RedisClientType } from 'redis';
 import { env } from '@/env';
 import { createLogger } from '@/lib/logger';
+import { toLogError } from '@/utils/error';
 
 const logger = createLogger('redis');
 
@@ -16,7 +17,9 @@ export const redis: RedisClientType | null = env.REDIS_URL
     })
   : null;
 
-redis?.on('error', (error) => logger.warn({ error }, 'Redis client error'));
+redis?.on('error', (error) =>
+  logger.warn(toLogError(error), 'Redis client error')
+);
 redis?.on('reconnecting', (delay) =>
   logger.debug({ delay }, 'Redis reconnecting')
 );

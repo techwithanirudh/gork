@@ -8,6 +8,7 @@ import { env } from '@/env';
 import { events } from '@/events';
 import { redis } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
+import { toLogError } from '@/utils/error';
 import { beginStatusUpdates } from '@/utils/status';
 
 const logger = createLogger('core');
@@ -52,7 +53,10 @@ client.once(Events.ClientReady, async (client) => {
       logger.warn('REDIS_URL not set; running without Redis-backed caching');
     }
   } catch (error) {
-    logger.warn({ error }, 'Redis connection failed; continuing without cache');
+    logger.warn(
+      toLogError(error),
+      'Redis connection failed; continuing without cache'
+    );
   }
 
   langfuse.start();
@@ -70,7 +74,7 @@ async function sendLogsMessage(message: string) {
       await channel.send(message);
     }
   } catch (error) {
-    logger.warn({ error }, 'Failed to send logs channel message');
+    logger.warn(toLogError(error), 'Failed to send logs channel message');
   }
 }
 
@@ -103,7 +107,7 @@ client.on(Events.InteractionCreate, (interaction) => {
         // biome-ignore lint/suspicious/noExplicitAny: command execute signatures vary by command
         .execute(interaction as any)
         .catch((error: unknown) => {
-          logger.error({ error }, 'Command execution failed');
+          logger.error(toLogError(error), 'Command execution failed');
         });
     }
     return;
@@ -119,7 +123,10 @@ for (const key of Object.keys(events)) {
     );
     if (result instanceof Promise) {
       result.catch((error: unknown) =>
-        logger.error({ error }, `Unhandled error in event: ${event.name}`)
+        logger.error(
+          toLogError(error),
+          `Unhandled error in event: ${event.name}`
+        )
       );
     }
   };
@@ -145,18 +152,18 @@ const gracefulShutdown = async (signal: string) => {
 
 process.on('SIGINT', () => {
   gracefulShutdown('SIGINT').catch((error) => {
-    logger.error({ error }, 'Failed during SIGINT shutdown');
+    logger.error(toLogError(error), 'Failed during SIGINT shutdown');
   });
 });
 process.on('SIGTERM', () => {
   gracefulShutdown('SIGTERM').catch((error) => {
-    logger.error({ error }, 'Failed during SIGTERM shutdown');
+    logger.error(toLogError(error), 'Failed during SIGTERM shutdown');
   });
 });
 process.on('beforeExit', () => {
   if (redis?.isOpen) {
     redis.quit().catch((error) => {
-      logger.error({ error }, 'Failed to close Redis on beforeExit');
+      logger.error(toLogError(error), 'Failed to close Redis on beforeExit');
     });
   }
 });
