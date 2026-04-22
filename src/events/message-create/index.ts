@@ -9,6 +9,7 @@ import {
 } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { saveChatMemory } from '@/lib/memory';
+import { getQueue } from '@/lib/queue';
 import { buildChatContext } from '@/utils/context';
 import { logReply } from '@/utils/log';
 import {
@@ -19,6 +20,7 @@ import {
 import { getTrigger } from '@/utils/triggers';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
+import { startTyping } from './utils/typing';
 
 const logger = createLogger('events:message');
 
@@ -73,24 +75,7 @@ async function onSuccess(message: Message) {
   await saveChatMemory(message, 5);
 }
 
-export async function execute(message: Message) {
-  if (message.partial) {
-    try {
-      // biome-ignore lint/style/noParameterAssign: partial fetch requires reassignment
-      message = await message.fetch();
-    } catch (error) {
-      logger.warn({ error }, 'Failed to fetch partial message');
-      return;
-    }
-  }
-
-  if (message.author.bot) {
-    return;
-  }
-  if (message.author.id === message.client.user?.id) {
-    return;
-  }
-
+async function handleMessage(message: Message) {
   const { content, client, guild, author } = message;
   const isDM = !guild;
   if (isDM) {
@@ -193,20 +178,38 @@ export async function execute(message: Message) {
   }
 }
 
-function startTyping(channel: Message['channel']): () => void {
-  if (!('sendTyping' in channel) || typeof channel.sendTyping !== 'function') {
-    return () => {
-      /* no-op */
-    };
+export async function execute(message: Message) {
+  if (message.partial) {
+    try {
+      // biome-ignore lint/style/noParameterAssign: partial fetch requires reassignment
+      message = await message.fetch();
+    } catch (error) {
+      logger.warn({ error }, 'Failed to fetch partial message');
+      return;
+    }
   }
-  const send = () => {
-    (channel as { sendTyping(): Promise<void> })
-      .sendTyping()
-      .catch((_e: unknown) => {
-        /* ignore */
-      });
-  };
-  send();
-  const interval = setInterval(send, 8000);
-  return () => clearInterval(interval);
+
+  if (message.author.bot) {
+    return;
+  }
+  if (message.author.id === message.client.user?.id) {
+    return;
+  }
+  if (message.content.startsWith('//')) {
+    logger.info(
+      { author: message.author.username, content: message.content },
+      'Silent message ignored'
+    );
+    return;
+  }
+
+  const { guild, author } = message;
+  const isDM = !guild;
+  const ctxId = isDM ? `dm:${author.id}` : guild.id;
+
+  await getQueue(ctxId)
+    .add(() => handleMessage(message))
+    .catch((error: unknown) => {
+      logger.error({ error, ctxId }, 'Failed to process queued message');
+    });
 }

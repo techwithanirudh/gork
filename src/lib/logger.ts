@@ -20,14 +20,18 @@ if (!(await exists(logDir))) {
   await mkdir(logDir, { recursive: true });
 }
 
-const runId = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+const runId = new Date()
+  .toISOString()
+  .replace('T', '_')
+  .replace(/[:.]/g, '-')
+  .slice(0, 19);
 
 const pinoTransport = transport({
   targets: [
     {
       target: 'pino/file',
       level: 'debug',
-      options: { destination: path.join(logDir, `app-${runId}.log`) },
+      options: { destination: path.join(logDir, `${runId}.log`) },
     },
     {
       target: 'pino-pretty',
