@@ -9,7 +9,6 @@ import {
 } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { saveChatMemory } from '@/lib/memory';
-import { getQueue } from '@/lib/queue';
 import { buildChatContext } from '@/utils/context';
 import { logReply } from '@/utils/log';
 import {
@@ -203,13 +202,7 @@ export async function execute(message: Message) {
     return;
   }
 
-  const { guild, author } = message;
-  const isDM = !guild;
-  const ctxId = isDM ? `dm:${author.id}` : guild.id;
-
-  await getQueue(ctxId)
-    .add(() => handleMessage(message))
-    .catch((error: unknown) => {
-      logger.error({ error, ctxId }, 'Failed to process queued message');
-    });
+  handleMessage(message).catch((error: unknown) => {
+    logger.error({ error }, 'Failed to process message');
+  });
 }

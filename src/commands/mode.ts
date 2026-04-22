@@ -1,5 +1,6 @@
 import {
   type ChatInputCommandInteraction,
+  InteractionContextType,
   MessageFlags,
   PermissionsBitField,
   SlashCommandBuilder,
@@ -22,7 +23,7 @@ const modeLabels: Record<ResponseMode, string> = {
 export const data = new SlashCommandBuilder()
   .setName('mode')
   .setDescription('Edit how Gork replies in this server or channel')
-  .setDMPermission(false)
+  .setContexts(InteractionContextType.Guild)
   .addSubcommand((subcommand) =>
     subcommand
       .setName('set')
