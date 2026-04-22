@@ -12,7 +12,6 @@ import {
   type ResponseMode,
   setResponseMode,
 } from '@/lib/kv';
-import { openModePanel } from './mode-panel';
 
 const modeLabels: Record<ResponseMode, string> = {
   ping: 'ping only',
@@ -80,9 +79,7 @@ export const data = new SlashCommandBuilder()
       )
   )
   .addSubcommand((subcommand) =>
-    subcommand
-      .setName('panel')
-      .setDescription('Open the interactive response control panel')
+    subcommand.setName('help').setDescription('Show how to use /mode')
   );
 
 export async function execute(
@@ -110,8 +107,18 @@ export async function execute(
   const subcommand = interaction.options.getSubcommand();
 
   switch (subcommand) {
-    case 'panel':
-      return openModePanel(interaction);
+    case 'help':
+      return interaction.reply({
+        content: [
+          '**`/mode set`** — set reply mode for the server or a channel',
+          '**`/mode show`** — show the current mode (server default or channel override)',
+          '**`/mode clear`** — remove the server default or channel override',
+          '',
+          '**Modes:** `ping only` · `relevance` · `ping + keyword`',
+          '**Scopes:** `server` (default for all channels) · `channel` (overrides server)',
+        ].join('\n'),
+        flags: MessageFlags.Ephemeral,
+      });
 
     case 'set': {
       const selectedScope = interaction.options.getString('scope', true) as

@@ -3,10 +3,6 @@ import { NodeSDK } from '@opentelemetry/sdk-node';
 import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { LangfuseExporter } from 'langfuse-vercel';
 import { commands } from '@/commands';
-import {
-  handleModePanelButton,
-  handleModePanelSelect,
-} from '@/commands/mode-panel';
 import { deployCommands } from '@/deploy-commands';
 import { env } from '@/env';
 import { events } from '@/events';
@@ -111,22 +107,6 @@ client.on(Events.InteractionCreate, (interaction) => {
         });
     }
     return;
-  }
-
-  if (interaction.isButton() && interaction.customId.startsWith('modepanel:')) {
-    handleModePanelButton(interaction).catch((error: unknown) => {
-      logger.error({ error }, 'Mode panel button failed');
-    });
-    return;
-  }
-
-  if (
-    interaction.isStringSelectMenu() &&
-    interaction.customId.startsWith('modepanel:')
-  ) {
-    handleModePanelSelect(interaction).catch((error: unknown) => {
-      logger.error({ error }, 'Mode panel select failed');
-    });
   }
 });
 

@@ -46,6 +46,7 @@
     "jsonrepair",
     "Jsonify",
     "agentic",
-    "cooldown"
+    "cooldown",
+    "healthcheck"
   ]
 }
