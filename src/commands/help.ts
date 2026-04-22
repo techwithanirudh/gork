@@ -26,8 +26,8 @@ export const data = new SlashCommandBuilder()
       )
   );
 
-function buildInviteButton(interaction: ChatInputCommandInteraction) {
-  const url = interaction.client.generateInvite({
+function buildActionRow(interaction: ChatInputCommandInteraction) {
+  const inviteUrl = interaction.client.generateInvite({
     scopes: [OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands],
     permissions: [
       PermissionsBitField.Flags.ViewChannel,
@@ -45,7 +45,11 @@ function buildInviteButton(interaction: ChatInputCommandInteraction) {
     new ButtonBuilder()
       .setLabel('Invite Gork')
       .setStyle(ButtonStyle.Link)
-      .setURL(url)
+      .setURL(inviteUrl),
+    new ButtonBuilder()
+      .setLabel('Developer')
+      .setStyle(ButtonStyle.Link)
+      .setURL('https://techwithanirudh.com')
   );
 }
 
@@ -85,7 +89,7 @@ function buildOverviewEmbed(interaction: ChatInputCommandInteraction) {
         inline: false,
       }
     )
-    .setFooter({ text: 'Gork' })
+    .setFooter({ text: 'Developed by Anirudh.' })
     .setColor(0x58_65_f2);
 
   return embed;
@@ -144,7 +148,7 @@ export function execute(interaction: ChatInputCommandInteraction) {
   }
 
   const embed = buildOverviewEmbed(interaction);
-  const row = buildInviteButton(interaction);
+  const row = buildActionRow(interaction);
 
   return interaction.reply({
     embeds: [embed],
