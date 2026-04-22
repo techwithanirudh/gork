@@ -78,9 +78,6 @@ export const data = new SlashCommandBuilder()
             { name: 'Channel', value: 'channel' }
           )
       )
-  )
-  .addSubcommand((sub) =>
-    sub.setName('help').setDescription('Show how to use /safety')
   );
 
 export async function execute(
@@ -99,20 +96,6 @@ export async function execute(
   const isBotOwner = interaction.user.id === env.DISCORD_OWNER_ID;
 
   const subcommand = interaction.options.getSubcommand();
-
-  if (subcommand === 'help') {
-    return interaction.reply({
-      content: [
-        '**`/safety set`** — set safety mode for the server or a channel',
-        '**`/safety show`** — show the current mode (server default or channel override)',
-        '**`/safety clear`** — remove the server default or channel override',
-        '',
-        '**Modes:** `unfiltered` · `safe`',
-        '**Scopes:** `server` · `channel` (channel override wins)',
-      ].join('\n'),
-      flags: MessageFlags.Ephemeral,
-    });
-  }
 
   if (!(canManageGuild || isBotOwner)) {
     return interaction.reply({

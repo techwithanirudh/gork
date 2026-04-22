@@ -78,9 +78,6 @@ export const data = new SlashCommandBuilder()
             { name: 'Channel', value: 'channel' }
           )
       )
-  )
-  .addSubcommand((subcommand) =>
-    subcommand.setName('help').setDescription('Show how to use /mode')
   );
 
 export async function execute(
@@ -108,19 +105,6 @@ export async function execute(
   const subcommand = interaction.options.getSubcommand();
 
   switch (subcommand) {
-    case 'help':
-      return interaction.reply({
-        content: [
-          '**`/mode set`** — set reply mode for the server or a channel',
-          '**`/mode show`** — show the current mode (server default or channel override)',
-          '**`/mode clear`** — remove the server default or channel override',
-          '',
-          '**Modes:** `ping only` · `relevance` · `ping + keyword`',
-          '**Scopes:** `server` (default for all channels) · `channel` (overrides server)',
-        ].join('\n'),
-        flags: MessageFlags.Ephemeral,
-      });
-
     case 'set': {
       const selectedScope = interaction.options.getString('scope', true) as
         | 'guild'

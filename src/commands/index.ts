@@ -1,3 +1,4 @@
+import { data as helpData, execute as helpExecute } from './help';
 import { data as modeData, execute as modeExecute } from './mode';
 import { data as pingData, execute as pingExecute } from './ping';
 import { data as safetyData, execute as safetyExecute } from './safety';
@@ -24,5 +25,9 @@ export const commands = {
   safety: {
     data: safetyData,
     execute: safetyExecute,
+  },
+  help: {
+    data: helpData,
+    execute: helpExecute,
   },
 };
