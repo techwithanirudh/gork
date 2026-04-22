@@ -1,5 +1,6 @@
 import { stepCountIs, ToolLoopAgent } from 'ai';
 import type { Message } from 'discord.js';
+import type { SafetyMode } from '@/lib/kv';
 import { saveToolMemory } from '@/lib/memory';
 import type { RequestHints } from '@/types/request';
 import { systemPrompt } from '../prompts';
@@ -10,9 +11,11 @@ import { successToolCall } from '../utils/tools';
 export const orchestratorAgent = ({
   message,
   hints,
+  safetyMode,
 }: {
   message: Message;
   hints: RequestHints;
+  safetyMode?: SafetyMode;
 }) =>
   new ToolLoopAgent({
     model: provider.languageModel('chat-model'),
@@ -20,6 +23,7 @@ export const orchestratorAgent = ({
       agent: 'chat',
       message,
       requestHints: hints,
+      safetyMode,
     }),
     stopWhen: [
       stepCountIs(10),

@@ -10,4 +10,6 @@ export const redisKeys = {
   responseModeChannel: (channelId: string) =>
     `${PREFIX}:responseMode:channel:${channelId}`,
   silenced: (ctx: string) => `${PREFIX}:silenced:${ctx}`,
+  safetyGuild: (guildId: string) => `${PREFIX}:safety:guild:${guildId}`,
+  safetyChannel: (channelId: string) => `${PREFIX}:safety:channel:${channelId}`,
 };

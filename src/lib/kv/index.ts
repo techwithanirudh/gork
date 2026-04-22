@@ -10,4 +10,12 @@ export {
   type ResponseModeScope,
   setResponseMode,
 } from './response-mode';
+export {
+  clearSafetyMode,
+  getSafetyMode,
+  getStoredSafetyMode,
+  type SafetyMode,
+  type SafetyScope,
+  setSafetyMode,
+} from './safety';
 export { isSilenced, setSilenced, unsetSilenced } from './silence';

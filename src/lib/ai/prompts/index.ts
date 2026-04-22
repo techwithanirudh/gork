@@ -1,8 +1,10 @@
 import type { Message } from 'discord.js';
+import type { SafetyMode } from '@/lib/kv';
 import type { RequestHints } from '@/types';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
+import { safetyPrompt } from './safety';
 import { relevancePrompt } from './tasks/relevance';
 import { replyPrompt } from './tasks/reply';
 import { toolsPrompt } from './tools';
@@ -24,12 +26,15 @@ export const systemPrompt = ({
   agent,
   requestHints,
   message,
+  safetyMode = 'unfiltered',
 }: {
   agent: string;
   requestHints: RequestHints;
   message?: Message;
+  safetyMode?: SafetyMode;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const safety = safetyMode === 'safe' ? safetyPrompt : undefined;
 
   if (agent === 'chat') {
     return [
@@ -37,6 +42,7 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
+      safety,
       toolsPrompt,
       replyPrompt,
     ]
@@ -50,6 +56,7 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
+      safety,
       relevancePrompt(message),
     ]
       .filter(Boolean)

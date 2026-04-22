@@ -1,6 +1,7 @@
 import type { ModelMessage } from 'ai';
 import type { Message } from 'discord.js';
 import { orchestratorAgent } from '@/lib/ai/agents/orchestrator';
+import { getSafetyMode } from '@/lib/kv';
 import type { RequestHints } from '@/types';
 
 export async function generateResponse(
@@ -9,11 +10,15 @@ export async function generateResponse(
   hints: RequestHints
 ) {
   try {
+    const safetyMode = await getSafetyMode({
+      guildId: msg.guild?.id,
+      channelId: msg.channelId,
+    });
     const attachmentNotice =
       msg.attachments.size > 0
         ? ` The current message includes ${msg.attachments.size} image attachment(s) that you can use for image editing or transformation.`
         : '';
-    const agent = orchestratorAgent({ message: msg, hints });
+    const agent = orchestratorAgent({ message: msg, hints, safetyMode });
     const { toolCalls } = await agent.generate({
       messages: [
         ...messages,

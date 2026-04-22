@@ -1,5 +1,6 @@
 import { data as modeData, execute as modeExecute } from './mode';
 import { data as pingData, execute as pingExecute } from './ping';
+import { data as safetyData, execute as safetyExecute } from './safety';
 import { data as shutupData, execute as shutupExecute } from './shutup';
 import { data as vcData, execute as vcExecute } from './voice-channel';
 
@@ -19,5 +20,9 @@ export const commands = {
   vc: {
     data: vcData,
     execute: vcExecute,
+  },
+  safety: {
+    data: safetyData,
+    execute: safetyExecute,
   },
 };
