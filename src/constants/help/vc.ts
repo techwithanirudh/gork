@@ -1,4 +1,6 @@
-export const vcHelp = {
+import type { CommandHelp } from '@/types';
+
+export const vcHelp: CommandHelp = {
   name: 'vc',
   description: 'Control Gork in voice channels.',
   subcommands: [

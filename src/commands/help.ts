@@ -113,16 +113,18 @@ function buildCommandEmbed(command: string) {
     .setColor(0x58_65_f2);
 
   const usageLines = help.subcommands
-    .filter((s) => s.usage)
-    .map((s) => `**\`${s.usage}\`**: ${s.description}`)
+    .map((s) => `- **\`${s.usage}\`**: ${s.description}`)
     .join('\n');
 
   if (usageLines) {
     embed.addFields({ name: 'Usage', value: usageLines });
   }
 
-  if ('modes' in help && help.modes.length > 0) {
-    embed.addFields({ name: 'Modes', value: help.modes.join('\n') });
+  if (help.modes && help.modes.length > 0) {
+    const modeLines = help.modes
+      .map((m) => `- **${m.name}**: ${m.description}`)
+      .join('\n');
+    embed.addFields({ name: 'Modes', value: modeLines });
   }
 
   embed.addFields({ name: 'Permission', value: help.permissions });

@@ -1,7 +1,7 @@
 import { getRedis } from './client';
 import { redisKeys } from './keys';
 
-export type ResponseMode = 'ping' | 'relevance' | 'ping+keyword';
+export type ResponseMode = 'ping' | 'relevance' | 'ping+keyword' | 'none';
 export type ResponseModeScope = 'guild' | 'channel';
 
 const DEFAULT_RESPONSE_MODE: ResponseMode = 'relevance';
@@ -65,7 +65,12 @@ export async function getStoredResponseMode({
       ? await r.get(redisKeys.responseModeGuild(id))
       : await r.get(redisKeys.responseModeChannel(id));
 
-  if (mode === 'ping' || mode === 'relevance' || mode === 'ping+keyword') {
+  if (
+    mode === 'ping' ||
+    mode === 'relevance' ||
+    mode === 'ping+keyword' ||
+    mode === 'none'
+  ) {
     return mode;
   }
 

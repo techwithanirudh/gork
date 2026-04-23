@@ -92,6 +92,10 @@ async function handleMessage(message: Message) {
         channelId: message.channelId,
       });
 
+  if (responseMode === 'none') {
+    return;
+  }
+
   if (!(await canReply(message))) {
     return;
   }

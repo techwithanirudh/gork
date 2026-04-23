@@ -94,18 +94,18 @@ export async function execute(
     PermissionsBitField.Flags.ManageGuild
   );
   const isBotOwner = interaction.user.id === env.DISCORD_OWNER_ID;
+  const canEdit = canManageGuild || isBotOwner;
 
   const subcommand = interaction.options.getSubcommand();
 
-  if (!(canManageGuild || isBotOwner)) {
-    return interaction.reply({
-      content: 'only mods or admins can change this setting',
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
   switch (subcommand) {
     case 'set': {
+      if (!canEdit) {
+        return interaction.reply({
+          content: 'only mods or admins can change this setting',
+          flags: MessageFlags.Ephemeral,
+        });
+      }
       const scope = interaction.options.getString('scope', true) as
         | 'guild'
         | 'channel';
@@ -164,6 +164,12 @@ export async function execute(
     }
 
     case 'clear': {
+      if (!canEdit) {
+        return interaction.reply({
+          content: 'only mods or admins can change this setting',
+          flags: MessageFlags.Ephemeral,
+        });
+      }
       const scope = interaction.options.getString('scope', true) as
         | 'guild'
         | 'channel';

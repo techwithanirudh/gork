@@ -1,13 +1,15 @@
-export const shutupHelp = {
+import type { CommandHelp } from '@/types';
+
+export const shutupHelp: CommandHelp = {
   name: 'shutup',
   description: 'Toggle whether Gork talks in this channel.',
   subcommands: [
     {
-      name: '',
+      name: 'shutup',
       usage: '/shutup',
       description:
         'Silences Gork for 6 hours. Run again to unsilence. Pings always wake Gork up.',
     },
   ],
-  permissions: 'Anyone',
+  permissions: 'Server admins or bot owner',
 };

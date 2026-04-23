@@ -1,4 +1,6 @@
-export const safetyHelp = {
+import type { CommandHelp } from '@/types';
+
+export const safetyHelp: CommandHelp = {
   name: 'safety',
   description: 'Control content filtering for Gork in this server or channel.',
   subcommands: [
@@ -16,11 +18,11 @@ export const safetyHelp = {
       name: 'clear',
       usage: '/safety clear <scope>',
       description: 'Remove the server default or channel override.',
-    }
+    },
   ],
   modes: [
-    '**unfiltered**: no content restrictions (default)',
-    '**safe**: SFW mode, filters explicit content',
+    { name: 'unfiltered', description: 'no content restrictions (default)' },
+    { name: 'safe', description: 'SFW mode, filters explicit content' },
   ],
   permissions: 'Server admins or bot owner',
 };

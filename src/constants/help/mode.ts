@@ -1,4 +1,6 @@
-export const modeHelp = {
+import type { CommandHelp } from '@/types';
+
+export const modeHelp: CommandHelp = {
   name: 'mode',
   description: 'Control when Gork replies in this server or channel.',
   subcommands: [
@@ -16,12 +18,19 @@ export const modeHelp = {
       name: 'clear',
       usage: '/mode clear <scope>',
       description: 'Remove the server default or channel override.',
-    }
+    },
   ],
   modes: [
-    '**ping only**: only replies when pinged',
-    '**relevance**: decides whether to reply based on context (default)',
-    '**ping + keyword**: replies on pings or keyword matches',
+    { name: 'ping only', description: 'only replies when pinged' },
+    {
+      name: 'relevance',
+      description: 'decides whether to reply based on context (default)',
+    },
+    {
+      name: 'ping + keyword',
+      description: 'replies on pings or keyword matches',
+    },
+    { name: 'none', description: 'completely silent, ignores everything' },
   ],
   permissions: 'Server admins or bot owner',
 };

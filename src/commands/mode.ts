@@ -18,6 +18,7 @@ const modeLabels: Record<ResponseMode, string> = {
   ping: 'ping only',
   relevance: 'relevance',
   'ping+keyword': 'ping + keyword',
+  none: 'none',
 };
 
 export const data = new SlashCommandBuilder()
@@ -46,7 +47,8 @@ export const data = new SlashCommandBuilder()
           .addChoices(
             { name: 'Ping only', value: 'ping' },
             { name: 'Relevance', value: 'relevance' },
-            { name: 'Ping + keyword', value: 'ping+keyword' }
+            { name: 'Ping + keyword', value: 'ping+keyword' },
+            { name: 'None', value: 'none' }
           )
       )
   )
@@ -94,18 +96,18 @@ export async function execute(
     PermissionsBitField.Flags.ManageGuild
   );
   const isBotOwner = interaction.user.id === env.DISCORD_OWNER_ID;
-
-  if (!(canManageGuild || isBotOwner)) {
-    return interaction.reply({
-      content: 'only mods or admins can change this setting',
-      flags: MessageFlags.Ephemeral,
-    });
-  }
+  const canEdit = canManageGuild || isBotOwner;
 
   const subcommand = interaction.options.getSubcommand();
 
   switch (subcommand) {
     case 'set': {
+      if (!canEdit) {
+        return interaction.reply({
+          content: 'only mods or admins can change this setting',
+          flags: MessageFlags.Ephemeral,
+        });
+      }
       const selectedScope = interaction.options.getString('scope', true) as
         | 'guild'
         | 'channel';
@@ -173,6 +175,12 @@ export async function execute(
     }
 
     case 'clear': {
+      if (!canEdit) {
+        return interaction.reply({
+          content: 'only mods or admins can change this setting',
+          flags: MessageFlags.Ephemeral,
+        });
+      }
       const selectedScope = interaction.options.getString('scope', true) as
         | 'guild'
         | 'channel';
