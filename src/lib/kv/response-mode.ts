@@ -94,7 +94,8 @@ export async function getResponseMode({
     if (
       channelMode === 'ping' ||
       channelMode === 'relevance' ||
-      channelMode === 'ping+keyword'
+      channelMode === 'ping+keyword' ||
+      channelMode === 'none'
     ) {
       return channelMode;
     }
@@ -105,7 +106,8 @@ export async function getResponseMode({
     if (
       guildMode === 'ping' ||
       guildMode === 'relevance' ||
-      guildMode === 'ping+keyword'
+      guildMode === 'ping+keyword' ||
+      guildMode === 'none'
     ) {
       return guildMode;
     }
