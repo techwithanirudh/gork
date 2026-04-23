@@ -7,13 +7,13 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./logs:/usr/src/app/logs
 
   redis:
     image: redis:7-alpine
-    restart: always
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
