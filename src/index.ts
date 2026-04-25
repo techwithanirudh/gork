@@ -79,24 +79,54 @@ async function sendLogsMessage(message: string) {
 }
 
 client.on(Events.GuildCreate, async (guild) => {
-  await deployCommands({ guildId: guild.id });
   logger.info({ guildId: guild.id, guildName: guild.name }, 'Added to guild');
+
+  try {
+    await deployCommands({ guildId: guild.id });
+  } catch (error) {
+    logger.warn(
+      { ...toLogError(error), guildId: guild.id, guildName: guild.name },
+      'Failed to deploy commands for guild'
+    );
+  }
+
   await sendLogsMessage(`added to server: **${guild.name}** (\`${guild.id}\`)`);
 
-  const channel = guild.systemChannel;
-  if (channel) {
-    await channel.send("yeah i'm here, try not to make it weird");
+  const systemChannel = guild.systemChannel;
+  if (!systemChannel) {
+    return;
+  }
+
+  try {
+    await systemChannel.send("yeah i'm here, try not to make it weird");
+  } catch (error) {
+    logger.warn(
+      {
+        ...toLogError(error),
+        guildId: guild.id,
+        guildName: guild.name,
+        channelId: systemChannel.id,
+      },
+      'Failed to send guild welcome message'
+    );
   }
 });
 
 client.on(Events.GuildDelete, async (guild) => {
-  logger.info(
-    { guildId: guild.id, guildName: guild.name },
-    'Removed from guild'
-  );
-  await sendLogsMessage(
-    `removed from server: **${guild.name}** (\`${guild.id}\`)`
-  );
+  try {
+    logger.info(
+      { guildId: guild.id, guildName: guild.name },
+      'Removed from guild'
+    );
+    await sendLogsMessage(
+      `removed from server: **${guild.name}** (\`${guild.id}\`)`
+    );
+  } catch (error) {
+    logger.warn(
+      { ...toLogError(error), guildId: guild.id, guildName: guild.name },
+      'Guild delete handler failed'
+    );
+  }
 });
 
 client.on(Events.InteractionCreate, (interaction) => {
