@@ -15,7 +15,8 @@ export const env = createEnv({
     // AI
     OPENAI_API_KEY: z.string().optional(),
     HACKCLUB_API_KEY: z.string().optional(),
-    GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
+    OPENROUTER_API_KEY: z.string().min(1),
+    OPENROUTER_BASE_URL: z.url().optional(),
     // Logging
     LOG_DIRECTORY: z.string().optional().default('logs'),
     LOG_LEVEL: z

@@ -9,6 +9,7 @@ import {
 } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { saveChatMemory } from '@/lib/memory';
+import { getQueue } from '@/lib/queue';
 import { buildChatContext } from '@/utils/context';
 import { toLogError } from '@/utils/error';
 import { logReply } from '@/utils/log';
@@ -164,7 +165,7 @@ async function handleMessage(message: Message) {
     `[${ctxId}] Relevance check`
   );
 
-  const willReply = probability > 0.5;
+  const willReply = probability > 0.65;
   await handleMessageCount(ctxId, willReply);
 
   if (!willReply) {
@@ -207,7 +208,10 @@ export async function execute(message: Message) {
     return;
   }
 
-  handleMessage(message).catch((error: unknown) => {
-    logger.error(toLogError(error), 'Failed to process message');
-  });
+  const ctxId = message.guild ? message.guild.id : `dm:${message.author.id}`;
+  getQueue(ctxId)
+    .add(() => handleMessage(message))
+    .catch((error: unknown) => {
+      logger.error(toLogError(error), 'Failed to process message');
+    });
 }

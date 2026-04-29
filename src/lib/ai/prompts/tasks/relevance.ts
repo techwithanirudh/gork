@@ -2,64 +2,32 @@ import type { Message } from 'discord.js';
 
 export const relevancePrompt = (message?: Message) => `\
 <task>
-Analyze the current message and provide a structured assessment:
+Decide whether Gork should reply to this specific message. Return a probability (0.0-1.0) and a short reason.
 
-1. TALKING_TO_GORK (boolean): Is this message directed at you specifically?
-   - true: Direct mentions of "Gork" (or misspellings like "pork", "fork", "gor"), replies to Gork, questions/requests aimed at Gork
-   - false: General conversation, talking to others, not specifically for Gork
+REPLY (probability ≥ 0.7):
+- Message is directly addressed to Gork (mention, reply, name used even misspelled)
+- Direct question or request anyone would expect Gork to answer
+- Message is funny/weird and Gork could land a joke that actually adds something
+- Someone is clearly baiting Gork into a conversation
 
-2. RELEVANCY_TO_GORK (0.0-1.0): How relevant is this content for Gork to engage with?
-   HIGHLY RELEVANT (0.8-1.0):
-   - Direct questions or requests for help
-   - Engaging topics Gork could contribute meaningfully to
-   - Jokes, memes, or humor Gork could build on
-   - Technical discussions where Gork's knowledge helps
-   - Conversation starters or open-ended statements
-   - Messages mentioning Gork by name (even misspelled)
+MAYBE REPLY (0.4-0.69), lean toward skipping unless it's genuinely interesting:
+- Open-ended statement in a slow conversation Gork was already part of
+- Topic Gork has a strong opinion on and hasn't recently chimed in
 
-   MODERATELY RELEVANT (0.5-0.7):
-   - General chat Gork could naturally join
-   - Reactions to previous messages Gork could comment on
-   - Casual observations or experiences
-   - Light complaints or celebrations Gork could respond to
-   - Ongoing conversations Gork was previously part of
+SKIP (probability < 0.4):
+- Quick back-and-forth between two people that doesn't involve Gork
+- One-word / reaction messages ("lol", "ok", "nice", "fr", "💀")
+- Resolving something Gork didn't start
+- Pings directed at other users
+- Spam, bot commands, system messages
+- Gork already replied recently in this same conversation thread
 
-   LESS RELEVANT (0.2-0.4):
-   - Brief acknowledgments ("ok", "thanks", "lol")
-   - Very personal/private conversations between specific users
-   - Inside jokes without context
-   - Messages already fully resolved
-   - Random chatter not directed at anyone
+IMPORTANT: Default to skipping. Gork should feel like it chose to speak, not like it's compelled to respond to everything. Quality over quantity.
 
-   NOT RELEVANT (0.0-0.1):
-   - Spam, gibberish, or abuse
-   - Bot commands for other bots (unless mentioning Gork)
-   - Messages clearly not meant for conversation
-   - Automated messages or system notifications
-   - Pings to other users like <@1072591948499664996>
+YOU ARE SCORING ONLY THIS MESSAGE, from @${message?.author.username ?? 'user'}: "${
+  (message?.content ?? '').slice(0, 200) || '(empty)'
+}"
 
-3. CONFIDENCE (0.0-1.0): How confident are you in your assessment?
-   - 1.0: Very clear and obvious
-   - 0.8: Pretty confident
-   - 0.6: Somewhat confident
-   - 0.4: Uncertain
-   - 0.2: Very uncertain
-
-IMPORTANT: Don't interrupt ongoing conversations between other people unless:
-- They mention you specifically
-- The topic is highly engaging and you could add value
-- It's a group conversation where bots are welcome
-
-### response format:
-{
-  "probability": 1.0,
-  "reason": "The message is about you and you're interested in it."
-}
-
-YOU ARE ONLY SCORING THE MESSAGE FROM @${message?.author.username ?? 'user'}: ${
-  (message?.content ?? '').slice(0, 200) || 'message'
-}. DO NOT USE CONTEXT / MEMORIES TO DETERMINE RELEVANCE
-
-Do NOT return anything else than the JSON object, LIKE the suggested reply. Do NOT wrap the JSON object in quotes, or a codeblock.
-ONLY return the JSON Object, nothing ELSE.
+Respond with ONLY this JSON object, no other text:
+{"probability": 0.0, "reason": "one sentence"}
 </task>`;
