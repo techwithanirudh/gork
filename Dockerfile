@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-       curl git sudo python3 python3-pip make \
+       curl git sudo python3 python3-pip make gosu \
   && rm -rf /var/lib/apt/lists/*
 
 # install dependencies into temp directory
@@ -23,8 +23,10 @@ COPY --from=install /usr/src/app/node_modules ./node_modules
 
 # then copy all (non-ignored) project files into the image
 COPY . .
-RUN mkdir -p logs \
- && chmod 0777 logs
+RUN mkdir -p logs
 
-USER bun
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["bun", "run", "start"]
