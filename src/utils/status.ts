@@ -32,12 +32,19 @@ const updateStatus = (client: Client): void => {
   logger.info(`Status: ${status}, Activity: ${activity.name}`);
 };
 
-const beginStatusUpdates = (
-  client: Client,
-  intervalMs = 10 * 60 * 1000
-): void => {
+const scheduleNextUpdate = (client: Client): void => {
+  const minMs = 5 * 60 * 1000;
+  const maxMs = 10 * 60 * 1000;
+  const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+  setTimeout(() => {
+    updateStatus(client);
+    scheduleNextUpdate(client);
+  }, delay);
+};
+
+const beginStatusUpdates = (client: Client): void => {
   updateStatus(client);
-  setInterval(() => updateStatus(client), intervalMs);
+  scheduleNextUpdate(client);
 };
 
 export { beginStatusUpdates, updateStatus };
